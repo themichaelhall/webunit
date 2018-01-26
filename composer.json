@@ -1,0 +1,33 @@
+{
+  "name": "michaelhall/webunit",
+  "description": "Webunit test client",
+  "license": "MIT",
+  "keywords": [
+    "web",
+    "unit"
+  ],
+  "authors": [
+    {
+      "name": "Michael Hall",
+      "homepage": "https://michaelhall.se/"
+    }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "michaelhall/page-fetcher": "dev-master",
+    "datatypes/datatypes": "~2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "MichaelHall\\Webunit\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MichaelHall\\Webunit\\Tests\\": "tests"
+    }
+  }
+}
