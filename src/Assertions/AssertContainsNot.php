@@ -12,14 +12,14 @@ use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 
 /**
- * Class representing an assertion for containing test content.
+ * Class representing an assertion for not containing test content.
  *
  * @since 1.0.0
  */
-class AssertContains implements AssertInterface
+class AssertContainsNot implements AssertInterface
 {
     /**
-     * AssertContains constructor.
+     * AssertContainsNot constructor.
      *
      * @since 1.0.0
      *
@@ -41,7 +41,7 @@ class AssertContains implements AssertInterface
      */
     public function test(PageResultInterface $pageResult): bool
     {
-        return strpos($pageResult->getContent(), $this->content) !== false;
+        return strpos($pageResult->getContent(), $this->content) === false;
     }
 
     /**
