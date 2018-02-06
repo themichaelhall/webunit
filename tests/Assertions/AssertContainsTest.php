@@ -26,4 +26,15 @@ class AssertContainsTest extends TestCase
         self::assertFalse($assert->test(new PageResult('foo')));
         self::assertFalse($assert->test(new PageResult('Bar')));
     }
+
+    /**
+     * Test error text on failure.
+     */
+    public function testErrorTextOnFailure()
+    {
+        $assert = new AssertContains('Foo');
+        $assert->test(new PageResult('Bar'), $error);
+
+        self::assertSame('Content "Bar" does not contain "Foo"', $error);
+    }
 }

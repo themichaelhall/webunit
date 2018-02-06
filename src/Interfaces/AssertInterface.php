@@ -21,8 +21,9 @@ interface AssertInterface
      * @since 1.0.0
      *
      * @param PageResultInterface $pageResult The page result.
+     * @param string              $error      The error text if assertion failed.
      *
      * @return bool True if assertion was successful, false otherwise.
      */
-    public function test(PageResultInterface $pageResult): bool;
+    public function test(PageResultInterface $pageResult, string &$error = null): bool;
 }
