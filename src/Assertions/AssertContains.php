@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Assertions;
 
+use MichaelHall\Webunit\AssertResult;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
+use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 
 /**
@@ -36,18 +38,16 @@ class AssertContains implements AssertInterface
      * @since 1.0.0
      *
      * @param PageResultInterface $pageResult The page result.
-     * @param string              $error      The error text if assertion failed.
      *
-     * @return bool True if assertion was successful, false otherwise.
+     * @return AssertResultInterface The test result.
      */
-    public function test(PageResultInterface $pageResult, string &$error = null): bool
+    public function test(PageResultInterface $pageResult): AssertResultInterface
     {
-        $result = strpos($pageResult->getContent(), $this->content) !== false;
-        if (!$result) {
-            $error = 'Content "' . $pageResult->getContent() . '" does not contain "' . $this->content . '"';
+        if (strpos($pageResult->getContent(), $this->content) !== false) {
+            return new AssertResult($this);
         }
 
-        return $result;
+        return new AssertResult($this, false, 'Content "' . $pageResult->getContent() . '" does not contain "' . $this->content . '"');
     }
 
     /**

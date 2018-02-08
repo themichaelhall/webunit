@@ -20,11 +20,11 @@ class AssertContainsNotTest extends TestCase
     {
         $assert = new AssertContainsNot('Foo');
 
-        self::assertFalse($assert->test(new PageResult('FooBar')));
-        self::assertTrue($assert->test(new PageResult('fooBar')));
-        self::assertFalse($assert->test(new PageResult('Foo')));
-        self::assertTrue($assert->test(new PageResult('foo')));
-        self::assertTrue($assert->test(new PageResult('Bar')));
+        self::assertFalse($assert->test(new PageResult('FooBar'))->isSuccess());
+        self::assertTrue($assert->test(new PageResult('fooBar'))->isSuccess());
+        self::assertFalse($assert->test(new PageResult('Foo'))->isSuccess());
+        self::assertTrue($assert->test(new PageResult('foo'))->isSuccess());
+        self::assertTrue($assert->test(new PageResult('Bar'))->isSuccess());
     }
 
     /**
@@ -33,8 +33,8 @@ class AssertContainsNotTest extends TestCase
     public function testErrorTextOnFailure()
     {
         $assert = new AssertContainsNot('Foo');
-        $assert->test(new PageResult('Foo Bar'), $error);
+        $result = $assert->test(new PageResult('Foo Bar'));
 
-        self::assertSame('Content "Foo Bar" contains "Foo"', $error);
+        self::assertSame('Content "Foo Bar" contains "Foo"', $result->getError());
     }
 }
