@@ -14,7 +14,7 @@
   ],
   "require": {
     "php": ">=7.1",
-    "michaelhall/page-fetcher": "dev-master",
+    "michaelhall/page-fetcher": "~1.0",
     "datatypes/datatypes": "~2.0"
   },
   "require-dev": {
