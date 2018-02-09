@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests\Assertions;
 
 use MichaelHall\Webunit\Assertions\AssertContains;
+use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
 
@@ -15,26 +16,47 @@ class AssertContainsTest extends TestCase
 {
     /**
      * Test assertion.
+     *
+     * @dataProvider assertionDataProvider
+     *
+     * @param int    $modifiers       The modifiers.
+     * @param string $content         The content.
+     * @param bool   $expectedSuccess True the expected result is success, false otherwise.
+     * @param string $expectedError   The expected error.
      */
-    public function testAssertion()
+    public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertContains('Foo');
+        $assert = new AssertContains('Foo', new Modifiers($modifiers));
+        $pageResult = new PageResult($content);
+        $result = $assert->test($pageResult);
 
-        self::assertTrue($assert->test(new PageResult('FooBar'))->isSuccess());
-        self::assertFalse($assert->test(new PageResult('fooBar'))->isSuccess());
-        self::assertTrue($assert->test(new PageResult('Foo'))->isSuccess());
-        self::assertFalse($assert->test(new PageResult('foo'))->isSuccess());
-        self::assertFalse($assert->test(new PageResult('Bar'))->isSuccess());
+        self::assertSame($expectedSuccess, $result->isSuccess());
+        self::assertSame($expectedError, $result->getError());
     }
 
     /**
-     * Test error text on failure.
+     * Data provider for assertion test.
+     *
+     * @return array The data.
      */
-    public function testErrorTextOnFailure()
+    public function assertionDataProvider()
     {
-        $assert = new AssertContains('Foo');
-        $result = $assert->test(new PageResult('Bar'));
+        return [
+            // Modifiers::NONE
+            [Modifiers::NONE, '', false, 'Content "" does not contain "Foo"'],
+            [Modifiers::NONE, 'Foo', true, ''],
+            [Modifiers::NONE, 'foo', false, 'Content "foo" does not contain "Foo"'],
+            [Modifiers::NONE, 'FooBar', true, ''],
+            [Modifiers::NONE, 'fooBar', false, 'Content "fooBar" does not contain "Foo"'],
+            [Modifiers::NONE, 'Bar', false, 'Content "Bar" does not contain "Foo"'],
 
-        self::assertSame('Content "Bar" does not contain "Foo"', $result->getError());
+            // Modifiers::NOT
+            [Modifiers::NOT, '', true, ''],
+            [Modifiers::NOT, 'Foo', false, 'Content "Foo" does contain "Foo"'],
+            [Modifiers::NOT, 'foo', true, ''],
+            [Modifiers::NOT, 'FooBar', false, 'Content "FooBar" does contain "Foo"'],
+            [Modifiers::NOT, 'fooBar', true, ''],
+            [Modifiers::NOT, 'Bar', true, ''],
+        ];
     }
 }

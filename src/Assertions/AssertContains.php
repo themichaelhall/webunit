@@ -12,6 +12,7 @@ use MichaelHall\Webunit\AssertResult;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
+use MichaelHall\Webunit\Modifiers;
 
 /**
  * Class representing an assertion for containing test content.
@@ -25,11 +26,13 @@ class AssertContains implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @param string $content The content to check for.
+     * @param string    $content   The content to check for.
+     * @param Modifiers $modifiers The modifiers.
      */
-    public function __construct(string $content)
+    public function __construct(string $content, Modifiers $modifiers)
     {
         $this->content = $content;
+        $this->modifiers = $modifiers;
     }
 
     /**
@@ -43,15 +46,25 @@ class AssertContains implements AssertInterface
      */
     public function test(PageResultInterface $pageResult): AssertResultInterface
     {
-        if (strpos($pageResult->getContent(), $this->content) !== false) {
+        $result = strpos($pageResult->getContent(), $this->content) !== false;
+        if ($this->modifiers->isNot()) {
+            $result = !$result;
+        }
+
+        if ($result) {
             return new AssertResult($this);
         }
 
-        return new AssertResult($this, false, 'Content "' . $pageResult->getContent() . '" does not contain "' . $this->content . '"');
+        return new AssertResult($this, false, 'Content "' . $pageResult->getContent() . '" does ' . ($this->modifiers->isNot() ? '' : 'not ') . 'contain "' . $this->content . '"');
     }
 
     /**
      * @var string My content to check for.
      */
     private $content;
+
+    /**
+     * @var Modifiers My modifiers.
+     */
+    private $modifiers;
 }

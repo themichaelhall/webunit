@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests;
 
 use MichaelHall\Webunit\Assertions\AssertContains;
-use MichaelHall\Webunit\Assertions\AssertContainsNot;
+use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,8 +28,8 @@ class TestCaseTest extends TestCase
      */
     public function testWithAsserts()
     {
-        $assert1 = new AssertContains('Foo');
-        $assert2 = new AssertContainsNot('Bar');
+        $assert1 = new AssertContains('Foo', new Modifiers());
+        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase();
         $testCase->addAssert($assert1);

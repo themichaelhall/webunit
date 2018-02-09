@@ -6,6 +6,7 @@ namespace MichaelHall\Webunit\Tests;
 
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
+use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,7 +19,7 @@ class AssertResultTest extends TestCase
      */
     public function testSuccessfulResult()
     {
-        $assert = new AssertContains('Foo');
+        $assert = new AssertContains('Foo', new Modifiers());
         $result = new AssertResult($assert);
 
         self::assertTrue($result->isSuccess());
@@ -31,7 +32,7 @@ class AssertResultTest extends TestCase
      */
     public function testUnsuccessfulResult()
     {
-        $assert = new AssertContains('Foo');
+        $assert = new AssertContains('Foo', new Modifiers());
         $result = new AssertResult($assert, false, 'Bar');
 
         self::assertFalse($result->isSuccess());
