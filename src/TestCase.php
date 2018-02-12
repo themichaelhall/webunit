@@ -8,8 +8,12 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit;
 
+use DataTypes\Url;
+use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
+use MichaelHall\PageFetcher\PageFetcherRequest;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
+use MichaelHall\Webunit\Interfaces\TestCaseResultInterface;
 
 /**
  * Class representing a test case.
@@ -50,6 +54,32 @@ class TestCase implements TestCaseInterface
     public function getAsserts(): array
     {
         return $this->asserts;
+    }
+
+    /**
+     * Runs the test case.
+     *
+     * @since 1.0.0
+     *
+     * @param PageFetcherInterface $pageFetcher The page fetcher.
+     *
+     * @return TestCaseResultInterface The result.
+     */
+    public function run(PageFetcherInterface $pageFetcher): TestCaseResultInterface
+    {
+        $pageFetcherRequest = new PageFetcherRequest(Url::parse('http://localhost')); // fixme: set url in constructor.
+        $pageFetcherResult = $pageFetcher->fetch($pageFetcherRequest);
+        $pageResult = new PageResult($pageFetcherResult->getContent());
+
+        foreach ($this->getAsserts() as $assert) {
+            $assertResult = $assert->test($pageResult);
+
+            if (!$assertResult->isSuccess()) {
+                return new TestCaseResult($this, false, $assertResult);
+            }
+        }
+
+        return new TestCaseResult($this);
     }
 
     /**

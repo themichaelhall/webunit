@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests;
 
+use MichaelHall\PageFetcher\FakePageFetcher;
+use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
+use MichaelHall\PageFetcher\PageFetcherResponse;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
@@ -36,5 +39,59 @@ class TestCaseTest extends TestCase
         $testCase->addAssert($assert2);
 
         self::assertSame([$assert1, $assert2], $testCase->getAsserts());
+    }
+
+    /**
+     * Test run successful test.
+     */
+    public function testRunSuccessfulTest()
+    {
+        $assert1 = new AssertContains('Foo', new Modifiers());
+        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertContains('Baz', new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+
+        $pageFetcher = new FakePageFetcher();
+        $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
+            return new PageFetcherResponse(200, 'Foo Baz');
+        });
+
+        $result = $testCase->run($pageFetcher);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertTrue($result->isSuccess());
+        self::assertNull($result->getFailedAssertResult());
+    }
+
+    /**
+     * Test run failed test.
+     */
+    public function testRunFailedTest()
+    {
+        $assert1 = new AssertContains('Foo', new Modifiers());
+        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertContains('Baz', new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+
+        $pageFetcher = new FakePageFetcher();
+        $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
+            return new PageFetcherResponse(200, 'Foo Baz Bar');
+        });
+
+        $result = $testCase->run($pageFetcher);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertFalse($result->isSuccess());
+        self::assertFalse($result->getFailedAssertResult()->isSuccess());
+        self::assertSame($assert2, $result->getFailedAssertResult()->getAssert());
+        self::assertSame('Content "Foo Baz Bar" does contain "Bar"', $result->getFailedAssertResult()->getError());
     }
 }
