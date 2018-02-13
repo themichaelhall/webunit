@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests;
 
+use DataTypes\Url;
 use MichaelHall\PageFetcher\FakePageFetcher;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
 use MichaelHall\PageFetcher\PageFetcherResponse;
@@ -21,7 +22,7 @@ class TestCaseTest extends TestCase
      */
     public function testEmptyTestCase()
     {
-        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
 
         self::assertSame([], $testCase->getAsserts());
     }
@@ -34,11 +35,22 @@ class TestCaseTest extends TestCase
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
 
-        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
 
         self::assertSame([$assert1, $assert2], $testCase->getAsserts());
+    }
+
+    /**
+     * Test getUrl method.
+     */
+    public function testGetUrl()
+    {
+        $url = Url::parse('http://localhost/foo/bar');
+        $testCase = new \MichaelHall\Webunit\TestCase($url);
+
+        self::assertSame($url, $testCase->getUrl());
     }
 
     /**
@@ -50,7 +62,7 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
         $assert3 = new AssertContains('Baz', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -76,7 +88,7 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
         $assert3 = new AssertContains('Baz', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);

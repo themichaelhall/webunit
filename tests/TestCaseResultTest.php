@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests;
 
+use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
 use MichaelHall\Webunit\Modifiers;
@@ -20,7 +21,7 @@ class TestCaseResultTest extends TestCase
      */
     public function testSuccessfulResult()
     {
-        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCaseResult = new TestCaseResult($testCase);
 
         self::assertSame($testCase, $testCaseResult->getTestCase());
@@ -33,7 +34,7 @@ class TestCaseResultTest extends TestCase
      */
     public function testUnsuccessfulResult()
     {
-        $testCase = new \MichaelHall\Webunit\TestCase();
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $assert = new AssertContains('Foo', new Modifiers());
         $assertResult = new AssertResult($assert, false, 'Fail');
         $testCaseResult = new TestCaseResult($testCase, false, $assertResult);

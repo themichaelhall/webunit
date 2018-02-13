@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit;
 
-use DataTypes\Url;
+use DataTypes\Interfaces\UrlInterface;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
 use MichaelHall\PageFetcher\PageFetcherRequest;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
@@ -26,9 +26,12 @@ class TestCase implements TestCaseInterface
      * Constructs a test case.
      *
      * @since 1.0.0
+     *
+     * @param UrlInterface $url The url.
      */
-    public function __construct()
+    public function __construct(UrlInterface $url)
     {
+        $this->url = $url;
         $this->asserts = [];
     }
 
@@ -57,6 +60,18 @@ class TestCase implements TestCaseInterface
     }
 
     /**
+     * Returns the url.
+     *
+     * @since 1.0.0
+     *
+     * @return UrlInterface The url.
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
      * Runs the test case.
      *
      * @since 1.0.0
@@ -67,7 +82,7 @@ class TestCase implements TestCaseInterface
      */
     public function run(PageFetcherInterface $pageFetcher): TestCaseResultInterface
     {
-        $pageFetcherRequest = new PageFetcherRequest(Url::parse('http://localhost')); // fixme: set url in constructor.
+        $pageFetcherRequest = new PageFetcherRequest($this->url);
         $pageFetcherResult = $pageFetcher->fetch($pageFetcherRequest);
         $pageResult = new PageResult($pageFetcherResult->getContent());
 
@@ -81,6 +96,11 @@ class TestCase implements TestCaseInterface
 
         return new TestCaseResult($this);
     }
+
+    /**
+     * @var UrlInterface My url.
+     */
+    private $url;
 
     /**
      * @var AssertInterface[] My asserts.
