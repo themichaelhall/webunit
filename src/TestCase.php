@@ -90,7 +90,7 @@ class TestCase implements TestCaseInterface
             $assertResult = $assert->test($pageResult);
 
             if (!$assertResult->isSuccess()) {
-                return new TestCaseResult($this, false, $assertResult);
+                return new TestCaseResult($this, $assertResult);
             }
         }
 

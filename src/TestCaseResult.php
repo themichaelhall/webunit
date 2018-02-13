@@ -25,14 +25,13 @@ class TestCaseResult implements TestCaseResultInterface
      * @since 1.0.0
      *
      * @param TestCaseInterface     $testCase           The test case.
-     * @param bool                  $isSuccess          True if test is successful, false otherwise.
      * @param AssertResultInterface $failedAssertResult The failed assert result or null if no assert failed.
      */
-    public function __construct(TestCaseInterface $testCase, bool $isSuccess = true, ?AssertResultInterface $failedAssertResult = null)
+    public function __construct(TestCaseInterface $testCase, ?AssertResultInterface $failedAssertResult = null)
     {
         $this->testCase = $testCase;
-        $this->isSuccess = $isSuccess;
         $this->failedAssertResult = $failedAssertResult;
+        $this->isSuccess = $failedAssertResult === null;
     }
 
     /**

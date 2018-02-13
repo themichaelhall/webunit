@@ -37,7 +37,7 @@ class TestCaseResultTest extends TestCase
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $assert = new AssertContains('Foo', new Modifiers());
         $assertResult = new AssertResult($assert, false, 'Fail');
-        $testCaseResult = new TestCaseResult($testCase, false, $assertResult);
+        $testCaseResult = new TestCaseResult($testCase, $assertResult);
 
         self::assertSame($testCase, $testCaseResult->getTestCase());
         self::assertFalse($testCaseResult->isSuccess());
