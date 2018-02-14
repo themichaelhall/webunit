@@ -8,8 +8,10 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit;
 
+use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
+use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
 
 /**
  * Class representing a test suite.
@@ -50,6 +52,25 @@ class TestSuite implements TestSuiteInterface
     public function getTestCases(): array
     {
         return $this->testCases;
+    }
+
+    /**
+     * Runs the test suite.
+     *
+     * @since 1.0.0
+     *
+     * @param PageFetcherInterface $pageFetcher The page fetcher.
+     *
+     * @return TestSuiteResultInterface The result.
+     */
+    public function run(PageFetcherInterface $pageFetcher): TestSuiteResultInterface
+    {
+        $testCaseResults = [];
+        foreach ($this->testCases as $testCase) {
+            $testCaseResults[] = $testCase->run($pageFetcher);
+        }
+
+        return new TestSuiteResult($this, $testCaseResults);
     }
 
     /**

@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
+use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
+
 /**
  * Interface for TestSuite class.
  *
@@ -32,4 +34,15 @@ interface TestSuiteInterface
      * @return TestCaseInterface[] The test cases.
      */
     public function getTestCases(): array;
+
+    /**
+     * Runs the test suite.
+     *
+     * @since 1.0.0
+     *
+     * @param PageFetcherInterface $pageFetcher The page fetcher.
+     *
+     * @return TestSuiteResultInterface The result.
+     */
+    public function run(PageFetcherInterface $pageFetcher): TestSuiteResultInterface;
 }
