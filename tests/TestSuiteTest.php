@@ -11,6 +11,7 @@ use MichaelHall\PageFetcher\Interfaces\PageFetcherRequestInterface;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
 use MichaelHall\PageFetcher\PageFetcherResponse;
 use MichaelHall\Webunit\Assertions\AssertContains;
+use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestSuite;
 use PHPUnit\Framework\TestCase;
@@ -66,7 +67,7 @@ class TestSuiteTest extends TestCase
     public function testRunSuccessfulTests()
     {
         $testCase1 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/foo'));
-        $testCase1->addAssert(new AssertContains('Foo', new Modifiers()));
+        $testCase1->addAssert(new AssertEquals('This is Foo page.', new Modifiers()));
         $testCase1->addAssert(new AssertContains('Bar', new Modifiers(Modifiers::NOT)));
 
         $testCase2 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/bar'));
@@ -121,7 +122,7 @@ class TestSuiteTest extends TestCase
         self::assertSame($testCase1, $result->getTestCaseResults()[0]->getTestCase());
         self::assertFalse($result->getTestCaseResults()[0]->isSuccess());
         self::assertFalse($result->getTestCaseResults()[0]->getFailedAssertResult()->isSuccess());
-        self::assertSame('Content "This is Foo page." does contain "Foo"', $result->getTestCaseResults()[0]->getFailedAssertResult()->getError());
+        self::assertSame('Content "This is Foo page." contains "Foo"', $result->getTestCaseResults()[0]->getFailedAssertResult()->getError());
         self::assertSame($testCase2, $result->getTestCaseResults()[1]->getTestCase());
         self::assertFalse($result->getTestCaseResults()[1]->isSuccess());
         self::assertFalse($result->getTestCaseResults()[1]->getFailedAssertResult()->isSuccess());
@@ -133,7 +134,7 @@ class TestSuiteTest extends TestCase
         self::assertSame($testCase1, $result->getFailedTestCaseResults()[0]->getTestCase());
         self::assertFalse($result->getFailedTestCaseResults()[0]->isSuccess());
         self::assertFalse($result->getFailedTestCaseResults()[0]->getFailedAssertResult()->isSuccess());
-        self::assertSame('Content "This is Foo page." does contain "Foo"', $result->getFailedTestCaseResults()[0]->getFailedAssertResult()->getError());
+        self::assertSame('Content "This is Foo page." contains "Foo"', $result->getFailedTestCaseResults()[0]->getFailedAssertResult()->getError());
         self::assertSame($testCase2, $result->getFailedTestCaseResults()[1]->getTestCase());
         self::assertFalse($result->getFailedTestCaseResults()[1]->isSuccess());
         self::assertFalse($result->getFailedTestCaseResults()[1]->getFailedAssertResult()->isSuccess());

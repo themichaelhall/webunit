@@ -15,14 +15,14 @@ use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
 /**
- * Class representing an assertion for containing test content.
+ * Class representing an assertion for equals test content.
  *
  * @since 1.0.0
  */
-class AssertContains implements AssertInterface
+class AssertEquals implements AssertInterface
 {
     /**
-     * AssertContains constructor.
+     * AssertEquals constructor.
      *
      * @since 1.0.0
      *
@@ -46,7 +46,7 @@ class AssertContains implements AssertInterface
      */
     public function test(PageResultInterface $pageResult): AssertResultInterface
     {
-        $result = strpos($pageResult->getContent(), $this->content) !== false;
+        $result = $pageResult->getContent() === $this->content;
         if ($this->modifiers->isNot()) {
             $result = !$result;
         }
@@ -55,7 +55,7 @@ class AssertContains implements AssertInterface
             return new AssertResult($this);
         }
 
-        return new AssertResult($this, false, 'Content "' . $pageResult->getContent() . '" ' . ($this->modifiers->isNot() ? 'contains' : 'does not contain') . ' "' . $this->content . '"');
+        return new AssertResult($this, false, 'Content "' . $pageResult->getContent() . '" ' . ($this->modifiers->isNot() ? 'equals' : 'does not equal') . ' "' . $this->content . '"');
     }
 
     /**

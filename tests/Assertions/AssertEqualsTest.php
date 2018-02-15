@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
-use MichaelHall\Webunit\Assertions\AssertContains;
+use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test AssertContains class.
+ * Test AssertEquals class.
  */
-class AssertContainsTest extends TestCase
+class AssertEqualsTest extends TestCase
 {
     /**
      * Test assertion.
@@ -26,7 +26,7 @@ class AssertContainsTest extends TestCase
      */
     public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertContains('Foo', new Modifiers($modifiers));
+        $assert = new AssertEquals('Foo', new Modifiers($modifiers));
         $pageResult = new PageResult($content);
         $result = $assert->test($pageResult);
 
@@ -43,18 +43,18 @@ class AssertContainsTest extends TestCase
     {
         return [
             // Modifiers::NONE
-            [Modifiers::NONE, '', false, 'Content "" does not contain "Foo"'],
+            [Modifiers::NONE, '', false, 'Content "" does not equal "Foo"'],
             [Modifiers::NONE, 'Foo', true, ''],
-            [Modifiers::NONE, 'foo', false, 'Content "foo" does not contain "Foo"'],
-            [Modifiers::NONE, 'FooBar', true, ''],
-            [Modifiers::NONE, 'fooBar', false, 'Content "fooBar" does not contain "Foo"'],
-            [Modifiers::NONE, 'Bar', false, 'Content "Bar" does not contain "Foo"'],
+            [Modifiers::NONE, 'foo', false, 'Content "foo" does not equal "Foo"'],
+            [Modifiers::NONE, 'FooBar', false, 'Content "FooBar" does not equal "Foo"'],
+            [Modifiers::NONE, 'fooBar', false, 'Content "fooBar" does not equal "Foo"'],
+            [Modifiers::NONE, 'Bar', false, 'Content "Bar" does not equal "Foo"'],
 
             // Modifiers::NOT
             [Modifiers::NOT, '', true, ''],
-            [Modifiers::NOT, 'Foo', false, 'Content "Foo" contains "Foo"'],
+            [Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "Foo"'],
             [Modifiers::NOT, 'foo', true, ''],
-            [Modifiers::NOT, 'FooBar', false, 'Content "FooBar" contains "Foo"'],
+            [Modifiers::NOT, 'FooBar', true, ''],
             [Modifiers::NOT, 'fooBar', true, ''],
             [Modifiers::NOT, 'Bar', true, ''],
         ];

@@ -9,6 +9,7 @@ use MichaelHall\PageFetcher\FakePageFetcher;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
 use MichaelHall\PageFetcher\PageFetcherResponse;
 use MichaelHall\Webunit\Assertions\AssertContains;
+use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +61,7 @@ class TestCaseTest extends TestCase
     {
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertContains('Baz', new Modifiers());
+        $assert3 = new AssertEquals('Foo Baz', new Modifiers());
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
@@ -86,7 +87,7 @@ class TestCaseTest extends TestCase
     {
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertContains('Baz', new Modifiers());
+        $assert3 = new AssertEquals('Baz', new Modifiers());
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
@@ -104,6 +105,6 @@ class TestCaseTest extends TestCase
         self::assertFalse($result->isSuccess());
         self::assertFalse($result->getFailedAssertResult()->isSuccess());
         self::assertSame($assert2, $result->getFailedAssertResult()->getAssert());
-        self::assertSame('Content "Foo Baz Bar" does contain "Bar"', $result->getFailedAssertResult()->getError());
+        self::assertSame('Content "Foo Baz Bar" contains "Bar"', $result->getFailedAssertResult()->getError());
     }
 }
