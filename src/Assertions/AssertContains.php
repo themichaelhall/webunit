@@ -8,9 +8,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Assertions;
 
-use MichaelHall\Webunit\AssertResult;
-use MichaelHall\Webunit\Interfaces\AssertInterface;
-use MichaelHall\Webunit\Interfaces\AssertResultInterface;
+use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -19,7 +17,7 @@ use MichaelHall\Webunit\Modifiers;
  *
  * @since 1.0.0
  */
-class AssertContains implements AssertInterface
+class AssertContains extends AbstractAssert
 {
     /**
      * AssertContains constructor.
@@ -31,40 +29,34 @@ class AssertContains implements AssertInterface
      */
     public function __construct(string $content, Modifiers $modifiers)
     {
-        $this->content = $content;
-        $this->modifiers = $modifiers;
+        parent::__construct($content, $modifiers);
     }
 
     /**
-     * Test assertion against a page result.
+     * Called when a test is performed on a page result.
      *
      * @since 1.0.0
      *
      * @param PageResultInterface $pageResult The page result.
      *
-     * @return AssertResultInterface The test result.
+     * @return bool True if test was successful, false otherwise.
      */
-    public function test(PageResultInterface $pageResult): AssertResultInterface
+    protected function onTest(PageResultInterface $pageResult): bool
     {
-        $result = strpos($pageResult->getContent(), $this->content) !== false;
-        if ($this->modifiers->isNot()) {
-            $result = !$result;
-        }
-
-        if ($result) {
-            return new AssertResult($this);
-        }
-
-        return new AssertResult($this, false, 'Content "' . $pageResult->getContent() . '" ' . ($this->modifiers->isNot() ? 'contains' : 'does not contain') . ' "' . $this->content . '"');
+        return strpos($pageResult->getContent(), $this->getContent()) !== false;
     }
 
     /**
-     * @var string My content to check for.
+     * Called when a test failed.
+     *
+     * @since 1.0.0
+     *
+     * @param PageResultInterface $pageResult The page result.
+     *
+     * @return string The error text.
      */
-    private $content;
-
-    /**
-     * @var Modifiers My modifiers.
-     */
-    private $modifiers;
+    protected function onFail(PageResultInterface $pageResult): string
+    {
+        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'contains' : 'does not contain') . ' "' . $this->getContent() . '"';
+    }
 }
