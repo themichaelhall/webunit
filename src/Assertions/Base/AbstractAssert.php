@@ -22,18 +22,6 @@ use MichaelHall\Webunit\Modifiers;
 abstract class AbstractAssert implements AssertInterface
 {
     /**
-     * Returns the content.
-     *
-     * @since 1.0.0
-     *
-     * @return string The content.
-     */
-    public function getContent(): string
-    {
-        return $this->content;
-    }
-
-    /**
      * Returns the modifiers.
      *
      * @since 1.0.0
@@ -73,12 +61,10 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @param string    $content   The content.
      * @param Modifiers $modifiers The modifiers.
      */
-    protected function __construct(string $content, Modifiers $modifiers)
+    protected function __construct(Modifiers $modifiers)
     {
-        $this->content = $content;
         $this->modifiers = $modifiers;
     }
 
@@ -103,11 +89,6 @@ abstract class AbstractAssert implements AssertInterface
      * @return string The error text.
      */
     abstract protected function onFail(PageResultInterface $pageResult): string;
-
-    /**
-     * @var string My content to check for.
-     */
-    private $content;
 
     /**
      * @var Modifiers My modifiers.

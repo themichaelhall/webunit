@@ -29,7 +29,9 @@ class AssertEquals extends AbstractAssert
      */
     public function __construct(string $content, Modifiers $modifiers)
     {
-        parent::__construct($content, $modifiers);
+        parent::__construct($modifiers);
+
+        $this->content = $content;
     }
 
     /**
@@ -43,7 +45,7 @@ class AssertEquals extends AbstractAssert
      */
     protected function onTest(PageResultInterface $pageResult): bool
     {
-        return $pageResult->getContent() === $this->getContent();
+        return $pageResult->getContent() === $this->content;
     }
 
     /**
@@ -57,6 +59,11 @@ class AssertEquals extends AbstractAssert
      */
     protected function onFail(PageResultInterface $pageResult): string
     {
-        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'equals' : 'does not equal') . ' "' . $this->getContent() . '"';
+        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'equals' : 'does not equal') . ' "' . $this->content . '"';
     }
+
+    /**
+     * @var string My content to check for.
+     */
+    private $content;
 }

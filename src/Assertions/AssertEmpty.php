@@ -13,25 +13,22 @@ use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
 /**
- * Class representing an assertion for containing test content.
+ * Class representing an assertion for empty content.
  *
  * @since 1.0.0
  */
-class AssertContains extends AbstractAssert
+class AssertEmpty extends AbstractAssert
 {
     /**
-     * AssertContains constructor.
+     * AssertEmpty constructor.
      *
      * @since 1.0.0
      *
-     * @param string    $content   The content to check for.
      * @param Modifiers $modifiers The modifiers.
      */
-    public function __construct(string $content, Modifiers $modifiers)
+    public function __construct(Modifiers $modifiers)
     {
         parent::__construct($modifiers);
-
-        $this->content = $content;
     }
 
     /**
@@ -45,7 +42,7 @@ class AssertContains extends AbstractAssert
      */
     protected function onTest(PageResultInterface $pageResult): bool
     {
-        return strpos($pageResult->getContent(), $this->content) !== false;
+        return $pageResult->getContent() === '';
     }
 
     /**
@@ -59,11 +56,6 @@ class AssertContains extends AbstractAssert
      */
     protected function onFail(PageResultInterface $pageResult): string
     {
-        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'contains' : 'does not contain') . ' "' . $this->content . '"';
+        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'is empty' : 'is not empty');
     }
-
-    /**
-     * @var string My content to check for.
-     */
-    private $content;
 }

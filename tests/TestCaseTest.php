@@ -9,6 +9,7 @@ use MichaelHall\PageFetcher\FakePageFetcher;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
 use MichaelHall\PageFetcher\PageFetcherResponse;
 use MichaelHall\Webunit\Assertions\AssertContains;
+use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
@@ -35,12 +36,14 @@ class TestCaseTest extends TestCase
     {
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertEmpty(new Modifiers());
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
 
-        self::assertSame([$assert1, $assert2], $testCase->getAsserts());
+        self::assertSame([$assert1, $assert2, $assert3], $testCase->getAsserts());
     }
 
     /**
@@ -62,11 +65,13 @@ class TestCaseTest extends TestCase
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
         $assert3 = new AssertEquals('Foo Baz', new Modifiers());
+        $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
+        $testCase->addAssert($assert4);
 
         $pageFetcher = new FakePageFetcher();
         $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
@@ -88,11 +93,13 @@ class TestCaseTest extends TestCase
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
         $assert3 = new AssertEquals('Baz', new Modifiers());
+        $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
+        $testCase->addAssert($assert4);
 
         $pageFetcher = new FakePageFetcher();
         $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
