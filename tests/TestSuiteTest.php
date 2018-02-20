@@ -74,7 +74,7 @@ class TestSuiteTest extends TestCase
 
         $testCase2 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/bar'));
         $testCase2->addAssert(new AssertContains('Foo', new Modifiers(Modifiers::NOT)));
-        $testCase2->addAssert(new AssertContains('Bar', new Modifiers()));
+        $testCase2->addAssert(new AssertContains('bar', new Modifiers(Modifiers::CASE_INSENSITIVE)));
         $testCase2->addAssert(new AssertEmpty(new Modifiers(Modifiers::NOT)));
 
         $testSuite = new TestSuite();

@@ -45,7 +45,9 @@ class AssertContains extends AbstractAssert
      */
     protected function onTest(PageResultInterface $pageResult): bool
     {
-        return strpos($pageResult->getContent(), $this->content) !== false;
+        return $this->getModifiers()->isCaseInsensitive() ?
+            mb_stristr($pageResult->getContent(), $this->content) !== false :
+            strpos($pageResult->getContent(), $this->content) !== false;
     }
 
     /**

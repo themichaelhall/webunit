@@ -50,7 +50,13 @@ abstract class AbstractAssert implements AssertInterface
         }
 
         if (!$result) {
-            return new AssertResult($this, false, $this->onFail($pageResult));
+            $error = $this->onFail($pageResult);
+            $modifiers = $this->getModifiers()->__toString();
+            if ($modifiers !== '') {
+                $error .= ' ' . $modifiers;
+            }
+
+            return new AssertResult($this, false, $error);
         }
 
         return new AssertResult($this);

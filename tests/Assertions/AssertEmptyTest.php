@@ -57,6 +57,22 @@ class AssertEmptyTest extends TestCase
             [Modifiers::NOT, 'FooBar', true, ''],
             [Modifiers::NOT, 'fooBar', true, ''],
             [Modifiers::NOT, 'Bar', true, ''],
+
+            // Modifiers::CASE_INSENSITIVE
+            [Modifiers::CASE_INSENSITIVE, '', true, ''],
+            [Modifiers::CASE_INSENSITIVE, 'Foo', false, 'Content "Foo" is not empty (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'foo', false, 'Content "foo" is not empty (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'FooBar', false, 'Content "FooBar" is not empty (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'fooBar', false, 'Content "fooBar" is not empty (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" is not empty (case insensitive)'],
+
+            // Modifiers::NOT | Modifiers::CASE_INSENSITIVE
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, '', false, 'Content "" is empty (case insensitive)'],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'foo', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'FooBar', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'fooBar', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'Bar', true, ''],
         ];
     }
 }

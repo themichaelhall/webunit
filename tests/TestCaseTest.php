@@ -64,7 +64,7 @@ class TestCaseTest extends TestCase
     {
         $assert1 = new AssertContains('Foo', new Modifiers());
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEquals('Foo Baz', new Modifiers());
+        $assert3 = new AssertEquals('Foo Baz', new Modifiers(Modifiers::CASE_INSENSITIVE));
         $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
@@ -75,7 +75,7 @@ class TestCaseTest extends TestCase
 
         $pageFetcher = new FakePageFetcher();
         $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
-            return new PageFetcherResponse(200, 'Foo Baz');
+            return new PageFetcherResponse(200, 'Foo baz');
         });
 
         $result = $testCase->run($pageFetcher);

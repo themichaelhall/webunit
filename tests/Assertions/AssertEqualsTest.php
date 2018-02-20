@@ -57,6 +57,22 @@ class AssertEqualsTest extends TestCase
             [Modifiers::NOT, 'FooBar', true, ''],
             [Modifiers::NOT, 'fooBar', true, ''],
             [Modifiers::NOT, 'Bar', true, ''],
+
+            // Modifiers::CASE_INSENSITIVE
+            [Modifiers::CASE_INSENSITIVE, '', false, 'Content "" does not equal "Foo" (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
+            [Modifiers::CASE_INSENSITIVE, 'foo', true, ''],
+            [Modifiers::CASE_INSENSITIVE, 'FooBar', false, 'Content "FooBar" does not equal "Foo" (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'fooBar', false, 'Content "fooBar" does not equal "Foo" (case insensitive)'],
+            [Modifiers::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" does not equal "Foo" (case insensitive)'],
+
+            // Modifiers::NOT | Modifiers::CASE_INSENSITIVE
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, '', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'Foo', false, 'Content "Foo" equals "Foo" (case insensitive)'],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'foo', false, 'Content "foo" equals "Foo" (case insensitive)'],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'FooBar', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'fooBar', true, ''],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'Bar', true, ''],
         ];
     }
 }

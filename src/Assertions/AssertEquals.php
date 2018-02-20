@@ -45,7 +45,9 @@ class AssertEquals extends AbstractAssert
      */
     protected function onTest(PageResultInterface $pageResult): bool
     {
-        return $pageResult->getContent() === $this->content;
+        return $this->getModifiers()->isCaseInsensitive() ?
+            mb_strtolower($pageResult->getContent()) === mb_strtolower($this->content) :
+            $pageResult->getContent() === $this->content;
     }
 
     /**
