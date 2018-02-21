@@ -26,7 +26,8 @@ class AssertEmptyTest extends TestCase
      */
     public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertEmpty(new Modifiers($modifiers));
+        $assert = new AssertEmpty();
+        $assert->setModifiers(new Modifiers($modifiers));
         $pageResult = new PageResult($content);
         $result = $assert->test($pageResult);
 

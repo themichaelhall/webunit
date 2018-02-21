@@ -34,9 +34,9 @@ class TestCaseTest extends TestCase
      */
     public function testWithAsserts()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEmpty(new Modifiers());
+        $assert1 = new AssertContains('Foo');
+        $assert2 = (new AssertContains('Bar'))->setModifiers(new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertEmpty();
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
@@ -62,10 +62,10 @@ class TestCaseTest extends TestCase
      */
     public function testRunSuccessfulTest()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEquals('Foo Baz', new Modifiers(Modifiers::CASE_INSENSITIVE));
-        $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
+        $assert1 = new AssertContains('Foo');
+        $assert2 = (new AssertContains('Bar'))->setModifiers(new Modifiers(Modifiers::NOT));
+        $assert3 = (new AssertEquals('Foo Baz'))->setModifiers(new Modifiers(Modifiers::CASE_INSENSITIVE));
+        $assert4 = (new AssertEmpty())->setModifiers(new Modifiers(Modifiers::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
@@ -90,10 +90,10 @@ class TestCaseTest extends TestCase
      */
     public function testRunFailedTest()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEquals('Baz', new Modifiers());
-        $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
+        $assert1 = new AssertContains('Foo');
+        $assert2 = (new AssertContains('Bar'))->setModifiers(new Modifiers(Modifiers::NOT));
+        $assert3 = (new AssertEquals('Baz'))->setModifiers(new Modifiers());
+        $assert4 = (new AssertEmpty())->setModifiers(new Modifiers(Modifiers::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);

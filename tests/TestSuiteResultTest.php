@@ -7,7 +7,6 @@ namespace MichaelHall\Webunit\Tests;
 use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
-use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestCaseResult;
 use MichaelHall\Webunit\TestSuite;
 use MichaelHall\Webunit\TestSuiteResult;
@@ -61,7 +60,7 @@ class TestSuiteResultTest extends TestCase
 
         $testCase1 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/'));
         $testCase2 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/foo'));
-        $assert1 = new AssertContains('Foo', new Modifiers());
+        $assert1 = new AssertContains('Foo');
         $assertResult1 = new AssertResult($assert1, false, 'Fail');
         $testCaseResult1 = new TestCaseResult($testCase1, $assertResult1);
         $testCaseResult2 = new TestCaseResult($testCase2);

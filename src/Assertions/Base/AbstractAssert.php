@@ -34,6 +34,22 @@ abstract class AbstractAssert implements AssertInterface
     }
 
     /**
+     * Sets the modifiers.
+     *
+     * @since 1.0.0
+     *
+     * @param Modifiers $modifiers The modifiers.
+     *
+     * @return AssertInterface Self.
+     */
+    public function setModifiers(Modifiers $modifiers): AssertInterface
+    {
+        $this->modifiers = $modifiers;
+
+        return $this;
+    }
+
+    /**
      * Test assertion against a page result.
      *
      * @since 1.0.0
@@ -66,12 +82,10 @@ abstract class AbstractAssert implements AssertInterface
      * Creates an abstract assert.
      *
      * @since 1.0.0
-     *
-     * @param Modifiers $modifiers The modifiers.
      */
-    protected function __construct(Modifiers $modifiers)
+    protected function __construct()
     {
-        $this->modifiers = $modifiers;
+        $this->modifiers = new Modifiers();
     }
 
     /**

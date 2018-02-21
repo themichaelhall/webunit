@@ -7,7 +7,6 @@ namespace MichaelHall\Webunit\Tests;
 use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
-use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestCaseResult;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +34,7 @@ class TestCaseResultTest extends TestCase
     public function testUnsuccessfulResult()
     {
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
-        $assert = new AssertContains('Foo', new Modifiers());
+        $assert = new AssertContains('Foo');
         $assertResult = new AssertResult($assert, false, 'Fail');
         $testCaseResult = new TestCaseResult($testCase, $assertResult);
 

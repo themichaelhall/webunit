@@ -26,7 +26,8 @@ class AssertEqualsTest extends TestCase
      */
     public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertEquals('Foo', new Modifiers($modifiers));
+        $assert = new AssertEquals('Foo');
+        $assert->setModifiers(new Modifiers($modifiers));
         $pageResult = new PageResult($content);
         $result = $assert->test($pageResult);
 

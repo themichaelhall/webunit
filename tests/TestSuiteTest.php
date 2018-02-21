@@ -68,14 +68,14 @@ class TestSuiteTest extends TestCase
     public function testRunSuccessfulTests()
     {
         $testCase1 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/foo'));
-        $testCase1->addAssert(new AssertEquals('This is Foo page.', new Modifiers()));
-        $testCase1->addAssert(new AssertContains('Bar', new Modifiers(Modifiers::NOT)));
-        $testCase1->addAssert(new AssertEmpty(new Modifiers(Modifiers::NOT)));
+        $testCase1->addAssert(new AssertEquals('This is Foo page.'));
+        $testCase1->addAssert((new AssertContains('Bar'))->setModifiers(new Modifiers(Modifiers::NOT)));
+        $testCase1->addAssert((new AssertEmpty())->setModifiers(new Modifiers(Modifiers::NOT)));
 
         $testCase2 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/bar'));
-        $testCase2->addAssert(new AssertContains('Foo', new Modifiers(Modifiers::NOT)));
-        $testCase2->addAssert(new AssertContains('bar', new Modifiers(Modifiers::CASE_INSENSITIVE)));
-        $testCase2->addAssert(new AssertEmpty(new Modifiers(Modifiers::NOT)));
+        $testCase2->addAssert((new AssertContains('Foo'))->setModifiers(new Modifiers(Modifiers::NOT)));
+        $testCase2->addAssert((new AssertContains('bar'))->setModifiers(new Modifiers(Modifiers::CASE_INSENSITIVE)));
+        $testCase2->addAssert((new AssertEmpty())->setModifiers(new Modifiers(Modifiers::NOT)));
 
         $testSuite = new TestSuite();
         $testSuite->addTestCase($testCase1);
@@ -101,16 +101,16 @@ class TestSuiteTest extends TestCase
     public function testRunUnSuccessfulTests()
     {
         $testCase1 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/foo'));
-        $testCase1->addAssert(new AssertContains('Foo', new Modifiers(Modifiers::NOT)));
-        $testCase1->addAssert(new AssertContains('Bar', new Modifiers()));
+        $testCase1->addAssert((new AssertContains('Foo'))->setModifiers(new Modifiers(Modifiers::NOT)));
+        $testCase1->addAssert((new AssertContains('Bar'))->setModifiers(new Modifiers()));
 
         $testCase2 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/bar'));
-        $testCase2->addAssert(new AssertContains('Foo', new Modifiers()));
-        $testCase2->addAssert(new AssertContains('Bar', new Modifiers(Modifiers::NOT)));
-        $testCase2->addAssert(new AssertEmpty(new Modifiers()));
+        $testCase2->addAssert(new AssertContains('Foo'));
+        $testCase2->addAssert((new AssertContains('Bar'))->setModifiers(new Modifiers(Modifiers::NOT)));
+        $testCase2->addAssert(new AssertEmpty());
 
         $testCase3 = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost/baz'));
-        $testCase3->addAssert(new AssertContains('Baz', new Modifiers()));
+        $testCase3->addAssert(new AssertContains('Baz'));
 
         $testSuite = new TestSuite();
         $testSuite->addTestCase($testCase1);

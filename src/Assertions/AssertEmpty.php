@@ -10,7 +10,6 @@ namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
-use MichaelHall\Webunit\Modifiers;
 
 /**
  * Class representing an assertion for empty content.
@@ -23,12 +22,10 @@ class AssertEmpty extends AbstractAssert
      * AssertEmpty constructor.
      *
      * @since 1.0.0
-     *
-     * @param Modifiers $modifiers The modifiers.
      */
-    public function __construct(Modifiers $modifiers)
+    public function __construct()
     {
-        parent::__construct($modifiers);
+        parent::__construct();
     }
 
     /**

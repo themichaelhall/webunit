@@ -10,7 +10,6 @@ namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
-use MichaelHall\Webunit\Modifiers;
 
 /**
  * Class representing an assertion for containing test content.
@@ -24,12 +23,11 @@ class AssertContains extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @param string    $content   The content to check for.
-     * @param Modifiers $modifiers The modifiers.
+     * @param string $content The content to check for.
      */
-    public function __construct(string $content, Modifiers $modifiers)
+    public function __construct(string $content)
     {
-        parent::__construct($modifiers);
+        parent::__construct();
 
         $this->content = $content;
     }
