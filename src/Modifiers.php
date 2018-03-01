@@ -49,6 +49,20 @@ class Modifiers
     }
 
     /**
+     * Returns true if this equals other modifiers, false otherwise.
+     *
+     * @since 1.0.0
+     *
+     * @param Modifiers $modifiers The other modifiers.
+     *
+     * @return bool True if this equals other modifiers, false otherwise.
+     */
+    public function equals(self $modifiers): bool
+    {
+        return $this->modifiers === $modifiers->modifiers;
+    }
+
+    /**
      * Returns true if this is a NOT modifier, false otherwise.
      *
      * @since 1.0.0
