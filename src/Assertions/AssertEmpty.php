@@ -10,6 +10,7 @@ namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
+use MichaelHall\Webunit\Modifiers;
 
 /**
  * Class representing an assertion for empty content.
@@ -54,5 +55,17 @@ class AssertEmpty extends AbstractAssert
     protected function onFail(PageResultInterface $pageResult): string
     {
         return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'is empty' : 'is not empty');
+    }
+
+    /**
+     * Returns the allowed modifiers for assert.
+     *
+     * @since 1.0.0
+     *
+     * @return Modifiers The allowed modifiers.
+     */
+    protected function getAllowedModifiers(): Modifiers
+    {
+        return new Modifiers(Modifiers::NOT);
     }
 }

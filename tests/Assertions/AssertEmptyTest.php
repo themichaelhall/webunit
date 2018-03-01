@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests\Assertions;
 
 use MichaelHall\Webunit\Assertions\AssertEmpty;
+use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
@@ -58,22 +59,40 @@ class AssertEmptyTest extends TestCase
             [Modifiers::NOT, 'FooBar', true, ''],
             [Modifiers::NOT, 'fooBar', true, ''],
             [Modifiers::NOT, 'Bar', true, ''],
+        ];
+    }
 
-            // Modifiers::CASE_INSENSITIVE
-            [Modifiers::CASE_INSENSITIVE, '', true, ''],
-            [Modifiers::CASE_INSENSITIVE, 'Foo', false, 'Content "Foo" is not empty (case insensitive)'],
-            [Modifiers::CASE_INSENSITIVE, 'foo', false, 'Content "foo" is not empty (case insensitive)'],
-            [Modifiers::CASE_INSENSITIVE, 'FooBar', false, 'Content "FooBar" is not empty (case insensitive)'],
-            [Modifiers::CASE_INSENSITIVE, 'fooBar', false, 'Content "fooBar" is not empty (case insensitive)'],
-            [Modifiers::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" is not empty (case insensitive)'],
+    /**
+     * Test assertion with not allowed modifier.
+     *
+     * @dataProvider assertionWithNotAllowedModifierDataProvider
+     *
+     * @param int $modifiers                The modifiers.
+     * @param int $expectedInvalidModifiers The expected invalid modifiers.
+     */
+    public function testAssertionWithNotAllowedModifier(int $modifiers, int $expectedInvalidModifiers)
+    {
+        $assert = new AssertEmpty();
+        $exception = null;
 
-            // Modifiers::NOT | Modifiers::CASE_INSENSITIVE
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, '', false, 'Content "" is empty (case insensitive)'],
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'foo', true, ''],
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'FooBar', true, ''],
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'fooBar', true, ''],
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, 'Bar', true, ''],
+        try {
+            $assert->setModifiers(new Modifiers($modifiers));
+        } catch (NotAllowedModifierException $exception) {
+        }
+
+        self::assertTrue($exception->getModifiers()->equals(new Modifiers($expectedInvalidModifiers)));
+    }
+
+    /**
+     * Data provider for assertion with not allowed modifiers test.
+     *
+     * @return array The data.
+     */
+    public function assertionWithNotAllowedModifierDataProvider()
+    {
+        return [
+            [Modifiers::CASE_INSENSITIVE, Modifiers::CASE_INSENSITIVE],
+            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, Modifiers::CASE_INSENSITIVE],
         ];
     }
 }

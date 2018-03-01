@@ -10,6 +10,7 @@ namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
+use MichaelHall\Webunit\Modifiers;
 
 /**
  * Class representing an assertion for containing test content.
@@ -60,6 +61,18 @@ class AssertContains extends AbstractAssert
     protected function onFail(PageResultInterface $pageResult): string
     {
         return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'contains' : 'does not contain') . ' "' . $this->content . '"';
+    }
+
+    /**
+     * Returns the allowed modifiers for assert.
+     *
+     * @since 1.0.0
+     *
+     * @return Modifiers The allowed modifiers.
+     */
+    protected function getAllowedModifiers(): Modifiers
+    {
+        return new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE);
     }
 
     /**

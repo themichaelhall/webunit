@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions\Base;
 
 use MichaelHall\Webunit\AssertResult;
+use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
@@ -44,6 +45,10 @@ abstract class AbstractAssert implements AssertInterface
      */
     public function setModifiers(Modifiers $modifiers): AssertInterface
     {
+        if ($modifiers->isCaseInsensitive() && !$this->getAllowedModifiers()->isCaseInsensitive()) {
+            throw new NotAllowedModifierException(new Modifiers(Modifiers::CASE_INSENSITIVE));
+        }
+
         $this->modifiers = $modifiers;
 
         return $this;
@@ -109,6 +114,15 @@ abstract class AbstractAssert implements AssertInterface
      * @return string The error text.
      */
     abstract protected function onFail(PageResultInterface $pageResult): string;
+
+    /**
+     * Returns the allowed modifiers for assert.
+     *
+     * @since 1.0.0
+     *
+     * @return Modifiers The allowed modifiers.
+     */
+    abstract protected function getAllowedModifiers(): Modifiers;
 
     /**
      * @var Modifiers My modifiers.
