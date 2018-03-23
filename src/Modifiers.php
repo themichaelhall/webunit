@@ -37,6 +37,13 @@ class Modifiers
     const CASE_INSENSITIVE = 0x0002;
 
     /**
+     * Regexp modifier.
+     *
+     * @since 1.0.0
+     */
+    const REGEXP = 0x0004;
+
+    /**
      * Constructs modifiers.
      *
      * @since 1.0.0
@@ -87,6 +94,18 @@ class Modifiers
     }
 
     /**
+     * Returns true if this is a REGEXP modifier, false otherwise.
+     *
+     * @since 1.0.0
+     *
+     * @return bool True if this is a REGEXP modifier, false otherwise.
+     */
+    public function isRegexp()
+    {
+        return ($this->modifiers & self::REGEXP) !== 0;
+    }
+
+    /**
      * Returns the modifiers description as a string.
      *
      * @since 1.0.0
@@ -95,7 +114,21 @@ class Modifiers
      */
     public function __toString(): string
     {
-        return $this->isCaseInsensitive() ? '(case insensitive)' : '';
+        $modifierStrings = [];
+
+        if ($this->isCaseInsensitive()) {
+            $modifierStrings[] = 'case insensitive';
+        }
+
+        if ($this->isRegexp()) {
+            $modifierStrings[] = 'regexp';
+        }
+
+        if (count($modifierStrings) === 0) {
+            return '';
+        }
+
+        return '(' . implode(', ', $modifierStrings) . ')';
     }
 
     /**
