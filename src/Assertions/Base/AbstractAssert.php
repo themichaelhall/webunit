@@ -45,8 +45,18 @@ abstract class AbstractAssert implements AssertInterface
      */
     public function setModifiers(Modifiers $modifiers): AssertInterface
     {
+        $notAllowedModifiesValues = Modifiers::NONE;
+
         if ($modifiers->isCaseInsensitive() && !$this->getAllowedModifiers()->isCaseInsensitive()) {
-            throw new NotAllowedModifierException(new Modifiers(Modifiers::CASE_INSENSITIVE));
+            $notAllowedModifiesValues |= Modifiers::CASE_INSENSITIVE;
+        }
+
+        if ($modifiers->isRegexp() && !$this->getAllowedModifiers()->isRegexp()) {
+            $notAllowedModifiesValues |= Modifiers::REGEXP;
+        }
+
+        if ($notAllowedModifiesValues !== Modifiers::NONE) {
+            throw new NotAllowedModifierException(new Modifiers($notAllowedModifiesValues));
         }
 
         $this->modifiers = $modifiers;

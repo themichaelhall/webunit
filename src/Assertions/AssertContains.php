@@ -44,6 +44,10 @@ class AssertContains extends AbstractAssert
      */
     protected function onTest(PageResultInterface $pageResult): bool
     {
+        if ($this->getModifiers()->isRegexp()) {
+            return preg_match('/' . $this->content . '/' . ($this->getModifiers()->isCaseInsensitive() ? 'i' : ''), $pageResult->getContent()) === 1;
+        }
+
         return $this->getModifiers()->isCaseInsensitive() ?
             mb_stristr($pageResult->getContent(), $this->content) !== false :
             strpos($pageResult->getContent(), $this->content) !== false;
@@ -72,7 +76,7 @@ class AssertContains extends AbstractAssert
      */
     protected function getAllowedModifiers(): Modifiers
     {
-        return new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE);
+        return new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP);
     }
 
     /**

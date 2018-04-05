@@ -92,7 +92,11 @@ class AssertEmptyTest extends TestCase
     {
         return [
             [Modifiers::CASE_INSENSITIVE, Modifiers::CASE_INSENSITIVE],
-            [Modifiers::NOT | Modifiers::CASE_INSENSITIVE, Modifiers::CASE_INSENSITIVE],
+            [Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::CASE_INSENSITIVE],
+            [Modifiers::REGEXP, Modifiers::REGEXP],
+            [Modifiers::REGEXP | Modifiers::NOT, Modifiers::REGEXP],
+            [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
+            [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
         ];
     }
 }
