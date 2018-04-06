@@ -24,11 +24,12 @@ class AssertContains extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @param string $content The content to check for.
+     * @param string    $content   The content to check for.
+     * @param Modifiers $modifiers The modifiers.
      */
-    public function __construct(string $content)
+    public function __construct(string $content, Modifiers $modifiers)
     {
-        parent::__construct();
+        parent::__construct($modifiers);
 
         $this->content = $content;
     }

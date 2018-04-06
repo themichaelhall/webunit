@@ -23,10 +23,12 @@ class AssertEmpty extends AbstractAssert
      * AssertEmpty constructor.
      *
      * @since 1.0.0
+     *
+     * @param Modifiers $modifiers The modifiers.
      */
-    public function __construct()
+    public function __construct(Modifiers $modifiers)
     {
-        parent::__construct();
+        parent::__construct($modifiers);
     }
 
     /**

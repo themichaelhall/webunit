@@ -35,36 +35,6 @@ abstract class AbstractAssert implements AssertInterface
     }
 
     /**
-     * Sets the modifiers.
-     *
-     * @since 1.0.0
-     *
-     * @param Modifiers $modifiers The modifiers.
-     *
-     * @return AssertInterface Self.
-     */
-    public function setModifiers(Modifiers $modifiers): AssertInterface
-    {
-        $notAllowedModifiesValues = Modifiers::NONE;
-
-        if ($modifiers->isCaseInsensitive() && !$this->getAllowedModifiers()->isCaseInsensitive()) {
-            $notAllowedModifiesValues |= Modifiers::CASE_INSENSITIVE;
-        }
-
-        if ($modifiers->isRegexp() && !$this->getAllowedModifiers()->isRegexp()) {
-            $notAllowedModifiesValues |= Modifiers::REGEXP;
-        }
-
-        if ($notAllowedModifiesValues !== Modifiers::NONE) {
-            throw new NotAllowedModifierException(new Modifiers($notAllowedModifiesValues));
-        }
-
-        $this->modifiers = $modifiers;
-
-        return $this;
-    }
-
-    /**
      * Test assertion against a page result.
      *
      * @since 1.0.0
@@ -97,10 +67,47 @@ abstract class AbstractAssert implements AssertInterface
      * Creates an abstract assert.
      *
      * @since 1.0.0
+     *
+     * @param Modifiers $modifiers The modifiers.
+     *
+     * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
+     *
      */
-    protected function __construct()
+    protected function __construct(Modifiers $modifiers)
     {
-        $this->modifiers = new Modifiers();
+        $this->setModifiers($modifiers);
+    }
+
+    /**
+     * Sets the modifiers.
+     *
+     * @since 1.0.0
+     *
+     * @param Modifiers $modifiers The modifiers.
+     *
+     * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
+     *
+     * @return AssertInterface Self.
+     */
+    protected function setModifiers(Modifiers $modifiers): AssertInterface
+    {
+        $notAllowedModifiesValues = Modifiers::NONE;
+
+        if ($modifiers->isCaseInsensitive() && !$this->getAllowedModifiers()->isCaseInsensitive()) {
+            $notAllowedModifiesValues |= Modifiers::CASE_INSENSITIVE;
+        }
+
+        if ($modifiers->isRegexp() && !$this->getAllowedModifiers()->isRegexp()) {
+            $notAllowedModifiesValues |= Modifiers::REGEXP;
+        }
+
+        if ($notAllowedModifiesValues !== Modifiers::NONE) {
+            throw new NotAllowedModifierException(new Modifiers($notAllowedModifiesValues));
+        }
+
+        $this->modifiers = $modifiers;
+
+        return $this;
     }
 
     /**

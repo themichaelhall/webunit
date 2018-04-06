@@ -27,8 +27,7 @@ class AssertEmptyTest extends TestCase
      */
     public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertEmpty();
-        $assert->setModifiers(new Modifiers($modifiers));
+        $assert = new AssertEmpty(new Modifiers($modifiers));
         $pageResult = new PageResult($content);
         $result = $assert->test($pageResult);
 
@@ -72,11 +71,10 @@ class AssertEmptyTest extends TestCase
      */
     public function testAssertionWithNotAllowedModifier(int $modifiers, int $expectedInvalidModifiers)
     {
-        $assert = new AssertEmpty();
         $exception = null;
 
         try {
-            $assert->setModifiers(new Modifiers($modifiers));
+            new AssertEmpty(new Modifiers($modifiers));
         } catch (NotAllowedModifierException $exception) {
         }
 
