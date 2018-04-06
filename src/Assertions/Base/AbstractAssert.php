@@ -71,7 +71,6 @@ abstract class AbstractAssert implements AssertInterface
      * @param Modifiers $modifiers The modifiers.
      *
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
-     *
      */
     protected function __construct(Modifiers $modifiers)
     {
