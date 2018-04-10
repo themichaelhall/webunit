@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Assertions;
 
-use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
+use MichaelHall\Webunit\Assertions\Base\AbstractContentAssert;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -17,7 +17,7 @@ use MichaelHall\Webunit\Modifiers;
  *
  * @since 1.0.0
  */
-class AssertContains extends AbstractAssert
+class AssertContains extends AbstractContentAssert
 {
     /**
      * AssertContains constructor.
@@ -29,9 +29,7 @@ class AssertContains extends AbstractAssert
      */
     public function __construct(string $content, Modifiers $modifiers)
     {
-        parent::__construct($modifiers);
-
-        $this->content = $content;
+        parent::__construct($content, $modifiers);
     }
 
     /**
@@ -45,13 +43,7 @@ class AssertContains extends AbstractAssert
      */
     protected function onTest(PageResultInterface $pageResult): bool
     {
-        if ($this->getModifiers()->isRegexp()) {
-            return preg_match('/' . $this->content . '/' . ($this->getModifiers()->isCaseInsensitive() ? 'i' : ''), $pageResult->getContent()) === 1;
-        }
-
-        return $this->getModifiers()->isCaseInsensitive() ?
-            mb_stristr($pageResult->getContent(), $this->content) !== false :
-            strpos($pageResult->getContent(), $this->content) !== false;
+        return $this->stringContains($this->getContent(), $pageResult->getContent());
     }
 
     /**
@@ -65,7 +57,7 @@ class AssertContains extends AbstractAssert
      */
     protected function onFail(PageResultInterface $pageResult): string
     {
-        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'contains' : 'does not contain') . ' "' . $this->content . '"';
+        return 'Content "' . $pageResult->getContent() . '" ' . ($this->getModifiers()->isNot() ? 'contains' : 'does not contain') . ' "' . $this->getContent() . '"';
     }
 
     /**
@@ -79,9 +71,4 @@ class AssertContains extends AbstractAssert
     {
         return new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP);
     }
-
-    /**
-     * @var string My content to check for.
-     */
-    private $content;
 }
