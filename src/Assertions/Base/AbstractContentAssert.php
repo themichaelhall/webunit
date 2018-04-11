@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Assertions\Base;
 
+use MichaelHall\Webunit\Exceptions\InvalidRegexpException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Modifiers;
 
@@ -27,10 +28,16 @@ abstract class AbstractContentAssert extends AbstractAssert
      * @param Modifiers $modifiers The modifiers.
      *
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
+     * @throws InvalidRegexpException      If modifiers contains regexp and content is not a valid regexp.
      */
     protected function __construct(string $content, Modifiers $modifiers)
     {
         parent::__construct($modifiers);
+
+        /** @noinspection PhpUsageOfSilenceOperatorInspection */
+        if ($modifiers->isRegexp() && @preg_match('/' . $content . '/', '') === false) {
+            throw new InvalidRegexpException($content);
+        }
 
         $this->content = $content;
     }

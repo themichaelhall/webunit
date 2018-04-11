@@ -120,4 +120,15 @@ class AssertEqualsTest extends TestCase
             ['F[O]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Bar', true, ''],
         ];
     }
+
+    /**
+     * Test invalid regexp.
+     *
+     * @expectedException \MichaelHall\Webunit\Exceptions\InvalidRegexpException
+     * @expectedExceptionMessage Regexp "(Foo" is invalid.
+     */
+    public function testInvalidRegexp()
+    {
+        new AssertEquals('(Foo', new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP));
+    }
 }
