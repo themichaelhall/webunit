@@ -22,10 +22,12 @@ class PageResult implements PageResultInterface
      *
      * @since 1.0.0
      *
-     * @param string $content The content.
+     * @param int    $statusCode The status code.
+     * @param string $content    The content.
      */
-    public function __construct(string $content)
+    public function __construct(int $statusCode = 200, string $content = '')
     {
+        $this->statusCode = $statusCode;
         $this->content = $content;
     }
 
@@ -40,6 +42,23 @@ class PageResult implements PageResultInterface
     {
         return $this->content;
     }
+
+    /**
+     * Returns the status code.
+     *
+     * @since 1.0.0
+     *
+     * @return int The status code.
+     */
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    /**
+     * @var int My status code.
+     */
+    private $statusCode;
 
     /**
      * @var string My content.

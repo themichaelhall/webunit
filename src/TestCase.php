@@ -84,7 +84,11 @@ class TestCase implements TestCaseInterface
     {
         $pageFetcherRequest = new PageFetcherRequest($this->url);
         $pageFetcherResult = $pageFetcher->fetch($pageFetcherRequest);
-        $pageResult = new PageResult($pageFetcherResult->getContent());
+
+        $pageResult = new PageResult(
+            $pageFetcherResult->getHttpCode(),
+            $pageFetcherResult->getContent()
+        );
 
         foreach ($this->getAsserts() as $assert) {
             $assertResult = $assert->test($pageResult);

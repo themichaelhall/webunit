@@ -28,7 +28,7 @@ class AssertEmptyTest extends TestCase
     public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
         $assert = new AssertEmpty(new Modifiers($modifiers));
-        $pageResult = new PageResult($content);
+        $pageResult = new PageResult(200, $content);
         $result = $assert->test($pageResult);
 
         self::assertSame($expectedSuccess, $result->isSuccess());

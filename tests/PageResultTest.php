@@ -13,12 +13,24 @@ use PHPUnit\Framework\TestCase;
 class PageResultTest extends TestCase
 {
     /**
-     * Test getContent method.
+     * Test default constructor.
      */
-    public function testGetContent()
+    public function testDefaultConstructor()
     {
-        $pageResult = new PageResult('Foo');
+        $pageResult = new PageResult();
 
+        self::assertSame(200, $pageResult->getStatusCode());
+        self::assertSame('', $pageResult->getContent());
+    }
+
+    /**
+     * Test constructor.
+     */
+    public function testConstructor()
+    {
+        $pageResult = new PageResult(404, 'Foo');
+
+        self::assertSame(404, $pageResult->getStatusCode());
         self::assertSame('Foo', $pageResult->getContent());
     }
 }

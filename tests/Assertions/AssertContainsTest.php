@@ -28,7 +28,7 @@ class AssertContainsTest extends TestCase
     public function testAssertion(string $assertContent, int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
         $assert = new AssertContains($assertContent, new Modifiers($modifiers));
-        $pageResult = new PageResult($content);
+        $pageResult = new PageResult(200, $content);
         $result = $assert->test($pageResult);
 
         self::assertSame($expectedSuccess, $result->isSuccess());
