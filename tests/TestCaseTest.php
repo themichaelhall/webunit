@@ -11,6 +11,7 @@ use MichaelHall\PageFetcher\PageFetcherResponse;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
@@ -66,12 +67,14 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
         $assert3 = new AssertEquals('Foo Baz', new Modifiers(Modifiers::CASE_INSENSITIVE));
         $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
+        $assert5 = new AssertStatusCode(200, new Modifiers());
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
         $testCase->addAssert($assert4);
+        $testCase->addAssert($assert5);
 
         $pageFetcher = new FakePageFetcher();
         $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
@@ -94,16 +97,18 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
         $assert3 = new AssertEquals('Baz', new Modifiers());
         $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
+        $assert5 = new AssertStatusCode(200, new Modifiers());
 
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
         $testCase->addAssert($assert4);
+        $testCase->addAssert($assert5);
 
         $pageFetcher = new FakePageFetcher();
         $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
-            return new PageFetcherResponse(200, 'Foo Baz Bar');
+            return new PageFetcherResponse(404, 'Foo Baz Bar');
         });
 
         $result = $testCase->run($pageFetcher);

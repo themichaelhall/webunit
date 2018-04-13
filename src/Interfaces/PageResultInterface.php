@@ -23,4 +23,13 @@ interface PageResultInterface
      * @return string The content.
      */
     public function getContent(): string;
+
+    /**
+     * Returns the status code.
+     *
+     * @since 1.0.0
+     *
+     * @return int The status code.
+     */
+    public function getStatusCode(): int;
 }
