@@ -12,6 +12,7 @@ use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
+use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +28,8 @@ class TestCaseTest extends TestCase
     {
         $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
 
-        self::assertSame([], $testCase->getAsserts());
+        self::assertSame(1, count($testCase->getAsserts()));
+        self::assertSame(DefaultAssert::class, get_class($testCase->getAsserts()[0]));
     }
 
     /**
@@ -44,7 +46,31 @@ class TestCaseTest extends TestCase
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
 
-        self::assertSame([$assert1, $assert2, $assert3], $testCase->getAsserts());
+        self::assertSame(4, count($testCase->getAsserts()));
+        self::assertSame(DefaultAssert::class, get_class($testCase->getAsserts()[0]));
+        self::assertSame($assert1, $testCase->getAsserts()[1]);
+        self::assertSame($assert2, $testCase->getAsserts()[2]);
+        self::assertSame($assert3, $testCase->getAsserts()[3]);
+    }
+
+    /**
+     * Test test case with status code assert (should remove default assert).
+     */
+    public function testStatusCodeAssertRemovesDefaultAssert()
+    {
+        $assert1 = new AssertContains('Foo', new Modifiers());
+        $assert2 = new AssertStatusCode(404, new Modifiers());
+        $assert3 = new AssertEmpty(new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+
+        self::assertSame(3, count($testCase->getAsserts()));
+        self::assertSame($assert1, $testCase->getAsserts()[0]);
+        self::assertSame($assert2, $testCase->getAsserts()[1]);
+        self::assertSame($assert3, $testCase->getAsserts()[2]);
     }
 
     /**

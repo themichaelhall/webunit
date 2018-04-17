@@ -11,6 +11,8 @@ namespace MichaelHall\Webunit;
 use DataTypes\Interfaces\UrlInterface;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
 use MichaelHall\PageFetcher\PageFetcherRequest;
+use MichaelHall\Webunit\Assertions\AssertStatusCode;
+use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseResultInterface;
@@ -32,7 +34,7 @@ class TestCase implements TestCaseInterface
     public function __construct(UrlInterface $url)
     {
         $this->url = $url;
-        $this->asserts = [];
+        $this->asserts = [new DefaultAssert()];
     }
 
     /**
@@ -45,6 +47,10 @@ class TestCase implements TestCaseInterface
     public function addAssert(AssertInterface $assert): void
     {
         $this->asserts[] = $assert;
+
+        if ($assert instanceof AssertStatusCode) {
+            $this->removeDefaultAssert();
+        }
     }
 
     /**
@@ -99,6 +105,16 @@ class TestCase implements TestCaseInterface
         }
 
         return new TestCaseResult($this);
+    }
+
+    /**
+     * Removes default assert from my asserts.
+     */
+    private function removeDefaultAssert(): void
+    {
+        $this->asserts = array_values(array_filter($this->asserts, function (AssertInterface $assert) {
+            return !($assert instanceof DefaultAssert);
+        }));
     }
 
     /**
