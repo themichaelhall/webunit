@@ -30,4 +30,25 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
     }
+
+    /**
+     * Test parse with whitespaces.
+     */
+    public function testParseWithWhitespaces()
+    {
+        $parser = new Parser();
+        $testSuite = $parser->parse([
+                '',
+                "\t \r\n",
+                "  get \thttp://example.com/ \t",
+                ' ',
+            ]
+        );
+        $testCases = $testSuite->getTestCases();
+
+        self::assertSame(1, count($testSuite->getTestCases()));
+        self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(1, count($testCases[0]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+    }
 }

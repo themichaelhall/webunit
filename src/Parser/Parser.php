@@ -35,9 +35,14 @@ class Parser
 
         foreach ($content as $line) {
             $line = trim($line);
-            $lineParts = preg_split('/\s+/', $line, 2);
+            if ($line === '') {
+                continue;
+            }
 
-            $testCase = new TestCase(Url::parse($lineParts[1]));
+            $lineParts = preg_split('/\s+/', $line, 2);
+            $parameter = trim($lineParts[1]);
+
+            $testCase = new TestCase(Url::parse($parameter));
             $result->addTestCase($testCase);
         }
 
