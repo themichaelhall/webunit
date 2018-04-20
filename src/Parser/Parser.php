@@ -35,7 +35,7 @@ class Parser
 
         foreach ($content as $line) {
             $line = trim($line);
-            if ($line === '') {
+            if ($line === '' || $line[0] === '#') {
                 continue;
             }
 
