@@ -20,6 +20,6 @@ class FileLocationTest extends TestCase
     {
         $fileLocation = new FileLocation(FilePath::parse('/foo/bar'), 123);
 
-        self::assertSame('/foo/bar:123', $fileLocation->__toString());
+        self::assertSame(DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar:123', $fileLocation->__toString());
     }
 }
