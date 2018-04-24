@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Parser;
 
 use DataTypes\Url;
-use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
+use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\TestCase;
 use MichaelHall\Webunit\TestSuite;
 
@@ -27,11 +27,11 @@ class Parser
      *
      * @param string[] $content The content.
      *
-     * @return TestSuiteInterface The test suite.
+     * @return ParseResultInterface The parse result.
      */
-    public function parse(array $content): TestSuiteInterface
+    public function parse(array $content): ParseResultInterface
     {
-        $result = new TestSuite();
+        $testSuite = new TestSuite();
 
         foreach ($content as $line) {
             $line = trim($line);
@@ -43,9 +43,9 @@ class Parser
             $parameter = trim($lineParts[1]);
 
             $testCase = new TestCase(Url::parse($parameter));
-            $result->addTestCase($testCase);
+            $testSuite->addTestCase($testCase);
         }
 
-        return $result;
+        return new ParseResult($testSuite, []);
     }
 }

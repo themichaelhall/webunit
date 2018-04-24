@@ -19,16 +19,19 @@ class ParserTest extends TestCase
     public function testParseWithEmptyTest()
     {
         $parser = new Parser();
-        $testSuite = $parser->parse([
+        $parseResult = $parser->parse([
                 'get http://example.com/',
             ]
         );
+        $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
         self::assertSame(1, count($testSuite->getTestCases()));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame([], $parseResult->getParseErrors());
+        self::assertTrue($parseResult->isSuccess());
     }
 
     /**
@@ -37,19 +40,22 @@ class ParserTest extends TestCase
     public function testParseWithWhitespaces()
     {
         $parser = new Parser();
-        $testSuite = $parser->parse([
+        $parseResult = $parser->parse([
                 '',
                 "\t \r\n",
                 "  get \thttp://example.com/ \t",
                 ' ',
             ]
         );
+        $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
         self::assertSame(1, count($testSuite->getTestCases()));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame([], $parseResult->getParseErrors());
+        self::assertTrue($parseResult->isSuccess());
     }
 
     /**
@@ -58,17 +64,20 @@ class ParserTest extends TestCase
     public function testParseWithComments()
     {
         $parser = new Parser();
-        $testSuite = $parser->parse([
+        $parseResult = $parser->parse([
                 '# This is a comment',
                 '#',
                 'get http://example.com/',
             ]
         );
+        $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
         self::assertSame(1, count($testSuite->getTestCases()));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame([], $parseResult->getParseErrors());
+        self::assertTrue($parseResult->isSuccess());
     }
 }
