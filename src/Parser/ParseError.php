@@ -57,6 +57,18 @@ class ParseError implements ParseErrorInterface
     }
 
     /**
+     * Returns the error as a string.
+     *
+     * @since 1.0.0
+     *
+     * @return string The error as a string.
+     */
+    public function __toString(): string
+    {
+        return $this->location . ': ' . $this->error;
+    }
+
+    /**
      * @var LocationInterface My location.
      */
     private $location;

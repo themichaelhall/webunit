@@ -24,5 +24,6 @@ class ParseErrorTest extends TestCase
 
         self::assertSame($location, $parseError->getLocation());
         self::assertSame('Syntax error', $parseError->getError());
+        self::assertSame(DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'foo.webunit:12: Syntax error', $parseError->__toString());
     }
 }
