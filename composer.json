@@ -30,5 +30,8 @@
     "psr-4": {
       "MichaelHall\\Webunit\\Tests\\": "tests"
     }
-  }
+  },
+  "bin": [
+    "bin/webunit"
+  ]
 }

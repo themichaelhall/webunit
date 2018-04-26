@@ -1,0 +1,43 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use DataTypes\Exceptions\FilePathInvalidArgumentException;
+use DataTypes\FilePath;
+use MichaelHall\Webunit\Parser\Parser;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+if ($argc !== 2) {
+    echo 'Usage: webunit testfile' . PHP_EOL;
+
+    return 1;
+}
+
+$filePath = null;
+try {
+    $filePath = FilePath::parse($argv[1]);
+} catch (FilePathInvalidArgumentException $exception) {
+    echo 'Invalid file path "' . $argv[1] . '": ' . $exception->getMessage() . PHP_EOL;
+
+    return 2;
+}
+
+/** @noinspection PhpUsageOfSilenceOperatorInspection */
+$content = @file($filePath->__toString());
+if ($content === false) {
+    echo 'Could not open file "' . $filePath . '".' . PHP_EOL;
+
+    return 2;
+}
+
+$parser = new Parser();
+$parseResult = $parser->parse($filePath, $content);
+if (!$parseResult->isSuccess()) {
+    foreach ($parseResult->getParseErrors() as $parseError) {
+        echo $parseError . PHP_EOL;
+    }
+
+    return 3;
+}
