@@ -8,9 +8,11 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Parser;
 
+use DataTypes\Exceptions\UrlInvalidArgumentException;
 use DataTypes\Interfaces\FilePathInterface;
 use DataTypes\Url;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\TestCase;
 use MichaelHall\Webunit\TestSuite;
@@ -42,6 +44,7 @@ class Parser
         foreach ($content as $line) {
             $line = trim($line);
             $lineNumber++;
+            $fileLocation = new FileLocation($filePath, $lineNumber);
 
             if ($line === '' || $line[0] === '#') {
                 continue;
@@ -49,18 +52,58 @@ class Parser
 
             $lineParts = preg_split('/\s+/', $line, 2);
             $command = trim($lineParts[0]);
-            if (strtolower($command) !== 'get') {
-                $parseErrors[] = new ParseError(new FileLocation($filePath, $lineNumber), 'Syntax error: Invalid command "' . $command . '".');
+            $parameter = count($lineParts) > 1 ? trim($lineParts[1]) : null;
+
+            $testCase = $this->tryParseTestCase($command, $parameter, $error);
+            if ($testCase !== null) {
+                $testSuite->addTestCase($testCase);
 
                 continue;
             }
 
-            $parameter = trim($lineParts[1]);
+            if ($error !== null) {
+                $parseErrors[] = new ParseError($fileLocation, $error);
 
-            $testCase = new TestCase(Url::parse($parameter));
-            $testSuite->addTestCase($testCase);
+                continue;
+            }
+
+            $parseErrors[] = new ParseError($fileLocation, 'Syntax error: Invalid command "' . $command . '".');
         }
 
         return new ParseResult($testSuite, $parseErrors);
+    }
+
+    /**
+     * Try parse a test case.
+     *
+     * @param string      $command   The command.
+     * @param null|string $parameter The parameter or null if no parameter.
+     * @param null|string $error     The error or null if no error.
+     *
+     * @return TestCaseInterface|null The test case or null if the command was not a start of a test case.
+     */
+    private function tryParseTestCase(string $command, ?string $parameter, ?string &$error = null): ?TestCaseInterface
+    {
+        if (strtolower($command) !== 'get') {
+            return null;
+        }
+
+        if ($parameter === null) {
+            $error = 'Missing argument: Missing Url argument for "' . $command . '".';
+
+            return null;
+        }
+
+        $url = null;
+
+        try {
+            $url = Url::parse($parameter);
+        } catch (UrlInvalidArgumentException $exception) {
+            $error = 'Invalid argument: Invalid Url argument "' . $parameter . '" for "' . $command . '": ' . $exception->getMessage();
+
+            return null;
+        }
+
+        return new TestCase($url);
     }
 }
