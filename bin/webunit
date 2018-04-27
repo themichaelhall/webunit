@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use DataTypes\Exceptions\FilePathInvalidArgumentException;
 use DataTypes\FilePath;
+use MichaelHall\PageFetcher\PageFetcher;
 use MichaelHall\Webunit\Parser\Parser;
 
 foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php'] as $autoload) {
@@ -45,6 +46,27 @@ if (!$parseResult->isSuccess()) {
     }
 
     fail('Parsing failed', 3);
+}
+
+$testResults = $parseResult->getTestSuite()->run(new PageFetcher());
+if (!$testResults->isSuccess()) {
+    foreach ($testResults->getFailedTestCaseResults() as $failedTestCaseResult) {
+        echo $failedTestCaseResult->getFailedAssertResult()->getError() . "\n";
+    }
+
+    fail('Tests failed', 4);
+}
+
+success('Tests completed successfully');
+
+/**
+ * Print out success text and exit.
+ *
+ * @param string $message The message.
+ */
+function success(string $message): void
+{
+    echo "\033[42m\033[30m" . $message . "\033[0m" . PHP_EOL;
 }
 
 /**
