@@ -21,6 +21,8 @@ foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php
     }
 }
 
+echo "Webunit [dev] by Michael Hall." . PHP_EOL;
+
 if ($argc !== 2) {
     fail('Usage: webunit testfile', 1);
 }
