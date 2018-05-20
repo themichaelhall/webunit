@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
+use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
@@ -27,10 +29,12 @@ class AssertEqualsTest extends TestCase
      */
     public function testAssertion(string $assertContent, int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertEquals($assertContent, new Modifiers($modifiers));
+        $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
+        $assert = new AssertEquals($location, $assertContent, new Modifiers($modifiers));
         $pageResult = new PageResult(200, $content);
         $result = $assert->test($pageResult);
 
+        self::assertSame($location, $assert->getLocation());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }
@@ -129,6 +133,6 @@ class AssertEqualsTest extends TestCase
      */
     public function testInvalidRegexp()
     {
-        new AssertEquals('(Foo', new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP));
+        new AssertEquals(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP));
     }
 }

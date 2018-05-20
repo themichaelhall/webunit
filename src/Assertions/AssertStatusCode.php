@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -24,12 +25,13 @@ class AssertStatusCode extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @param int       $statusCode The status code.
-     * @param Modifiers $modifiers  The modifiers.
+     * @param LocationInterface $location   The location.
+     * @param int               $statusCode The status code.
+     * @param Modifiers         $modifiers  The modifiers.
      */
-    public function __construct(int $statusCode, Modifiers $modifiers)
+    public function __construct(LocationInterface $location, int $statusCode, Modifiers $modifiers)
     {
-        parent::__construct($modifiers);
+        parent::__construct($location, $modifiers);
 
         $this->statusCode = $statusCode;
     }

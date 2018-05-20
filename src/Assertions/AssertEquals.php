@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractContentAssert;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -24,12 +25,13 @@ class AssertEquals extends AbstractContentAssert
      *
      * @since 1.0.0
      *
-     * @param string    $content   The content to check for.
-     * @param Modifiers $modifiers The modifiers.
+     * @param LocationInterface $location  The location.
+     * @param string            $content   The content to check for.
+     * @param Modifiers         $modifiers The modifiers.
      */
-    public function __construct(string $content, Modifiers $modifiers)
+    public function __construct(LocationInterface $location, string $content, Modifiers $modifiers)
     {
-        parent::__construct($content, $modifiers);
+        parent::__construct($location, $content, $modifiers);
     }
 
     /**

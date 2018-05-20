@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
+use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
 
@@ -24,10 +26,12 @@ class DefaultAssertTest extends TestCase
      */
     public function testAssertion(int $statusCode, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new DefaultAssert();
+        $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
+        $assert = new DefaultAssert($location);
         $pageResult = new PageResult($statusCode, '');
         $result = $assert->test($pageResult);
 
+        self::assertSame($location, $assert->getLocation());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }

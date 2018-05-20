@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests;
 
+use DataTypes\FilePath;
 use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestCaseResult;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +23,9 @@ class TestCaseResultTest extends TestCase
      */
     public function testSuccessfulResult()
     {
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
         $testCaseResult = new TestCaseResult($testCase);
 
         self::assertSame($testCase, $testCaseResult->getTestCase());
@@ -34,8 +38,10 @@ class TestCaseResultTest extends TestCase
      */
     public function testUnsuccessfulResult()
     {
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
-        $assert = new AssertContains('Foo', new Modifiers());
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $assert = new AssertContains($location, 'Foo', new Modifiers());
         $assertResult = new AssertResult($assert, false, 'Fail');
         $testCaseResult = new TestCaseResult($testCase, $assertResult);
 

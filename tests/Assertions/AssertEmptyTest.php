@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
+use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
@@ -27,10 +29,12 @@ class AssertEmptyTest extends TestCase
      */
     public function testAssertion(int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertEmpty(new Modifiers($modifiers));
+        $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
+        $assert = new AssertEmpty($location, new Modifiers($modifiers));
         $pageResult = new PageResult(200, $content);
         $result = $assert->test($pageResult);
 
+        self::assertSame($location, $assert->getLocation());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }
@@ -74,7 +78,7 @@ class AssertEmptyTest extends TestCase
         $exception = null;
 
         try {
-            new AssertEmpty(new Modifiers($modifiers));
+            new AssertEmpty(new FileLocation(FilePath::parse('/tmp/tests'), 10), new Modifiers($modifiers));
         } catch (NotAllowedModifierException $exception) {
         }
 

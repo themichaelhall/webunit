@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests;
 
+use DataTypes\FilePath;
 use DataTypes\Url;
 use MichaelHall\PageFetcher\FakePageFetcher;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
@@ -13,6 +14,7 @@ use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +28,9 @@ class TestCaseTest extends TestCase
      */
     public function testEmptyTestCase()
     {
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
 
         self::assertSame(1, count($testCase->getAsserts()));
         self::assertSame(DefaultAssert::class, get_class($testCase->getAsserts()[0]));
@@ -37,11 +41,13 @@ class TestCaseTest extends TestCase
      */
     public function testWithAsserts()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEmpty(new Modifiers());
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $assert1 = new AssertContains($location, 'Foo', new Modifiers());
+        $assert2 = new AssertContains($location, 'Bar', new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertEmpty($location, new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -58,11 +64,13 @@ class TestCaseTest extends TestCase
      */
     public function testStatusCodeAssertRemovesDefaultAssert()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertStatusCode(404, new Modifiers());
-        $assert3 = new AssertEmpty(new Modifiers());
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $assert1 = new AssertContains($location, 'Foo', new Modifiers());
+        $assert2 = new AssertStatusCode($location, 404, new Modifiers());
+        $assert3 = new AssertEmpty($location, new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -78,8 +86,10 @@ class TestCaseTest extends TestCase
      */
     public function testGetUrl()
     {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
         $url = Url::parse('http://localhost/foo/bar');
-        $testCase = new \MichaelHall\Webunit\TestCase($url);
+        $testCase = new \MichaelHall\Webunit\TestCase($location, $url);
 
         self::assertSame($url, $testCase->getUrl());
     }
@@ -89,13 +99,15 @@ class TestCaseTest extends TestCase
      */
     public function testRunSuccessfulTest()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEquals('Foo Baz', new Modifiers(Modifiers::CASE_INSENSITIVE));
-        $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
-        $assert5 = new AssertStatusCode(200, new Modifiers());
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $assert1 = new AssertContains($location, 'Foo', new Modifiers());
+        $assert2 = new AssertContains($location, 'Bar', new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertEquals($location, 'Foo Baz', new Modifiers(Modifiers::CASE_INSENSITIVE));
+        $assert4 = new AssertEmpty($location, new Modifiers(Modifiers::NOT));
+        $assert5 = new AssertStatusCode($location, 200, new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -119,13 +131,15 @@ class TestCaseTest extends TestCase
      */
     public function testRunFailedTest()
     {
-        $assert1 = new AssertContains('Foo', new Modifiers());
-        $assert2 = new AssertContains('Bar', new Modifiers(Modifiers::NOT));
-        $assert3 = new AssertEquals('Baz', new Modifiers());
-        $assert4 = new AssertEmpty(new Modifiers(Modifiers::NOT));
-        $assert5 = new AssertStatusCode(200, new Modifiers());
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase(Url::parse('http://localhost'));
+        $assert1 = new AssertContains($location, 'Foo', new Modifiers());
+        $assert2 = new AssertContains($location, 'Bar', new Modifiers(Modifiers::NOT));
+        $assert3 = new AssertEquals($location, 'Baz', new Modifiers());
+        $assert4 = new AssertEmpty($location, new Modifiers(Modifiers::NOT));
+        $assert5 = new AssertStatusCode($location, 200, new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);

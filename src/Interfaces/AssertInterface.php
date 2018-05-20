@@ -16,6 +16,15 @@ namespace MichaelHall\Webunit\Interfaces;
 interface AssertInterface
 {
     /**
+     * Returns the location.
+     *
+     * @since 1.0.0
+     *
+     * @return LocationInterface The location.
+     */
+    public function getLocation(): LocationInterface;
+
+    /**
      * Test assertion against a page result.
      *
      * @since 1.0.0

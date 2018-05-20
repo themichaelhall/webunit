@@ -11,6 +11,7 @@ namespace MichaelHall\Webunit\Parser;
 use DataTypes\Exceptions\UrlInvalidArgumentException;
 use DataTypes\Interfaces\FilePathInterface;
 use DataTypes\Url;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
@@ -54,7 +55,7 @@ class Parser
             $command = trim($lineParts[0]);
             $parameter = count($lineParts) > 1 ? trim($lineParts[1]) : null;
 
-            $testCase = $this->tryParseTestCase($command, $parameter, $error);
+            $testCase = $this->tryParseTestCase($fileLocation, $command, $parameter, $error);
             if ($testCase !== null) {
                 $testSuite->addTestCase($testCase);
 
@@ -76,13 +77,14 @@ class Parser
     /**
      * Try parse a test case.
      *
-     * @param string      $command   The command.
-     * @param null|string $parameter The parameter or null if no parameter.
-     * @param null|string $error     The error or null if no error.
+     * @param LocationInterface $location  The location.
+     * @param string            $command   The command.
+     * @param null|string       $parameter The parameter or null if no parameter.
+     * @param null|string       $error     The error or null if no error.
      *
      * @return TestCaseInterface|null The test case or null if the command was not a start of a test case.
      */
-    private function tryParseTestCase(string $command, ?string $parameter, ?string &$error = null): ?TestCaseInterface
+    private function tryParseTestCase(LocationInterface $location, string $command, ?string $parameter, ?string &$error = null): ?TestCaseInterface
     {
         if (strtolower($command) !== 'get') {
             return null;
@@ -104,6 +106,6 @@ class Parser
             return null;
         }
 
-        return new TestCase($url);
+        return new TestCase($location, $url);
     }
 }

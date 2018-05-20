@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
+use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
@@ -27,10 +29,12 @@ class AssertContainsTest extends TestCase
      */
     public function testAssertion(string $assertContent, int $modifiers, string $content, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertContains($assertContent, new Modifiers($modifiers));
+        $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
+        $assert = new AssertContains($location, $assertContent, new Modifiers($modifiers));
         $pageResult = new PageResult(200, $content);
         $result = $assert->test($pageResult);
 
+        self::assertSame($location, $assert->getLocation());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }
@@ -129,6 +133,6 @@ class AssertContainsTest extends TestCase
      */
     public function testInvalidRegexp()
     {
-        new AssertContains('(Foo', new Modifiers(Modifiers::REGEXP));
+        new AssertContains(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(Modifiers::REGEXP));
     }
 }

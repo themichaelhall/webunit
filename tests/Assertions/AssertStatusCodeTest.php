@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
+use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
+use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
 use PHPUnit\Framework\TestCase;
@@ -27,10 +29,12 @@ class AssertStatusCodeTest extends TestCase
      */
     public function testAssertion(int $modifiers, int $statusCode, bool $expectedSuccess, string $expectedError)
     {
-        $assert = new AssertStatusCode(200, new Modifiers($modifiers));
+        $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
+        $assert = new AssertStatusCode($location, 200, new Modifiers($modifiers));
         $pageResult = new PageResult($statusCode, '');
         $result = $assert->test($pageResult);
 
+        self::assertSame($location, $assert->getLocation());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }
@@ -66,7 +70,7 @@ class AssertStatusCodeTest extends TestCase
         $exception = null;
 
         try {
-            new AssertStatusCode(200, new Modifiers($modifiers));
+            new AssertStatusCode(new FileLocation(FilePath::parse('/tmp/tests'), 10), 200, new Modifiers($modifiers));
         } catch (NotAllowedModifierException $exception) {
         }
 

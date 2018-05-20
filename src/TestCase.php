@@ -14,6 +14,7 @@ use MichaelHall\PageFetcher\PageFetcherRequest;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseResultInterface;
 
@@ -29,12 +30,13 @@ class TestCase implements TestCaseInterface
      *
      * @since 1.0.0
      *
-     * @param UrlInterface $url The url.
+     * @param LocationInterface $location The location.
+     * @param UrlInterface      $url      The url.
      */
-    public function __construct(UrlInterface $url)
+    public function __construct(LocationInterface $location, UrlInterface $url)
     {
         $this->url = $url;
-        $this->asserts = [new DefaultAssert()];
+        $this->asserts = [new DefaultAssert($location)];
     }
 
     /**

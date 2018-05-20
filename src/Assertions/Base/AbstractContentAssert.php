@@ -10,6 +10,7 @@ namespace MichaelHall\Webunit\Assertions\Base;
 
 use MichaelHall\Webunit\Exceptions\InvalidRegexpException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Modifiers;
 
 /**
@@ -24,15 +25,16 @@ abstract class AbstractContentAssert extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @param string    $content   The content.
-     * @param Modifiers $modifiers The modifiers.
+     * @param LocationInterface $location  The location.
+     * @param string            $content   The content.
+     * @param Modifiers         $modifiers The modifiers.
      *
-     * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      * @throws InvalidRegexpException      If modifiers contains regexp and content is not a valid regexp.
+     * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      */
-    protected function __construct(string $content, Modifiers $modifiers)
+    protected function __construct(LocationInterface $location, string $content, Modifiers $modifiers)
     {
-        parent::__construct($modifiers);
+        parent::__construct($location, $modifiers);
 
         /** @noinspection PhpUsageOfSilenceOperatorInspection */
         if ($modifiers->isRegexp() && @preg_match('/' . $content . '/', '') === false) {

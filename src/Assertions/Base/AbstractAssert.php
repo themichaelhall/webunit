@@ -12,6 +12,7 @@ use MichaelHall\Webunit\AssertResult;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -22,6 +23,18 @@ use MichaelHall\Webunit\Modifiers;
  */
 abstract class AbstractAssert implements AssertInterface
 {
+    /**
+     * Returns the location.
+     *
+     * @since 1.0.0
+     *
+     * @return LocationInterface The location.
+     */
+    public function getLocation(): LocationInterface
+    {
+        return $this->location;
+    }
+
     /**
      * Returns the modifiers.
      *
@@ -68,13 +81,15 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @param Modifiers $modifiers The modifiers.
+     * @param LocationInterface $location  The location.
+     * @param Modifiers         $modifiers The modifiers.
      *
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      */
-    protected function __construct(Modifiers $modifiers)
+    protected function __construct(LocationInterface $location, Modifiers $modifiers)
     {
         $this->setModifiers($modifiers);
+        $this->location = $location;
     }
 
     /**
@@ -145,4 +160,9 @@ abstract class AbstractAssert implements AssertInterface
      * @var Modifiers My modifiers.
      */
     private $modifiers;
+
+    /**
+     * @var LocationInterface My location.
+     */
+    private $location;
 }

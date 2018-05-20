@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
+use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -23,10 +24,12 @@ class DefaultAssert extends AbstractAssert
      * DefaultAssert constructor.
      *
      * @since 1.0.0
+     *
+     * @param LocationInterface $location The location.
      */
-    public function __construct()
+    public function __construct(LocationInterface $location)
     {
-        parent::__construct(new Modifiers());
+        parent::__construct($location, new Modifiers());
     }
 
     /**
