@@ -53,7 +53,11 @@ if (!$parseResult->isSuccess()) {
 $testResults = $parseResult->getTestSuite()->run(new PageFetcher());
 if (!$testResults->isSuccess()) {
     foreach ($testResults->getFailedTestCaseResults() as $failedTestCaseResult) {
-        echo $failedTestCaseResult->getFailedAssertResult()->getError() . "\n";
+        $failedTestCase = $failedTestCaseResult->getTestCase();
+        $failedAssertResult = $failedTestCaseResult->getFailedAssertResult();
+        $failedAssert = $failedAssertResult->getAssert();
+
+        echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
     }
 
     fail('Tests failed', 4);
