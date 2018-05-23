@@ -1,0 +1,3 @@
+GET        https://example.com/
+
+GET        https://example.com/baz

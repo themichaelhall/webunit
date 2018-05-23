@@ -7,10 +7,8 @@
  */
 declare(strict_types=1);
 
-use DataTypes\Exceptions\FilePathInvalidArgumentException;
-use DataTypes\FilePath;
 use MichaelHall\PageFetcher\PageFetcher;
-use MichaelHall\Webunit\Parser\Parser;
+use MichaelHall\Webunit\Application\ConsoleApplication;
 
 foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php'] as $autoload) {
     if (file_exists($autoload)) {
@@ -21,68 +19,6 @@ foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php
     }
 }
 
-echo "Webunit [dev] by Michael Hall." . PHP_EOL;
+$application = new ConsoleApplication($argc, $argv, new PageFetcher());
 
-if ($argc !== 2) {
-    fail('Usage: webunit testfile', 1);
-}
-
-$filePath = null;
-try {
-    $filePath = FilePath::parse($argv[1]);
-} catch (FilePathInvalidArgumentException $exception) {
-    fail('Invalid file path "' . $argv[1] . '": ' . $exception->getMessage(), 2);
-}
-
-/** @noinspection PhpUsageOfSilenceOperatorInspection */
-$content = @file($filePath->__toString());
-if ($content === false) {
-    fail('Could not open file "' . $filePath . '"', 2);
-}
-
-$parser = new Parser();
-$parseResult = $parser->parse($filePath, $content);
-if (!$parseResult->isSuccess()) {
-    foreach ($parseResult->getParseErrors() as $parseError) {
-        echo $parseError . PHP_EOL;
-    }
-
-    fail('Parsing failed', 3);
-}
-
-$testResults = $parseResult->getTestSuite()->run(new PageFetcher());
-if (!$testResults->isSuccess()) {
-    foreach ($testResults->getFailedTestCaseResults() as $failedTestCaseResult) {
-        $failedTestCase = $failedTestCaseResult->getTestCase();
-        $failedAssertResult = $failedTestCaseResult->getFailedAssertResult();
-        $failedAssert = $failedAssertResult->getAssert();
-
-        echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
-    }
-
-    fail('Tests failed', 4);
-}
-
-success('Tests completed successfully');
-
-/**
- * Print out success text and exit.
- *
- * @param string $message The message.
- */
-function success(string $message): void
-{
-    echo "\033[42m\033[30m" . $message . "\033[0m" . PHP_EOL;
-}
-
-/**
- * Print out error text and exit.
- *
- * @param string $message    The message.
- * @param int    $returnCode The return code.
- */
-function fail(string $message, int $returnCode): void
-{
-    echo "\033[41m\033[1;37m" . $message . "\033[0m" . PHP_EOL;
-    exit($returnCode);
-}
+return $application->run();
