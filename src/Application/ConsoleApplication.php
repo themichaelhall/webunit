@@ -52,6 +52,7 @@ class ConsoleApplication
         }
 
         $filePath = null;
+        
         try {
             $filePath = FilePath::parse($this->argv[1]);
         } catch (FilePathInvalidArgumentException $exception) {
