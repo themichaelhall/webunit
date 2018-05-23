@@ -98,6 +98,7 @@ class ParserTest extends TestCase
                 'get http://example.com/',
                 'get',
                 'get FooBar',
+                'baz',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -108,10 +109,11 @@ class ParserTest extends TestCase
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
-        self::assertSame(3, count($parseErrors));
+        self::assertSame(4, count($parseErrors));
         self::assertSame('foo.webunit:2: Syntax error: Invalid command "foo".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:4: Missing argument: Missing Url argument for "get".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:5: Invalid argument: Invalid Url argument "FooBar" for "get": Url "FooBar" is invalid: Scheme is missing.', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:6: Syntax error: Invalid command "baz".', $parseErrors[3]->__toString());
         self::assertFalse($parseResult->isSuccess());
     }
 }

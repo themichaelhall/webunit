@@ -86,6 +86,8 @@ class Parser
      */
     private function tryParseTestCase(LocationInterface $location, string $command, ?string $parameter, ?string &$error = null): ?TestCaseInterface
     {
+        $error = null;
+
         if (strtolower($command) !== 'get') {
             return null;
         }
