@@ -45,7 +45,7 @@ class ConsoleApplication
      */
     public function run(): int
     {
-        echo "Webunit [dev] by Michael Hall." . PHP_EOL;
+        echo 'Webunit [dev] by Michael Hall.' . PHP_EOL;
 
         if ($this->argc !== 2) {
             return self::fail('Usage: webunit testfile', 1);
