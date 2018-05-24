@@ -11,6 +11,7 @@ namespace MichaelHall\Webunit\Application;
 use DataTypes\Exceptions\FilePathInvalidArgumentException;
 use DataTypes\FilePath;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
+use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
 use MichaelHall\Webunit\Parser\Parser;
 
 /**
@@ -20,6 +21,41 @@ use MichaelHall\Webunit\Parser\Parser;
  */
 class ConsoleApplication
 {
+    /**
+     * All tests passed.
+     *
+     * @since 1.0.0
+     */
+    const RESULT_OK = 0;
+
+    /**
+     * Command line parameter error.
+     *
+     * @since 1.0.0
+     */
+    const RESULT_PARAMETER_ERROR = 1;
+
+    /**
+     * Error while reading the test file.
+     *
+     * @since 1.0.0
+     */
+    const RESULT_READ_TEST_FILE_ERROR = 2;
+
+    /**
+     * Error while parsing the test file.
+     *
+     * @since 1.0.0
+     */
+    const RESULT_PARSE_TEST_FILE_ERROR = 3;
+
+    /**
+     * Tests failed.
+     *
+     * @since 1.0.0
+     */
+    const RESULT_TESTS_FAILED = 4;
+
     /**
      * Constructs the console application.
      *
@@ -48,7 +84,9 @@ class ConsoleApplication
         echo 'Webunit [dev] by Michael Hall.' . PHP_EOL;
 
         if ($this->argc !== 2) {
-            return self::fail('Usage: webunit testfile', 1);
+            self::fail('Usage: webunit testfile');
+
+            return self::RESULT_PARAMETER_ERROR;
         }
 
         $filePath = null;
@@ -56,13 +94,17 @@ class ConsoleApplication
         try {
             $filePath = FilePath::parse($this->argv[1]);
         } catch (FilePathInvalidArgumentException $exception) {
-            return self::fail('Invalid file path "' . $this->argv[1] . '": ' . $exception->getMessage(), 2);
+            self::fail('Invalid file path "' . $this->argv[1] . '": ' . $exception->getMessage());
+
+            return self::RESULT_READ_TEST_FILE_ERROR;
         }
 
         /** @noinspection PhpUsageOfSilenceOperatorInspection */
         $content = @file($filePath->__toString());
         if ($content === false) {
-            return self::fail('Could not open file "' . $filePath . '".', 2);
+            self::fail('Could not open file "' . $filePath . '".');
+
+            return self::RESULT_READ_TEST_FILE_ERROR;
         }
 
         $parser = new Parser();
@@ -72,25 +114,39 @@ class ConsoleApplication
                 echo $parseError . PHP_EOL;
             }
 
-            return self::fail('Parsing failed', 3);
+            self::fail('Parsing failed');
+
+            return self::RESULT_PARSE_TEST_FILE_ERROR;
         }
 
         $testResults = $parseResult->getTestSuite()->run($this->pageFetcher);
-        if (!$testResults->isSuccess()) {
-            foreach ($testResults->getFailedTestCaseResults() as $failedTestCaseResult) {
-                $failedTestCase = $failedTestCaseResult->getTestCase();
-                $failedAssertResult = $failedTestCaseResult->getFailedAssertResult();
-                $failedAssert = $failedAssertResult->getAssert();
+        $this->printReport($testResults);
 
-                echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
-            }
+        return $testResults->isSuccess() ? self::RESULT_OK : self::RESULT_TESTS_FAILED;
+    }
 
-            return self::fail('Tests failed', 4);
+    /**
+     * Prints a report from the result of the tests.
+     *
+     * @param TestSuiteResultInterface $testResults The test results.
+     */
+    private function printReport(TestSuiteResultInterface $testResults): void
+    {
+        if ($testResults->isSuccess()) {
+            self::success('Tests completed successfully');
+
+            return;
         }
 
-        self::success('Tests completed successfully');
+        foreach ($testResults->getFailedTestCaseResults() as $failedTestCaseResult) {
+            $failedTestCase = $failedTestCaseResult->getTestCase();
+            $failedAssertResult = $failedTestCaseResult->getFailedAssertResult();
+            $failedAssert = $failedAssertResult->getAssert();
 
-        return 0;
+            echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
+        }
+
+        self::fail('Tests failed');
     }
 
     /**
@@ -106,16 +162,11 @@ class ConsoleApplication
     /**
      * Prints an error message.
      *
-     * @param string $message    The message.
-     * @param int    $resultCode The result code.
-     *
-     * @return int The result code.
+     * @param string $message The message.
      */
-    private static function fail(string $message, int $resultCode): int
+    private static function fail(string $message): void
     {
         echo "\033[41m\033[1;37m" . $message . "\033[0m" . PHP_EOL;
-
-        return $resultCode;
     }
 
     /**
