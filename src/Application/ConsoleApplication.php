@@ -10,6 +10,7 @@ namespace MichaelHall\Webunit\Application;
 
 use DataTypes\Exceptions\FilePathInvalidArgumentException;
 use DataTypes\FilePath;
+use DataTypes\Interfaces\FilePathInterface;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
 use MichaelHall\Webunit\Parser\Parser;
@@ -89,21 +90,8 @@ class ConsoleApplication
             return self::RESULT_PARAMETER_ERROR;
         }
 
-        $filePath = null;
-
-        try {
-            $filePath = FilePath::parse($this->argv[1]);
-        } catch (FilePathInvalidArgumentException $exception) {
-            self::fail('Invalid file path "' . $this->argv[1] . '": ' . $exception->getMessage());
-
-            return self::RESULT_READ_TEST_FILE_ERROR;
-        }
-
-        /** @noinspection PhpUsageOfSilenceOperatorInspection */
-        $content = @file($filePath->__toString());
-        if ($content === false) {
-            self::fail('Could not open file "' . $filePath . '".');
-
+        $content = $this->tryReadContent($filePath);
+        if ($content === null) {
             return self::RESULT_READ_TEST_FILE_ERROR;
         }
 
@@ -123,6 +111,36 @@ class ConsoleApplication
         $this->printReport($testResults);
 
         return $testResults->isSuccess() ? self::RESULT_OK : self::RESULT_TESTS_FAILED;
+    }
+
+    /**
+     * Try to read content from the specified command line argument.
+     *
+     * @param FilePathInterface|null $filePath The file path or undefined if failed.
+     *
+     * @return array|null The content or null if failed.
+     */
+    private function tryReadContent(?FilePathInterface &$filePath = null): ?array
+    {
+        $filePath = null;
+
+        try {
+            $filePath = FilePath::parse($this->argv[1]);
+        } catch (FilePathInvalidArgumentException $exception) {
+            self::fail('Invalid file path "' . $this->argv[1] . '": ' . $exception->getMessage());
+
+            return null;
+        }
+
+        /** @noinspection PhpUsageOfSilenceOperatorInspection */
+        $content = @file($filePath->__toString());
+        if ($content === false) {
+            self::fail('Could not open file "' . $filePath . '".');
+
+            return null;
+        }
+
+        return $content;
     }
 
     /**
