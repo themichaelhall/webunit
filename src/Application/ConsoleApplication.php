@@ -30,32 +30,39 @@ class ConsoleApplication
     const RESULT_OK = 0;
 
     /**
+     * No tests found.
+     *
+     * @since 1.0.0
+     */
+    const RESULT_NO_TESTS_FOUND = 1;
+
+    /**
      * Command line parameter error.
      *
      * @since 1.0.0
      */
-    const RESULT_PARAMETER_ERROR = 1;
+    const RESULT_PARAMETER_ERROR = 2;
 
     /**
      * Error while reading the test file.
      *
      * @since 1.0.0
      */
-    const RESULT_READ_TEST_FILE_ERROR = 2;
+    const RESULT_READ_TEST_FILE_ERROR = 3;
 
     /**
      * Error while parsing the test file.
      *
      * @since 1.0.0
      */
-    const RESULT_PARSE_TEST_FILE_ERROR = 3;
+    const RESULT_PARSE_TEST_FILE_ERROR = 4;
 
     /**
      * Tests failed.
      *
      * @since 1.0.0
      */
-    const RESULT_TESTS_FAILED = 4;
+    const RESULT_TESTS_FAILED = 5;
 
     /**
      * Constructs the console application.
@@ -102,12 +109,19 @@ class ConsoleApplication
                 echo $parseError . PHP_EOL;
             }
 
-            self::fail('Parsing failed');
+            self::fail('Parsing failed.');
 
             return self::RESULT_PARSE_TEST_FILE_ERROR;
         }
 
-        $testResults = $parseResult->getTestSuite()->run($this->pageFetcher);
+        $testSuite = $parseResult->getTestSuite();
+        if (count($testSuite->getTestCases()) === 0) {
+            self::warn('No tests found.');
+
+            return self::RESULT_NO_TESTS_FOUND;
+        }
+
+        $testResults = $testSuite->run($this->pageFetcher);
         $this->printReport($testResults);
 
         return $testResults->isSuccess() ? self::RESULT_OK : self::RESULT_TESTS_FAILED;
@@ -151,7 +165,7 @@ class ConsoleApplication
     private function printReport(TestSuiteResultInterface $testResults): void
     {
         if ($testResults->isSuccess()) {
-            self::success('Tests completed successfully');
+            self::success('Tests completed successfully.');
 
             return;
         }
@@ -164,7 +178,7 @@ class ConsoleApplication
             echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
         }
 
-        self::fail('Tests failed');
+        self::fail('Tests failed.');
     }
 
     /**
@@ -175,6 +189,16 @@ class ConsoleApplication
     private static function success(string $message): void
     {
         echo "\033[42m\033[30m" . $message . "\033[0m" . PHP_EOL;
+    }
+
+    /**
+     * Prints a warning message.
+     *
+     * @param string $message The message.
+     */
+    private static function warn(string $message): void
+    {
+        echo "\033[43m\033[30m" . $message . "\033[0m" . PHP_EOL;
     }
 
     /**
