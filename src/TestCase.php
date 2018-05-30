@@ -85,10 +85,11 @@ class TestCase implements TestCaseInterface
      * @since 1.0.0
      *
      * @param PageFetcherInterface $pageFetcher The page fetcher.
+     * @param callable|null        $callback    An optional callback method to call after each assert. The method takes a AssertResultInterface as a parameter.
      *
      * @return TestCaseResultInterface The result.
      */
-    public function run(PageFetcherInterface $pageFetcher): TestCaseResultInterface
+    public function run(PageFetcherInterface $pageFetcher, ?callable $callback = null): TestCaseResultInterface
     {
         $pageFetcherRequest = new PageFetcherRequest($this->url);
         $pageFetcherResult = $pageFetcher->fetch($pageFetcherRequest);
@@ -100,6 +101,10 @@ class TestCase implements TestCaseInterface
 
         foreach ($this->getAsserts() as $assert) {
             $assertResult = $assert->test($pageResult);
+
+            if ($callback !== null) {
+                $callback($assertResult);
+            }
 
             if (!$assertResult->isSuccess()) {
                 return new TestCaseResult($this, $assertResult);
