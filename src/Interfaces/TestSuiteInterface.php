@@ -41,8 +41,9 @@ interface TestSuiteInterface
      * @since 1.0.0
      *
      * @param PageFetcherInterface $pageFetcher The page fetcher.
+     * @param callable|null        $callback    An optional callback method to call after each assert. The method takes a AssertResultInterface as a parameter.
      *
      * @return TestSuiteResultInterface The result.
      */
-    public function run(PageFetcherInterface $pageFetcher): TestSuiteResultInterface;
+    public function run(PageFetcherInterface $pageFetcher, ?callable $callback = null): TestSuiteResultInterface;
 }
