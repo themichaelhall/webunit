@@ -12,6 +12,7 @@ use DataTypes\Exceptions\FilePathInvalidArgumentException;
 use DataTypes\FilePath;
 use DataTypes\Interfaces\FilePathInterface;
 use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
+use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
 use MichaelHall\Webunit\Parser\Parser;
 
@@ -121,7 +122,11 @@ class ConsoleApplication
             return self::RESULT_NO_TESTS_FOUND;
         }
 
-        $testResults = $testSuite->run($this->pageFetcher);
+        $testResults = $testSuite->run($this->pageFetcher, function (AssertResultInterface $assertResult) {
+            echo $assertResult->isSuccess() ? '.' : "\033[41m\033[1;37mF\033[0m";
+        });
+        echo PHP_EOL;
+
         $this->printReport($testResults);
 
         return $testResults->isSuccess() ? self::RESULT_OK : self::RESULT_TESTS_FAILED;
