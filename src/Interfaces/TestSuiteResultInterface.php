@@ -25,6 +25,15 @@ interface TestSuiteResultInterface
     public function getFailedTestCaseResults(): array;
 
     /**
+     * Returns the count of failed tests.
+     *
+     * @since 1.0.0
+     *
+     * @return int The count of failed tests.
+     */
+    public function getFailedTestsCount(): int;
+
+    /**
      * Returns the test case results.
      *
      * @since 1.0.0

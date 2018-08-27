@@ -39,7 +39,8 @@ class TestSuiteResult implements TestSuiteResultInterface
             }
         }
 
-        $this->isSuccess = count($this->failedTestCaseResults) === 0;
+        $this->failedTestsCount = count($this->failedTestCaseResults);
+        $this->isSuccess = $this->failedTestsCount === 0;
     }
 
     /**
@@ -52,6 +53,18 @@ class TestSuiteResult implements TestSuiteResultInterface
     public function getFailedTestCaseResults(): array
     {
         return $this->failedTestCaseResults;
+    }
+
+    /**
+     * Returns the count of failed tests.
+     *
+     * @since 1.0.0
+     *
+     * @return int The count of failed tests.
+     */
+    public function getFailedTestsCount(): int
+    {
+        return $this->failedTestsCount;
     }
 
     /**
@@ -109,4 +122,9 @@ class TestSuiteResult implements TestSuiteResultInterface
      * @var bool True if tests are successful, false otherwise.
      */
     private $isSuccess;
+
+    /**
+     * @var int The count of failed tests.
+     */
+    private $failedTestsCount;
 }

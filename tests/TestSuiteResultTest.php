@@ -32,6 +32,7 @@ class TestSuiteResultTest extends TestCase
         self::assertSame([], $testSuiteResult->getTestCaseResults());
         self::assertSame([], $testSuiteResult->getFailedTestCaseResults());
         self::assertTrue($testSuiteResult->isSuccess());
+        self::assertSame(0, $testSuiteResult->getFailedTestsCount());
     }
 
     /**
@@ -54,6 +55,7 @@ class TestSuiteResultTest extends TestCase
         self::assertSame([$testCaseResult1, $testCaseResult2], $testSuiteResult->getTestCaseResults());
         self::assertSame([], $testSuiteResult->getFailedTestCaseResults());
         self::assertTrue($testSuiteResult->isSuccess());
+        self::assertSame(0, $testSuiteResult->getFailedTestsCount());
     }
 
     /**
@@ -78,5 +80,6 @@ class TestSuiteResultTest extends TestCase
         self::assertSame([$testCaseResult1, $testCaseResult2], $testSuiteResult->getTestCaseResults());
         self::assertSame([$testCaseResult1], $testSuiteResult->getFailedTestCaseResults());
         self::assertFalse($testSuiteResult->isSuccess());
+        self::assertSame(1, $testSuiteResult->getFailedTestsCount());
     }
 }
