@@ -34,6 +34,15 @@ interface TestSuiteResultInterface
     public function getFailedTestsCount(): int;
 
     /**
+     * Returns the count of successful tests.
+     *
+     * @since 1.0.0
+     *
+     * @return int The count of successful tests.
+     */
+    public function getSuccessfulTestsCount(): int;
+
+    /**
      * Returns the test case results.
      *
      * @since 1.0.0
