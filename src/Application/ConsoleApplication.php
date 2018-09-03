@@ -170,7 +170,8 @@ class ConsoleApplication
     private function printReport(TestSuiteResultInterface $testResults): void
     {
         if ($testResults->isSuccess()) {
-            self::success('Tests completed successfully.');
+            $count = $testResults->getSuccessfulTestsCount();
+            self::success($count . ' test' . ($count > 1 ? 's' : '') . ' completed successfully.');
 
             return;
         }
@@ -183,7 +184,8 @@ class ConsoleApplication
             echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
         }
 
-        self::fail('Tests failed.');
+        $count = $testResults->getFailedTestsCount();
+        self::fail($count . ' test' . ($count > 1 ? 's' : '') . ' failed.');
     }
 
     /**

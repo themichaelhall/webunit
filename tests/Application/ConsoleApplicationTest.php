@@ -140,7 +140,7 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
             '..' . PHP_EOL .
-            "\033[42m\033[30mTests completed successfully.\033[0m" . PHP_EOL,
+            "\033[42m\033[30m2 tests completed successfully.\033[0m" . PHP_EOL,
             $output
         );
     }
@@ -164,7 +164,7 @@ class ConsoleApplicationTest extends TestCase
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
             ".\033[41m\033[1;37mF\033[0m" . PHP_EOL .
             "{$filePath}:3: Test failed: https://example.com/baz: Status code 404 was returned." . PHP_EOL .
-            "\033[41m\033[1;37mTests failed.\033[0m" . PHP_EOL,
+            "\033[41m\033[1;37m1 test failed.\033[0m" . PHP_EOL,
             $output
         );
     }
