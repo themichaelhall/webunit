@@ -139,8 +139,8 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(0, $result);
         self::assertSame(
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
-            '..' . PHP_EOL .
-            "\033[42m\033[30m2 tests completed successfully.\033[0m" . PHP_EOL,
+            '....' . PHP_EOL .
+            "\033[42m\033[30m3 tests completed successfully.\033[0m" . PHP_EOL,
             $output
         );
     }
@@ -184,6 +184,8 @@ class ConsoleApplicationTest extends TestCase
                     return new PageFetcherResponse(200, 'This is Foo page.');
                 case '/bar':
                     return new PageFetcherResponse(200, 'This is Bar page.');
+                case '/empty':
+                    return new PageFetcherResponse(200, '');
             }
 
             return new PageFetcherResponse(404);

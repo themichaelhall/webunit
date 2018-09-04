@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests\Parser;
 
 use DataTypes\FilePath;
+use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Parser\Parser;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +29,7 @@ class ParserTest extends TestCase
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
-        self::assertSame(1, count($testSuite->getTestCases()));
+        self::assertSame(1, count($testCases));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
@@ -53,7 +54,7 @@ class ParserTest extends TestCase
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
-        self::assertSame(1, count($testSuite->getTestCases()));
+        self::assertSame(1, count($testCases));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
@@ -77,7 +78,7 @@ class ParserTest extends TestCase
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
-        self::assertSame(1, count($testSuite->getTestCases()));
+        self::assertSame(1, count($testCases));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
@@ -105,7 +106,7 @@ class ParserTest extends TestCase
         $testCases = $testSuite->getTestCases();
         $parseErrors = $parseResult->getParseErrors();
 
-        self::assertSame(1, count($testSuite->getTestCases()));
+        self::assertSame(1, count($testCases));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
@@ -114,6 +115,33 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:4: Missing argument: Missing Url argument for "get".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:5: Invalid argument: Invalid Url argument "FooBar" for "get": Url "FooBar" is invalid: Scheme is missing.', $parseErrors[2]->__toString());
         self::assertSame('foo.webunit:6: Syntax error: Invalid command "baz".', $parseErrors[3]->__toString());
+        self::assertFalse($parseResult->isSuccess());
+    }
+
+    /**
+     * Test parse with asserts.
+     */
+    public function testParseWithAsserts()
+    {
+        $parser = new Parser();
+        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+            [
+                'get http://example.com/',
+                'assert-empty',
+                'assert-empty foo',
+            ]
+        );
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(1, count($testCases));
+        self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(2, count($testCases[0]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[1]);
+        self::assertSame(1, count($parseErrors));
+        self::assertSame('foo.webunit:3: Extra argument: "foo". No arguments are allowed for assert "assert-empty".', $parseErrors[0]->__toString());
         self::assertFalse($parseResult->isSuccess());
     }
 }
