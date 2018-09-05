@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests\Parser;
 
 use DataTypes\FilePath;
+use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Parser\Parser;
@@ -127,8 +128,10 @@ class ParserTest extends TestCase
         $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
             [
                 'get http://example.com/',
+                'assert-contains',
+                'assert-contains foo',
                 'assert-empty',
-                'assert-empty foo',
+                'assert-empty bar',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -137,11 +140,15 @@ class ParserTest extends TestCase
 
         self::assertSame(1, count($testCases));
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
-        self::assertSame(2, count($testCases[0]->getAsserts()));
+
+        self::assertSame(3, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
-        self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[1]);
-        self::assertSame(1, count($parseErrors));
-        self::assertSame('foo.webunit:3: Extra argument: "foo". No arguments are allowed for assert "assert-empty".', $parseErrors[0]->__toString());
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
+        self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
+
+        self::assertSame(2, count($parseErrors));
+        self::assertSame('foo.webunit:2: Missing argument: Missing content argument for assert "assert-contains".', $parseErrors[0]->__toString());
+        self::assertSame('foo.webunit:5: Extra argument: "bar". No arguments are allowed for assert "assert-empty".', $parseErrors[1]->__toString());
         self::assertFalse($parseResult->isSuccess());
     }
 }

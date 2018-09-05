@@ -139,7 +139,7 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(0, $result);
         self::assertSame(
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
-            '....' . PHP_EOL .
+            '.....' . PHP_EOL .
             "\033[42m\033[30m3 tests completed successfully.\033[0m" . PHP_EOL,
             $output
         );

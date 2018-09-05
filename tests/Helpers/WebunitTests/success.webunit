@@ -1,6 +1,7 @@
-get            https://example.com/
+get                https://example.com/
 
-get            https://example.com/foo
+get                https://example.com/foo
+assert-contains    Foo
 
-get            https://example.com/empty
+get                https://example.com/empty
 assert-empty

@@ -11,6 +11,7 @@ namespace MichaelHall\Webunit\Parser;
 use DataTypes\Exceptions\UrlInvalidArgumentException;
 use DataTypes\Interfaces\FilePathInterface;
 use DataTypes\Url;
+use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
@@ -142,19 +143,48 @@ class Parser
     private function tryParseAssert(LocationInterface $location, string $command, ?string $parameter, ?string &$error = null): ?AssertInterface
     {
         $error = null;
+        $command = strtolower($command);
 
-        if (strtolower($command) !== 'assert-empty') { // fixme: All assertions
+        if (!isset(self::ASSERTS_INFO[$command])) {
             return null;
         }
 
-        if ($parameter !== null) {
-            $error = 'Extra argument: "' . $parameter . '". No arguments are allowed for assert "' . strtolower($command) . '".';
-
-            return null;
-        }
+        $assertInfo = self::ASSERTS_INFO[$command];
+        $argumentName = $assertInfo[0];
+        $className = $assertInfo[1];
 
         // fixme: Check modifiers
+        $modifiers = new Modifiers();
 
-        return new AssertEmpty($location, new Modifiers());
+        if ($argumentName === null) {
+            if ($parameter !== null) {
+                $error = 'Extra argument: "' . $parameter . '". No arguments are allowed for assert "' . strtolower($command) . '".';
+
+                return null;
+            }
+
+            return new $className($location, $modifiers);
+        }
+
+        if ($parameter === null) {
+            $error = 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . strtolower($command) . '".';
+
+            return null;
+        }
+
+        return new $className($location, $parameter, $modifiers);
     }
+
+    /**
+     * Info about the asserts.
+     *
+     * The format is as follows:
+     *
+     * name => [0 => argumentName|null, 1 => className]
+     */
+    private const ASSERTS_INFO = [
+        'assert-contains' => ['content', AssertContains::class],
+        'assert-empty'    => [null, AssertEmpty::class],
+        // fixme: all assertions.
+    ];
 }
