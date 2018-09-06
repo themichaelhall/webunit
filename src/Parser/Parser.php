@@ -13,6 +13,7 @@ use DataTypes\Interfaces\FilePathInterface;
 use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
+use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
@@ -185,6 +186,7 @@ class Parser
     private const ASSERTS_INFO = [
         'assert-contains' => ['content', AssertContains::class],
         'assert-empty'    => [null, AssertEmpty::class],
+        'assert-equals'   => ['content', AssertEquals::class],
         // fixme: all assertions.
     ];
 }

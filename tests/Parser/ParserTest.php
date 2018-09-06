@@ -7,6 +7,7 @@ namespace MichaelHall\Webunit\Tests\Parser;
 use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
+use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Parser\Parser;
 use PHPUnit\Framework\TestCase;
@@ -127,28 +128,38 @@ class ParserTest extends TestCase
         $parser = new Parser();
         $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
             [
-                'get http://example.com/',
+                'get https://example.com/',
                 'assert-contains',
                 'assert-contains foo',
                 'assert-empty',
                 'assert-empty bar',
+                '',
+                'get https://example.com/foo',
+                'assert-equals',
+                'assert-equals baz',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
         $parseErrors = $parseResult->getParseErrors();
 
-        self::assertSame(1, count($testCases));
-        self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(2, count($testCases));
 
+        self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(3, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
 
-        self::assertSame(2, count($parseErrors));
+        self::assertSame('https://example.com/foo', $testCases[1]->getUrl()->__toString());
+        self::assertSame(2, count($testCases[1]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[1]->getAsserts()[0]);
+        self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[1]);
+
+        self::assertSame(3, count($parseErrors));
         self::assertSame('foo.webunit:2: Missing argument: Missing content argument for assert "assert-contains".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:5: Extra argument: "bar". No arguments are allowed for assert "assert-empty".', $parseErrors[1]->__toString());
+        self::assertSame('foo.webunit:8: Missing argument: Missing content argument for assert "assert-equals".', $parseErrors[2]->__toString());
         self::assertFalse($parseResult->isSuccess());
     }
 }
