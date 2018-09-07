@@ -3,3 +3,8 @@ GET        https://example.com/
 # Some parse errors.
 GET        FooBar
 Baz
+
+assert-status-code -1
+
+assert-empty BAZ
+assert-empty

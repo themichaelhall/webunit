@@ -14,6 +14,8 @@ use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Assertions\AssertStatusCode;
+use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
@@ -151,8 +153,9 @@ class Parser
         }
 
         $assertInfo = self::ASSERTS_INFO[$command];
-        $argumentName = $assertInfo[0];
-        $className = $assertInfo[1];
+        $className = $assertInfo[0];
+        $argumentType = $assertInfo[1];
+        $argumentName = $assertInfo[2];
 
         // fixme: Check modifiers
         $modifiers = new Modifiers();
@@ -173,7 +176,24 @@ class Parser
             return null;
         }
 
-        return new $className($location, $parameter, $modifiers);
+        if ($argumentType === 'integer') {
+            $intParameter = intval($parameter);
+            if (strval($intParameter) !== $parameter) {
+                $error = 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $parameter . '" must be of type ' . $argumentType . ' for assert "' . strtolower($command) . '".';
+
+                return null;
+            }
+
+            $parameter = $intParameter;
+        }
+
+        try {
+            return new $className($location, $parameter, $modifiers);
+        } catch (InvalidParameterException $e) {
+            $error = 'Invalid argument: ' . $e->getMessage() . ' for assert "' . strtolower($command) . '".';
+        }
+
+        return null;
     }
 
     /**
@@ -184,9 +204,9 @@ class Parser
      * name => [0 => argumentName|null, 1 => className]
      */
     private const ASSERTS_INFO = [
-        'assert-contains' => ['content', AssertContains::class],
-        'assert-empty'    => [null, AssertEmpty::class],
-        'assert-equals'   => ['content', AssertEquals::class],
-        // fixme: all assertions.
+        'assert-contains'    => [AssertContains::class, 'string', 'content'],
+        'assert-empty'       => [AssertEmpty::class, null, null],
+        'assert-equals'      => [AssertEquals::class, 'string', 'content'],
+        'assert-status-code' => [AssertStatusCode::class, 'integer', 'status code'],
     ];
 }

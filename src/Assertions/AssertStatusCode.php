@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
+use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
@@ -32,6 +33,10 @@ class AssertStatusCode extends AbstractAssert
     public function __construct(LocationInterface $location, int $statusCode, Modifiers $modifiers)
     {
         parent::__construct($location, $modifiers);
+
+        if ($statusCode < 100 || $statusCode > 599) {
+            throw new InvalidParameterException('Status code ' . $statusCode . ' must be in range 100-599');
+        }
 
         $this->statusCode = $statusCode;
     }

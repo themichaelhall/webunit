@@ -93,4 +93,15 @@ class AssertStatusCodeTest extends TestCase
             [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
         ];
     }
+
+    /**
+     * Test assert with invalid status code.
+     *
+     * @expectedException \MichaelHall\Webunit\Exceptions\InvalidParameterException
+     * @expectedExceptionMessage Status code 0 must be in range 100-599
+     */
+    public function testAssertWithInvalidStatusCode()
+    {
+        new AssertStatusCode(new FileLocation(FilePath::parse('/tmp/tests'), 10), 0, new Modifiers());
+    }
 }

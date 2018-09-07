@@ -8,6 +8,7 @@ use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Parser\Parser;
 use PHPUnit\Framework\TestCase;
@@ -137,6 +138,10 @@ class ParserTest extends TestCase
                 'get https://example.com/foo',
                 'assert-equals',
                 'assert-equals baz',
+                'assert-status-code',
+                'assert-status-code foo',
+                'assert-status-code 600',
+                'assert-status-code 401',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -153,13 +158,17 @@ class ParserTest extends TestCase
 
         self::assertSame('https://example.com/foo', $testCases[1]->getUrl()->__toString());
         self::assertSame(2, count($testCases[1]->getAsserts()));
-        self::assertInstanceOf(DefaultAssert::class, $testCases[1]->getAsserts()[0]);
-        self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[1]);
+        self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[0]);
+        self::assertInstanceOf(AssertStatusCode::class, $testCases[1]->getAsserts()[1]);
 
-        self::assertSame(3, count($parseErrors));
+        self::assertSame(6, count($parseErrors));
         self::assertSame('foo.webunit:2: Missing argument: Missing content argument for assert "assert-contains".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:5: Extra argument: "bar". No arguments are allowed for assert "assert-empty".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:8: Missing argument: Missing content argument for assert "assert-equals".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:10: Missing argument: Missing status code argument for assert "assert-status-code".', $parseErrors[3]->__toString());
+        self::assertSame('foo.webunit:11: Invalid argument: Status code "foo" must be of type integer for assert "assert-status-code".', $parseErrors[4]->__toString());
+        self::assertSame('foo.webunit:12: Invalid argument: Status code 600 must be in range 100-599 for assert "assert-status-code".', $parseErrors[5]->__toString());
+
         self::assertFalse($parseResult->isSuccess());
     }
 }

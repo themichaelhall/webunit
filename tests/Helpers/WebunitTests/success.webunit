@@ -6,3 +6,7 @@ assert-contains    Foo
 
 get                https://example.com/empty
 assert-empty
+
+get                https://example.com/not-found
+assert-status-code 404
+assert-empty

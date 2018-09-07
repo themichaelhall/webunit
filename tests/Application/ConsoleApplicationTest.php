@@ -99,6 +99,8 @@ class ConsoleApplicationTest extends TestCase
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
             "{$filePath}:4: Invalid argument: Invalid Url argument \"FooBar\" for \"GET\": Url \"FooBar\" is invalid: Scheme is missing." . PHP_EOL .
             "{$filePath}:5: Syntax error: Invalid command \"Baz\"." . PHP_EOL .
+            "{$filePath}:7: Invalid argument: Status code -1 must be in range 100-599 for assert \"assert-status-code\"." . PHP_EOL .
+            "{$filePath}:9: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
             "\033[41m\033[1;37mParsing failed.\033[0m" . PHP_EOL,
             $output
         );
@@ -139,8 +141,8 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(0, $result);
         self::assertSame(
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
-            '......' . PHP_EOL .
-            "\033[42m\033[30m3 tests completed successfully.\033[0m" . PHP_EOL,
+            '........' . PHP_EOL .
+            "\033[42m\033[30m4 tests completed successfully.\033[0m" . PHP_EOL,
             $output
         );
     }
