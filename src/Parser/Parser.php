@@ -60,7 +60,7 @@ class Parser
             }
 
             $lineParts = preg_split('/\s+/', $line, 2);
-            $command = trim($lineParts[0]);
+            $command = strtolower(trim($lineParts[0]));
             $parameter = count($lineParts) > 1 ? trim($lineParts[1]) : null;
 
             $testCase = $this->tryParseTestCase($fileLocation, $command, $parameter, $error);
@@ -110,7 +110,7 @@ class Parser
     {
         $error = null;
 
-        if (strtolower($command) !== 'get') {
+        if ($command !== 'get') {
             return null;
         }
 
@@ -136,17 +136,16 @@ class Parser
     /**
      * Try parse an assert.
      *
-     * @param LocationInterface $location  The location.
-     * @param string            $command   The command.
-     * @param null|string       $parameter The parameter or null if no parameter.
-     * @param null|string       $error     The error or null if no error.
+     * @param LocationInterface $location The location.
+     * @param string            $command  The command.
+     * @param null|string       $argument The argument or null if no argument.
+     * @param null|string       $error    The error or null if no error.
      *
      * @return AssertInterface|null
      */
-    private function tryParseAssert(LocationInterface $location, string $command, ?string $parameter, ?string &$error = null): ?AssertInterface
+    private function tryParseAssert(LocationInterface $location, string $command, ?string $argument, ?string &$error = null): ?AssertInterface
     {
         $error = null;
-        $command = strtolower($command);
 
         if (!isset(self::ASSERTS_INFO[$command])) {
             return null;
@@ -157,43 +156,67 @@ class Parser
         $argumentType = $assertInfo[1];
         $argumentName = $assertInfo[2];
 
-        // fixme: Check modifiers
-        $modifiers = new Modifiers();
-
-        if ($argumentName === null) {
-            if ($parameter !== null) {
-                $error = 'Extra argument: "' . $parameter . '". No arguments are allowed for assert "' . strtolower($command) . '".';
-
-                return null;
+        $argumentResult = self::checkAssertArgument($argument, $argumentType, $argumentValue);
+        if ($argumentResult !== self::ARGUMENT_OK) {
+            switch ($argumentResult) {
+                case self::ARGUMENT_ERROR_EXTRA_ARGUMENT:
+                    $error = 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".';
+                    break;
+                case self::ARGUMENT_ERROR_MISSING_ARGUMENT:
+                    $error = 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".';
+                    break;
+                case self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE:
+                    $error = 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".';
+                    break;
             }
-
-            return new $className($location, $modifiers);
-        }
-
-        if ($parameter === null) {
-            $error = 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . strtolower($command) . '".';
 
             return null;
         }
 
-        if ($argumentType === 'integer') {
-            $intParameter = intval($parameter);
-            if (strval($intParameter) !== $parameter) {
-                $error = 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $parameter . '" must be of type ' . $argumentType . ' for assert "' . strtolower($command) . '".';
-
-                return null;
-            }
-
-            $parameter = $intParameter;
-        }
+        // fixme: Check modifiers
+        $modifiers = new Modifiers();
 
         try {
-            return new $className($location, $parameter, $modifiers);
+            return $argumentValue === null ?
+                new $className($location, $modifiers) :
+                new $className($location, $argumentValue, $modifiers);
         } catch (InvalidParameterException $e) {
-            $error = 'Invalid argument: ' . $e->getMessage() . ' for assert "' . strtolower($command) . '".';
+            $error = 'Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".';
         }
 
         return null;
+    }
+
+    /**
+     * Checks an assert argument.
+     *
+     * @param null|string $argument      The argument as a string.
+     * @param null|string $argumentType  The argument type or null if no argument.
+     * @param null|mixed  $argumentValue The actual argument to use.
+     *
+     * @return int The ARGUMENT_* result.
+     */
+    private static function checkAssertArgument(?string $argument, ?string $argumentType, &$argumentValue = null): int
+    {
+        $argumentValue = $argument;
+
+        if ($argumentType === null) {
+            return $argument === null ? self::ARGUMENT_OK : self::ARGUMENT_ERROR_EXTRA_ARGUMENT;
+        }
+
+        if ($argument === null) {
+            return self::ARGUMENT_ERROR_MISSING_ARGUMENT;
+        }
+
+        if ($argumentType === 'integer') {
+            $argumentValue = intval($argument);
+
+            if (strval($argumentValue) !== $argument) {
+                return self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE;
+            }
+        }
+
+        return self::ARGUMENT_OK;
     }
 
     /**
@@ -209,4 +232,24 @@ class Parser
         'assert-equals'      => [AssertEquals::class, 'string', 'content'],
         'assert-status-code' => [AssertStatusCode::class, 'integer', 'status code'],
     ];
+
+    /**
+     * Argument is ok.
+     */
+    private const ARGUMENT_OK = 0;
+
+    /**
+     * Extra argument error.
+     */
+    private const ARGUMENT_ERROR_EXTRA_ARGUMENT = 1;
+
+    /**
+     * Missing argument error.
+     */
+    private const ARGUMENT_ERROR_MISSING_ARGUMENT = 2;
+
+    /**
+     * Invalid argument type error.
+     */
+    private const ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE = 3;
 }
