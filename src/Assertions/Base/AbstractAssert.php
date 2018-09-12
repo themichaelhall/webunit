@@ -24,6 +24,22 @@ use MichaelHall\Webunit\Modifiers;
 abstract class AbstractAssert implements AssertInterface
 {
     /**
+     * Creates an abstract assert.
+     *
+     * @since 1.0.0
+     *
+     * @param LocationInterface $location  The location.
+     * @param Modifiers         $modifiers The modifiers.
+     *
+     * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
+     */
+    public function __construct(LocationInterface $location, Modifiers $modifiers)
+    {
+        $this->setModifiers($modifiers);
+        $this->location = $location;
+    }
+
+    /**
      * Returns the location.
      *
      * @since 1.0.0
@@ -74,22 +90,6 @@ abstract class AbstractAssert implements AssertInterface
         }
 
         return new AssertResult($this);
-    }
-
-    /**
-     * Creates an abstract assert.
-     *
-     * @since 1.0.0
-     *
-     * @param LocationInterface $location  The location.
-     * @param Modifiers         $modifiers The modifiers.
-     *
-     * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
-     */
-    protected function __construct(LocationInterface $location, Modifiers $modifiers)
-    {
-        $this->setModifiers($modifiers);
-        $this->location = $location;
     }
 
     /**

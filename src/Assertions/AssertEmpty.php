@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
-use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -20,19 +19,6 @@ use MichaelHall\Webunit\Modifiers;
  */
 class AssertEmpty extends AbstractAssert
 {
-    /**
-     * AssertEmpty constructor.
-     *
-     * @since 1.0.0
-     *
-     * @param LocationInterface $location  The location.
-     * @param Modifiers         $modifiers The modifiers.
-     */
-    public function __construct(LocationInterface $location, Modifiers $modifiers)
-    {
-        parent::__construct($location, $modifiers);
-    }
-
     /**
      * Called when a test is performed on a page result.
      *

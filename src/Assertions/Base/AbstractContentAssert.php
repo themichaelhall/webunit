@@ -32,7 +32,7 @@ abstract class AbstractContentAssert extends AbstractAssert
      * @throws InvalidRegexpException      If modifiers contains regexp and content is not a valid regexp.
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      */
-    protected function __construct(LocationInterface $location, string $content, Modifiers $modifiers)
+    public function __construct(LocationInterface $location, string $content, Modifiers $modifiers)
     {
         parent::__construct($location, $modifiers);
 
