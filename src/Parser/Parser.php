@@ -18,8 +18,10 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
+use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
+use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestCase;
@@ -47,75 +49,100 @@ class Parser
         $testSuite = new TestSuite();
         $currentTestCase = null;
         $parseErrors = [];
-
         $lineNumber = 0;
 
         foreach ($content as $line) {
             $line = trim($line);
             $lineNumber++;
-            $fileLocation = new FileLocation($filePath, $lineNumber);
+            $location = new FileLocation($filePath, $lineNumber);
 
-            if ($line === '' || $line[0] === '#') {
-                continue;
-            }
-
-            $lineParts = preg_split('/\s+/', $line, 2);
-            $command = strtolower(trim($lineParts[0]));
-            $parameter = count($lineParts) > 1 ? trim($lineParts[1]) : null;
-
-            $testCase = $this->tryParseTestCase($fileLocation, $command, $parameter, $error);
-            if ($testCase !== null) {
-                $testSuite->addTestCase($testCase);
-                $currentTestCase = $testCase;
-
-                continue;
-            }
-
-            if ($error !== null) {
-                $parseErrors[] = new ParseError($fileLocation, $error);
-
-                continue;
-            }
-
-            $assert = $this->tryParseAssert($fileLocation, $command, $parameter, $error);
-            if ($assert !== null) {
-                $currentTestCase->addAssert($assert); // fixme: Handle no test case
-
-                continue;
-            }
-
-            if ($error !== null) {
-                $parseErrors[] = new ParseError($fileLocation, $error);
-
-                continue;
-            }
-
-            $parseErrors[] = new ParseError($fileLocation, 'Syntax error: Invalid command "' . $command . '".');
+            self::parseLine($location, $line, $testSuite, $currentTestCase, $parseErrors);
         }
 
         return new ParseResult($testSuite, $parseErrors);
     }
 
     /**
-     * Try parse a test case.
+     * Parses a line.
      *
-     * @param LocationInterface $location  The location.
-     * @param string            $command   The command.
-     * @param null|string       $parameter The parameter or null if no parameter.
-     * @param null|string       $error     The error or null if no error.
-     *
-     * @return TestCaseInterface|null The test case or null if the command was not a start of a test case.
+     * @param LocationInterface      $location        The location.
+     * @param string                 $line            The line.
+     * @param TestSuiteInterface     $testSuite       The test suite.
+     * @param TestCaseInterface|null $currentTestCase The current test case that is parsing or null if no test case is parsing.
+     * @param ParseErrorInterface[]  $parseErrors     The current parse errors.
      */
-    private function tryParseTestCase(LocationInterface $location, string $command, ?string $parameter, ?string &$error = null): ?TestCaseInterface
+    private static function parseLine(LocationInterface $location, string $line, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase, array &$parseErrors): void
     {
-        $error = null;
-
-        if ($command !== 'get') {
-            return null;
+        if (self::isEmptyOrComment($line)) {
+            return;
         }
 
+        $lineParts = preg_split('/\s+/', $line, 2);
+        $command = strtolower(trim($lineParts[0]));
+        $parameter = count($lineParts) > 1 ? trim($lineParts[1]) : null;
+
+        if (self::isTestCase($command)) {
+            $testCase = self::tryParseTestCase($location, $command, $parameter, $parseErrors);
+
+            if ($testCase !== null) {
+                $testSuite->addTestCase($testCase);
+                $currentTestCase = $testCase;
+            }
+
+            return;
+        }
+
+        if (self::isAssert($command)) {
+            $assert = self::tryParseAssert($location, $command, $parameter, $parseErrors);
+
+            if ($assert !== null) {
+                $currentTestCase->addAssert($assert); // fixme: Handle no test case
+            }
+
+            return;
+        }
+
+        $parseErrors[] = new ParseError($location, 'Syntax error: Invalid command "' . $command . '".');
+    }
+
+    /**
+     * Checks if a line is empty or a comment.
+     *
+     * @param string $line The line.
+     *
+     * @return bool True if line is empty or a comment.
+     */
+    private static function isEmptyOrComment(string $line): bool
+    {
+        return $line === '' || $line[0] === '#';
+    }
+
+    /**
+     * Checks if a command is a test case.
+     *
+     * @param string $command The command.
+     *
+     * @return bool True if command is an test case, false otherwise.
+     */
+    private static function isTestCase(string $command): bool
+    {
+        return $command === 'get';
+    }
+
+    /**
+     * Try parse a test case.
+     *
+     * @param LocationInterface     $location    The location.
+     * @param string                $command     The command, assuming a valid test case.
+     * @param null|string           $parameter   The parameter or null if no parameter.
+     * @param ParseErrorInterface[] $parseErrors The parse errors.
+     *
+     * @return TestCaseInterface|null The test case or null if there were errors.
+     */
+    private static function tryParseTestCase(LocationInterface $location, string $command, ?string $parameter, array &$parseErrors): ?TestCaseInterface
+    {
         if ($parameter === null) {
-            $error = 'Missing argument: Missing Url argument for "' . $command . '".';
+            $parseErrors[] = new ParseError($location, 'Missing argument: Missing Url argument for "' . $command . '".');
 
             return null;
         }
@@ -125,7 +152,7 @@ class Parser
         try {
             $url = Url::parse($parameter);
         } catch (UrlInvalidArgumentException $exception) {
-            $error = 'Invalid argument: Invalid Url argument "' . $parameter . '" for "' . $command . '": ' . $exception->getMessage();
+            $parseErrors[] = new ParseError($location, 'Invalid argument: Invalid Url argument "' . $parameter . '" for "' . $command . '": ' . $exception->getMessage());
 
             return null;
         }
@@ -134,23 +161,29 @@ class Parser
     }
 
     /**
+     * Checks if a command is an assert.
+     *
+     * @param string $command The command.
+     *
+     * @return bool True if command is an assert, false otherwise.
+     */
+    private static function isAssert(string $command): bool
+    {
+        return isset(self::ASSERTS_INFO[$command]);
+    }
+
+    /**
      * Try parse an assert.
      *
-     * @param LocationInterface $location The location.
-     * @param string            $command  The command.
-     * @param null|string       $argument The argument or null if no argument.
-     * @param null|string       $error    The error or null if no error.
+     * @param LocationInterface     $location    The location.
+     * @param string                $command     The command, assuming a valid assert.
+     * @param null|string           $argument    The argument or null if no argument.
+     * @param ParseErrorInterface[] $parseErrors The parse errors.
      *
-     * @return AssertInterface|null
+     * @return AssertInterface|null The assert or null if there were errors.
      */
-    private function tryParseAssert(LocationInterface $location, string $command, ?string $argument, ?string &$error = null): ?AssertInterface
+    private static function tryParseAssert(LocationInterface $location, string $command, ?string $argument, array &$parseErrors): ?AssertInterface
     {
-        $error = null;
-
-        if (!isset(self::ASSERTS_INFO[$command])) {
-            return null;
-        }
-
         $assertInfo = self::ASSERTS_INFO[$command];
         $className = $assertInfo[0];
         $argumentType = $assertInfo[1];
@@ -160,13 +193,13 @@ class Parser
         if ($argumentResult !== self::ARGUMENT_OK) {
             switch ($argumentResult) {
                 case self::ARGUMENT_ERROR_EXTRA_ARGUMENT:
-                    $error = 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".';
+                    $parseErrors[] = new ParseError($location, 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".');
                     break;
                 case self::ARGUMENT_ERROR_MISSING_ARGUMENT:
-                    $error = 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".';
+                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".');
                     break;
                 case self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE:
-                    $error = 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".';
+                    $parseErrors[] = new ParseError($location, 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".');
                     break;
             }
 
@@ -181,7 +214,7 @@ class Parser
                 new $className($location, $modifiers) :
                 new $className($location, $argumentValue, $modifiers);
         } catch (InvalidParameterException $e) {
-            $error = 'Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".';
+            $parseErrors[] = new ParseError($location, 'Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".');
         }
 
         return null;
