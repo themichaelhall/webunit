@@ -129,6 +129,8 @@ class ParserTest extends TestCase
         $parser = new Parser();
         $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
             [
+                'assert-contains foo',
+                '',
                 'get https://example.com/',
                 'assert-contains',
                 'assert-contains foo',
@@ -161,13 +163,14 @@ class ParserTest extends TestCase
         self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[0]);
         self::assertInstanceOf(AssertStatusCode::class, $testCases[1]->getAsserts()[1]);
 
-        self::assertSame(6, count($parseErrors));
-        self::assertSame('foo.webunit:2: Missing argument: Missing content argument for assert "assert-contains".', $parseErrors[0]->__toString());
-        self::assertSame('foo.webunit:5: Extra argument: "bar". No arguments are allowed for assert "assert-empty".', $parseErrors[1]->__toString());
-        self::assertSame('foo.webunit:8: Missing argument: Missing content argument for assert "assert-equals".', $parseErrors[2]->__toString());
-        self::assertSame('foo.webunit:10: Missing argument: Missing status code argument for assert "assert-status-code".', $parseErrors[3]->__toString());
-        self::assertSame('foo.webunit:11: Invalid argument: Status code "foo" must be of type integer for assert "assert-status-code".', $parseErrors[4]->__toString());
-        self::assertSame('foo.webunit:12: Invalid argument: Status code 600 must be in range 100-599 for assert "assert-status-code".', $parseErrors[5]->__toString());
+        self::assertSame(7, count($parseErrors));
+        self::assertSame('foo.webunit:1: Undefined test case: Test case is not defined for assert "assert-contains".', $parseErrors[0]->__toString());
+        self::assertSame('foo.webunit:4: Missing argument: Missing content argument for assert "assert-contains".', $parseErrors[1]->__toString());
+        self::assertSame('foo.webunit:7: Extra argument: "bar". No arguments are allowed for assert "assert-empty".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:10: Missing argument: Missing content argument for assert "assert-equals".', $parseErrors[3]->__toString());
+        self::assertSame('foo.webunit:12: Missing argument: Missing status code argument for assert "assert-status-code".', $parseErrors[4]->__toString());
+        self::assertSame('foo.webunit:13: Invalid argument: Status code "foo" must be of type integer for assert "assert-status-code".', $parseErrors[5]->__toString());
+        self::assertSame('foo.webunit:14: Invalid argument: Status code 600 must be in range 100-599 for assert "assert-status-code".', $parseErrors[6]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }

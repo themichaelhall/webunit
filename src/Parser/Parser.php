@@ -96,7 +96,11 @@ class Parser
             $assert = self::tryParseAssert($location, $command, $parameter, $parseErrors);
 
             if ($assert !== null) {
-                $currentTestCase->addAssert($assert); // fixme: Handle no test case
+                if ($currentTestCase !== null) {
+                    $currentTestCase->addAssert($assert);
+                } else {
+                    $parseErrors[] = new ParseError($location, 'Undefined test case: Test case is not defined for assert "' . $command . '".');
+                }
             }
 
             return;
