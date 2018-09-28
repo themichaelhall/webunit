@@ -18,7 +18,7 @@ install:
 - echo extension=php_curl.dll >> php.ini
 - cd C:\project
 - appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar
-- appveyor-retry php composer.phar install --no-interaction --no-progress
+- appveyor-retry php composer.phar install --no-interaction --no-progress --no-suggest
 
 test_script:
 - cd C:\project

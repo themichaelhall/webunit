@@ -181,7 +181,7 @@ class ConsoleApplication
             $failedAssertResult = $failedTestCaseResult->getFailedAssertResult();
             $failedAssert = $failedAssertResult->getAssert();
 
-            echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . ".\n";
+            echo $failedAssert->getLocation() . ': Test failed: ' . $failedTestCase->getUrl() . ': ' . $failedAssertResult->getError() . '.' . PHP_EOL;
         }
 
         $count = $testResults->getFailedTestsCount();
