@@ -15,6 +15,7 @@ install:
 - echo extension_dir=ext >> php.ini
 - echo extension=php_openssl.dll >> php.ini
 - echo extension=php_mbstring.dll >> php.ini
+- echo extension=php_curl.dll >> php.ini
 - cd C:\project
 - appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar
 - appveyor-retry php composer.phar install --no-interaction --no-progress
