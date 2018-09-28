@@ -1,6 +1,7 @@
 # Webunit
 
 [![Build Status](https://travis-ci.org/themichaelhall/webunit.svg?branch=master)](https://travis-ci.org/themichaelhall/webunit)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/michaelhall/webunit?branch=master&svg=true)](https://ci.appveyor.com/project/themichaelhall/webunit)
 [![codecov.io](https://codecov.io/gh/themichaelhall/webunit/coverage.svg?branch=master)](https://codecov.io/gh/themichaelhall/webunit?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/003b86f21b519df7a8a2/maintainability)](https://codeclimate.com/github/themichaelhall/webunit/maintainability)
 [![StyleCI](https://styleci.io/repos/119093998/shield?style=flat)](https://styleci.io/repos/119093998)
