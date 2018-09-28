@@ -1,0 +1,24 @@
+build: off
+platform:
+- x64
+- x86
+clone_folder: C:\project
+
+init:
+- SET PATH=C:\php;%PATH%
+
+install:
+- appveyor-retry cinst -y php --params '""/InstallDir:c:\php""'
+- cd C:\php
+- copy php.ini-production php.ini
+- echo date.timezone="UTC" >> php.ini
+- echo extension_dir=ext >> php.ini
+- echo extension=php_openssl.dll >> php.ini
+- echo extension=php_mbstring.dll >> php.ini
+- cd C:\project
+- appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar
+- appveyor-retry php composer.phar install --no-interaction --no-progress
+
+test_script:
+- cd C:\project
+- vendor/bin/phpunit
