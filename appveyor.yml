@@ -1,25 +1,34 @@
 build: off
+
+cache:
+- C:\php -> appveyor.yml
+
+clone_folder: C:\project
+
 platform:
 - x64
 - x86
-clone_folder: C:\project
 
 init:
-- SET PATH=C:\php;%PATH%
+- SET PHP_DIR=C:\php
+- SET PROJECT_DIR=C:\project
+- SET PATH=%PHP_DIR%;%PATH%
+- SET PHP_INSTALLED=0
 
 install:
-- appveyor-retry cinst -y php --params '""/InstallDir:c:\php""'
-- cd C:\php
-- copy php.ini-production php.ini
-- echo date.timezone="UTC" >> php.ini
-- echo extension_dir=ext >> php.ini
-- echo extension=php_openssl.dll >> php.ini
-- echo extension=php_mbstring.dll >> php.ini
-- echo extension=php_curl.dll >> php.ini
-- cd C:\project
-- appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar
-- appveyor-retry php composer.phar install --no-interaction --no-progress --no-suggest
+- IF EXIST %PHP_DIR% (SET PHP_INSTALLED=1)
+- IF %PHP_INSTALLED%==0 appveyor-retry cinst -y php --params '""/InstallDir:%PHP_DIR%""'
+- IF %PHP_INSTALLED%==0 cd %PHP_DIR%
+- IF %PHP_INSTALLED%==0 copy php.ini-production php.ini /Y
+- IF %PHP_INSTALLED%==0 echo date.timezone="UTC" >> php.ini
+- IF %PHP_INSTALLED%==0 echo extension_dir=ext >> php.ini
+- IF %PHP_INSTALLED%==0 echo extension=php_curl.dll >> php.ini
+- IF %PHP_INSTALLED%==0 echo extension=php_mbstring.dll >> php.ini
+- IF %PHP_INSTALLED%==0 echo extension=php_openssl.dll >> php.ini
+- IF %PHP_INSTALLED%==0 appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar
+- cd %PROJECT_DIR%
+- appveyor-retry php %PHP_DIR%\composer.phar install --no-interaction --no-progress --no-suggest
 
 test_script:
-- cd C:\project
+- cd %PROJECT_DIR%
 - vendor/bin/phpunit
