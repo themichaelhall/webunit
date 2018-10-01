@@ -70,6 +70,20 @@ class Modifiers
     }
 
     /**
+     * Combines this with other modifiers.
+     *
+     * @since 1.0.0
+     *
+     * @param Modifiers $other The other modifiers.
+     *
+     * @return Modifiers The combined modifiers.
+     */
+    public function combinedWith(self $other): self
+    {
+        return new self($this->modifiers | $other->modifiers);
+    }
+
+    /**
      * Returns true if this is a NOT modifier, false otherwise.
      *
      * @since 1.0.0

@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
+use MichaelHall\Webunit\Modifiers;
+
 /**
  * Interface for assertions.
  *
@@ -23,6 +25,15 @@ interface AssertInterface
      * @return LocationInterface The location.
      */
     public function getLocation(): LocationInterface;
+
+    /**
+     * Returns the modifiers.
+     *
+     * @since 1.0.0
+     *
+     * @return Modifiers The modifiers.
+     */
+    public function getModifiers(): Modifiers;
 
     /**
      * Test assertion against a page result.

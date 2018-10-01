@@ -92,8 +92,10 @@ class Parser
             return;
         }
 
+        $modifiers = self::stripModifiers($command);
+
         if (self::isAssert($command)) {
-            $assert = self::tryParseAssert($location, $command, $parameter, $parseErrors);
+            $assert = self::tryParseAssert($location, $command, $modifiers, $parameter, $parseErrors);
 
             if ($assert !== null) {
                 if ($currentTestCase !== null) {
@@ -181,12 +183,13 @@ class Parser
      *
      * @param LocationInterface     $location    The location.
      * @param string                $command     The command, assuming a valid assert.
+     * @param Modifiers             $modifiers   The modifiers.
      * @param null|string           $argument    The argument or null if no argument.
      * @param ParseErrorInterface[] $parseErrors The parse errors.
      *
      * @return AssertInterface|null The assert or null if there were errors.
      */
-    private static function tryParseAssert(LocationInterface $location, string $command, ?string $argument, array &$parseErrors): ?AssertInterface
+    private static function tryParseAssert(LocationInterface $location, string $command, Modifiers $modifiers, ?string $argument, array &$parseErrors): ?AssertInterface
     {
         $assertInfo = self::ASSERTS_INFO[$command];
         $className = $assertInfo[0];
@@ -210,9 +213,7 @@ class Parser
             return null;
         }
 
-        // fixme: Check modifiers
-        $modifiers = new Modifiers();
-
+        // fixme: Handle invalid modifiers for assert.
         try {
             return $argumentValue === null ?
                 new $className($location, $modifiers) :
@@ -257,6 +258,38 @@ class Parser
     }
 
     /**
+     * Strips the modifiers from the command and returns them.
+     *
+     * @param string $command The command. May be altered.
+     *
+     * @return Modifiers The modifiers.
+     */
+    private static function stripModifiers(string &$command): Modifiers
+    {
+        $modifiers = new Modifiers();
+        $strippedCommand = $command;
+
+        // fixme: Test just modifiers without assert, e.g. "!^".
+        while (true) {
+            $ch = $strippedCommand[strlen($strippedCommand) - 1];
+
+            if (!isset(self::MODIFIERS_INFO[$ch])) {
+                break;
+            }
+
+            $parsedModifier = new Modifiers(self::MODIFIERS_INFO[$ch]);
+            // fixme: Check duplicated modifiers.
+            $modifiers = $modifiers->combinedWith($parsedModifier);
+
+            $strippedCommand = substr($strippedCommand, 0, -1);
+        }
+
+        $command = $strippedCommand;
+
+        return $modifiers;
+    }
+
+    /**
      * Info about the asserts.
      *
      * The format is as follows:
@@ -268,6 +301,19 @@ class Parser
         'assert-empty'       => [AssertEmpty::class, null, null],
         'assert-equals'      => [AssertEquals::class, 'string', 'content'],
         'assert-status-code' => [AssertStatusCode::class, 'integer', 'status code'],
+    ];
+
+    /**
+     * Info about the modifiers.
+     *
+     * The format is as follows:
+     *
+     * modifier-char => modifier-value
+     */
+    private const MODIFIERS_INFO = [
+        '!' => Modifiers::NOT,
+        '^' => Modifiers::CASE_INSENSITIVE,
+        '~' => Modifiers::REGEXP,
     ];
 
     /**

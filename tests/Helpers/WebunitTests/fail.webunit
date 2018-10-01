@@ -1,3 +1,6 @@
-GET        https://example.com/
+GET                https://example.com/
 
-GET        https://example.com/baz
+GET                https://example.com/foo
+assert-contains!^  foo
+
+GET                https://example.com/baz

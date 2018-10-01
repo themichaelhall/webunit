@@ -10,6 +10,7 @@ use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Parser\Parser;
 use PHPUnit\Framework\TestCase;
 
@@ -173,5 +174,40 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:14: Invalid argument: Status code 600 must be in range 100-599 for assert "assert-status-code".', $parseErrors[6]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
+    }
+
+    /**
+     * Test parse asserts with modifiers.
+     */
+    public function testParseAssertsWithModifiers()
+    {
+        $parser = new Parser();
+        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+            [
+                'get https://example.com/',
+                'assert-empty',
+                'assert-empty!',
+                'assert-contains~^ Foo',
+            ]
+        );
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(1, count($testCases));
+
+        self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(4, count($testCases[0]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[1]);
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[1]->getModifiers()));
+        self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
+        self::assertTrue((new Modifiers(Modifiers::NOT))->equals($testCases[0]->getAsserts()[2]->getModifiers()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[3]);
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
+
+        self::assertSame(0, count($parseErrors));
+
+        self::assertTrue($parseResult->isSuccess());
     }
 }

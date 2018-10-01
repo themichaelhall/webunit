@@ -84,4 +84,24 @@ class ModifiersTest extends TestCase
         self::assertFalse((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->equals(new Modifiers(Modifiers::NOT)));
         self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->equals(new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE)));
     }
+
+    /**
+     * Test combinedWith method.
+     */
+    public function testCombinedWith()
+    {
+        $modifiers1 = new Modifiers();
+        $modifiers2 = new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP);
+        $modifiers3 = new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT);
+
+        self::assertTrue((new Modifiers())->equals($modifiers1->combinedWith($modifiers1)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->equals($modifiers1->combinedWith($modifiers2)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->equals($modifiers1->combinedWith($modifiers3)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->equals($modifiers2->combinedWith($modifiers1)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->equals($modifiers2->combinedWith($modifiers2)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT | Modifiers::REGEXP))->equals($modifiers2->combinedWith($modifiers3)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->equals($modifiers3->combinedWith($modifiers1)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT | Modifiers::REGEXP))->equals($modifiers3->combinedWith($modifiers2)));
+        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->equals($modifiers3->combinedWith($modifiers3)));
+    }
 }
