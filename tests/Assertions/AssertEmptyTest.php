@@ -7,6 +7,7 @@ namespace MichaelHall\Webunit\Tests\Assertions;
 use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
@@ -47,21 +48,21 @@ class AssertEmptyTest extends TestCase
     public function assertionDataProvider()
     {
         return [
-            // Modifiers::NONE
-            [Modifiers::NONE, '', true, ''],
-            [Modifiers::NONE, 'Foo', false, 'Content "Foo" is not empty'],
-            [Modifiers::NONE, 'foo', false, 'Content "foo" is not empty'],
-            [Modifiers::NONE, 'FooBar', false, 'Content "FooBar" is not empty'],
-            [Modifiers::NONE, 'fooBar', false, 'Content "fooBar" is not empty'],
-            [Modifiers::NONE, 'Bar', false, 'Content "Bar" is not empty'],
+            // ModifiersInterface::NONE
+            [ModifiersInterface::NONE, '', true, ''],
+            [ModifiersInterface::NONE, 'Foo', false, 'Content "Foo" is not empty'],
+            [ModifiersInterface::NONE, 'foo', false, 'Content "foo" is not empty'],
+            [ModifiersInterface::NONE, 'FooBar', false, 'Content "FooBar" is not empty'],
+            [ModifiersInterface::NONE, 'fooBar', false, 'Content "fooBar" is not empty'],
+            [ModifiersInterface::NONE, 'Bar', false, 'Content "Bar" is not empty'],
 
-            // Modifiers::NOT
-            [Modifiers::NOT, '', false, 'Content "" is empty'],
-            [Modifiers::NOT, 'Foo', true, ''],
-            [Modifiers::NOT, 'foo', true, ''],
-            [Modifiers::NOT, 'FooBar', true, ''],
-            [Modifiers::NOT, 'fooBar', true, ''],
-            [Modifiers::NOT, 'Bar', true, ''],
+            // ModifiersInterface::NOT
+            [ModifiersInterface::NOT, '', false, 'Content "" is empty'],
+            [ModifiersInterface::NOT, 'Foo', true, ''],
+            [ModifiersInterface::NOT, 'foo', true, ''],
+            [ModifiersInterface::NOT, 'FooBar', true, ''],
+            [ModifiersInterface::NOT, 'fooBar', true, ''],
+            [ModifiersInterface::NOT, 'Bar', true, ''],
         ];
     }
 
@@ -93,12 +94,12 @@ class AssertEmptyTest extends TestCase
     public function assertionWithNotAllowedModifierDataProvider()
     {
         return [
-            [Modifiers::CASE_INSENSITIVE, Modifiers::CASE_INSENSITIVE],
-            [Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::CASE_INSENSITIVE],
-            [Modifiers::REGEXP, Modifiers::REGEXP],
-            [Modifiers::REGEXP | Modifiers::NOT, Modifiers::REGEXP],
-            [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
-            [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
+            [ModifiersInterface::CASE_INSENSITIVE, ModifiersInterface::CASE_INSENSITIVE],
+            [ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, ModifiersInterface::CASE_INSENSITIVE],
+            [ModifiersInterface::REGEXP, ModifiersInterface::REGEXP],
+            [ModifiersInterface::REGEXP | ModifiersInterface::NOT, ModifiersInterface::REGEXP],
+            [ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE],
+            [ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE],
         ];
     }
 }

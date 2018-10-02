@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Exceptions;
 
-use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 
 /**
  * Exception thrown when a modifier is not allowed.
@@ -22,9 +22,9 @@ class NotAllowedModifierException extends \LogicException
      *
      * @since 1.0.0
      *
-     * @param Modifiers $modifiers The modifiers.
+     * @param ModifiersInterface $modifiers The modifiers.
      */
-    public function __construct(Modifiers $modifiers)
+    public function __construct(ModifiersInterface $modifiers)
     {
         parent::__construct('Modifiers are not allowed.');
 
@@ -36,15 +36,15 @@ class NotAllowedModifierException extends \LogicException
      *
      * @since 1.0.0
      *
-     * @return Modifiers The modifiers.
+     * @return ModifiersInterface The modifiers.
      */
-    public function getModifiers(): Modifiers
+    public function getModifiers(): ModifiersInterface
     {
         return $this->modifiers;
     }
 
     /**
-     * @var Modifiers My modifiers.
+     * @var ModifiersInterface My modifiers.
      */
     private $modifiers;
 }

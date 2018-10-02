@@ -6,6 +6,7 @@ namespace MichaelHall\Webunit\Tests\Assertions;
 
 use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
@@ -47,81 +48,81 @@ class AssertEqualsTest extends TestCase
     public function assertionDataProvider()
     {
         return [
-            // Modifiers::NONE
-            ['Foo', Modifiers::NONE, '', false, 'Content "" does not equal "Foo"'],
-            ['Foo', Modifiers::NONE, 'Foo', true, ''],
-            ['Foo', Modifiers::NONE, 'foo', false, 'Content "foo" does not equal "Foo"'],
-            ['Foo', Modifiers::NONE, 'FooBar', false, 'Content "FooBar" does not equal "Foo"'],
-            ['Foo', Modifiers::NONE, 'fooBar', false, 'Content "fooBar" does not equal "Foo"'],
-            ['Foo', Modifiers::NONE, 'Bar', false, 'Content "Bar" does not equal "Foo"'],
+            // ModifiersInterface::NONE
+            ['Foo', ModifiersInterface::NONE, '', false, 'Content "" does not equal "Foo"'],
+            ['Foo', ModifiersInterface::NONE, 'Foo', true, ''],
+            ['Foo', ModifiersInterface::NONE, 'foo', false, 'Content "foo" does not equal "Foo"'],
+            ['Foo', ModifiersInterface::NONE, 'FooBar', false, 'Content "FooBar" does not equal "Foo"'],
+            ['Foo', ModifiersInterface::NONE, 'fooBar', false, 'Content "fooBar" does not equal "Foo"'],
+            ['Foo', ModifiersInterface::NONE, 'Bar', false, 'Content "Bar" does not equal "Foo"'],
 
-            // Modifiers::NOT
-            ['Foo', Modifiers::NOT, '', true, ''],
-            ['Foo', Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "Foo"'],
-            ['Foo', Modifiers::NOT, 'foo', true, ''],
-            ['Foo', Modifiers::NOT, 'FooBar', true, ''],
-            ['Foo', Modifiers::NOT, 'fooBar', true, ''],
-            ['Foo', Modifiers::NOT, 'Bar', true, ''],
+            // ModifiersInterface::NOT
+            ['Foo', ModifiersInterface::NOT, '', true, ''],
+            ['Foo', ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "Foo"'],
+            ['Foo', ModifiersInterface::NOT, 'foo', true, ''],
+            ['Foo', ModifiersInterface::NOT, 'FooBar', true, ''],
+            ['Foo', ModifiersInterface::NOT, 'fooBar', true, ''],
+            ['Foo', ModifiersInterface::NOT, 'Bar', true, ''],
 
-            // Modifiers::CASE_INSENSITIVE
-            ['Foo', Modifiers::CASE_INSENSITIVE, '', false, 'Content "" does not equal "Foo" (case insensitive)'],
-            ['Foo', Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
-            ['Foo', Modifiers::CASE_INSENSITIVE, 'foo', true, ''],
-            ['Foo', Modifiers::CASE_INSENSITIVE, 'FooBar', false, 'Content "FooBar" does not equal "Foo" (case insensitive)'],
-            ['Foo', Modifiers::CASE_INSENSITIVE, 'fooBar', false, 'Content "fooBar" does not equal "Foo" (case insensitive)'],
-            ['Foo', Modifiers::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" does not equal "Foo" (case insensitive)'],
+            // ModifiersInterface::CASE_INSENSITIVE
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE, '', false, 'Content "" does not equal "Foo" (case insensitive)'],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE, 'Foo', true, ''],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE, 'foo', true, ''],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE, 'FooBar', false, 'Content "FooBar" does not equal "Foo" (case insensitive)'],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE, 'fooBar', false, 'Content "fooBar" does not equal "Foo" (case insensitive)'],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" does not equal "Foo" (case insensitive)'],
 
-            // Modifiers::CASE_INSENSITIVE | Modifiers::NOT
-            ['Foo', Modifiers::CASE_INSENSITIVE | Modifiers::NOT, '', true, ''],
-            ['Foo', Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "Foo" (case insensitive)'],
-            ['Foo', Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'foo', false, 'Content "foo" equals "Foo" (case insensitive)'],
-            ['Foo', Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'FooBar', true, ''],
-            ['Foo', Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'fooBar', true, ''],
-            ['Foo', Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Bar', true, ''],
+            // ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, '', true, ''],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "Foo" (case insensitive)'],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'foo', false, 'Content "foo" equals "Foo" (case insensitive)'],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'FooBar', true, ''],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'fooBar', true, ''],
+            ['Foo', ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Bar', true, ''],
 
-            // Modifiers::REGEXP
-            ['Foo', Modifiers::REGEXP, '', false, 'Content "" does not equal "Foo" (regexp)'],
-            ['Foo', Modifiers::REGEXP, 'Foo', true, ''],
-            ['Foo', Modifiers::REGEXP, 'Foo Bar', false, 'Content "Foo Bar" does not equal "Foo" (regexp)'],
-            ['Foo', Modifiers::REGEXP, 'BazFoo', false, 'Content "BazFoo" does not equal "Foo" (regexp)'],
-            ['F[o]+', Modifiers::REGEXP, 'Foo', true, ''],
-            ['F[o]+', Modifiers::REGEXP, 'Foo Bar', false, 'Content "Foo Bar" does not equal "F[o]+" (regexp)'],
-            ['F[o]+', Modifiers::REGEXP, 'BazFoo', false, 'Content "BazFoo" does not equal "F[o]+" (regexp)'],
-            ['F[O]+', Modifiers::REGEXP, 'Foo', false, 'Content "Foo" does not equal "F[O]+" (regexp)'],
-            ['F[O]+', Modifiers::REGEXP, 'Bar', false, 'Content "Bar" does not equal "F[O]+" (regexp)'],
+            // ModifiersInterface::REGEXP
+            ['Foo', ModifiersInterface::REGEXP, '', false, 'Content "" does not equal "Foo" (regexp)'],
+            ['Foo', ModifiersInterface::REGEXP, 'Foo', true, ''],
+            ['Foo', ModifiersInterface::REGEXP, 'Foo Bar', false, 'Content "Foo Bar" does not equal "Foo" (regexp)'],
+            ['Foo', ModifiersInterface::REGEXP, 'BazFoo', false, 'Content "BazFoo" does not equal "Foo" (regexp)'],
+            ['F[o]+', ModifiersInterface::REGEXP, 'Foo', true, ''],
+            ['F[o]+', ModifiersInterface::REGEXP, 'Foo Bar', false, 'Content "Foo Bar" does not equal "F[o]+" (regexp)'],
+            ['F[o]+', ModifiersInterface::REGEXP, 'BazFoo', false, 'Content "BazFoo" does not equal "F[o]+" (regexp)'],
+            ['F[O]+', ModifiersInterface::REGEXP, 'Foo', false, 'Content "Foo" does not equal "F[O]+" (regexp)'],
+            ['F[O]+', ModifiersInterface::REGEXP, 'Bar', false, 'Content "Bar" does not equal "F[O]+" (regexp)'],
 
-            // Modifiers::REGEXP | Modifiers::NOT
-            ['Foo', Modifiers::REGEXP | Modifiers::NOT, '', true, ''],
-            ['Foo', Modifiers::REGEXP | Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "Foo" (regexp)'],
-            ['Foo', Modifiers::REGEXP | Modifiers::NOT, 'Foo Bar', true, ''],
-            ['Foo', Modifiers::REGEXP | Modifiers::NOT, 'BazFoo', true, ''],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "F[o]+" (regexp)'],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::NOT, 'Foo Bar', true, ''],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::NOT, 'BazFoo', true, ''],
-            ['F[O]+', Modifiers::REGEXP | Modifiers::NOT, 'Foo', true, ''],
-            ['F[O]+', Modifiers::REGEXP | Modifiers::NOT, 'Bar', true, ''],
+            // ModifiersInterface::REGEXP | ModifiersInterface::NOT
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::NOT, '', true, ''],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "Foo" (regexp)'],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'Foo Bar', true, ''],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'BazFoo', true, ''],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "F[o]+" (regexp)'],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'Foo Bar', true, ''],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'BazFoo', true, ''],
+            ['F[O]+', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'Foo', true, ''],
+            ['F[O]+', ModifiersInterface::REGEXP | ModifiersInterface::NOT, 'Bar', true, ''],
 
-            // Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, '', false, 'Content "" does not equal "Foo" (case insensitive, regexp)'],
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'Foo Bar', false, 'Content "Foo Bar" does not equal "Foo" (case insensitive, regexp)'],
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'BazFoo', false, 'Content "BazFoo" does not equal "Foo" (case insensitive, regexp)'],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'Foo Bar', false, 'Content "Foo Bar" does not equal "F[o]+" (case insensitive, regexp)'],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'BazFoo', false, 'Content "BazFoo" does not equal "F[o]+" (case insensitive, regexp)'],
-            ['F[O]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'Foo', true, ''],
-            ['F[O]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" does not equal "F[O]+" (case insensitive, regexp)'],
+            // ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, '', false, 'Content "" does not equal "Foo" (case insensitive, regexp)'],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'Foo', true, ''],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'Foo Bar', false, 'Content "Foo Bar" does not equal "Foo" (case insensitive, regexp)'],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'BazFoo', false, 'Content "BazFoo" does not equal "Foo" (case insensitive, regexp)'],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'Foo', true, ''],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'Foo Bar', false, 'Content "Foo Bar" does not equal "F[o]+" (case insensitive, regexp)'],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'BazFoo', false, 'Content "BazFoo" does not equal "F[o]+" (case insensitive, regexp)'],
+            ['F[O]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'Foo', true, ''],
+            ['F[O]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, 'Bar', false, 'Content "Bar" does not equal "F[O]+" (case insensitive, regexp)'],
 
-            // Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, '', true, ''],
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "Foo" (case insensitive, regexp)'],
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Foo Bar', true, ''],
-            ['Foo', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'BazFoo', true, ''],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "F[o]+" (case insensitive, regexp)'],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Foo Bar', true, ''],
-            ['F[o]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'BazFoo', true, ''],
-            ['F[O]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Foo', false, 'Content "Foo" equals "F[O]+" (case insensitive, regexp)'],
-            ['F[O]+', Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, 'Bar', true, ''],
+            // ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, '', true, ''],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "Foo" (case insensitive, regexp)'],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Foo Bar', true, ''],
+            ['Foo', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'BazFoo', true, ''],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "F[o]+" (case insensitive, regexp)'],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Foo Bar', true, ''],
+            ['F[o]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'BazFoo', true, ''],
+            ['F[O]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Foo', false, 'Content "Foo" equals "F[O]+" (case insensitive, regexp)'],
+            ['F[O]+', ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, 'Bar', true, ''],
         ];
     }
 
@@ -133,6 +134,6 @@ class AssertEqualsTest extends TestCase
      */
     public function testInvalidRegexp()
     {
-        new AssertEquals(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP));
+        new AssertEquals(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP));
     }
 }

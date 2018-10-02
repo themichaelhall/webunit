@@ -11,7 +11,7 @@ namespace MichaelHall\Webunit\Assertions\Base;
 use MichaelHall\Webunit\Exceptions\InvalidRegexpException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
-use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 
 /**
  * Abstract assertion with content base class.
@@ -25,14 +25,14 @@ abstract class AbstractContentAssert extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @param LocationInterface $location  The location.
-     * @param string            $content   The content.
-     * @param Modifiers         $modifiers The modifiers.
+     * @param LocationInterface  $location  The location.
+     * @param string             $content   The content.
+     * @param ModifiersInterface $modifiers The modifiers.
      *
      * @throws InvalidRegexpException      If modifiers contains regexp and content is not a valid regexp.
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      */
-    public function __construct(LocationInterface $location, string $content, Modifiers $modifiers)
+    public function __construct(LocationInterface $location, string $content, ModifiersInterface $modifiers)
     {
         parent::__construct($location, $modifiers);
 

@@ -13,6 +13,7 @@ use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -28,12 +29,12 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @param LocationInterface $location  The location.
-     * @param Modifiers         $modifiers The modifiers.
+     * @param LocationInterface  $location  The location.
+     * @param ModifiersInterface $modifiers The modifiers.
      *
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      */
-    public function __construct(LocationInterface $location, Modifiers $modifiers)
+    public function __construct(LocationInterface $location, ModifiersInterface $modifiers)
     {
         $this->setModifiers($modifiers);
         $this->location = $location;
@@ -56,9 +57,9 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @return Modifiers The modifiers.
+     * @return ModifiersInterface The modifiers.
      */
-    public function getModifiers(): Modifiers
+    public function getModifiers(): ModifiersInterface
     {
         return $this->modifiers;
     }
@@ -97,26 +98,26 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @param Modifiers $modifiers The modifiers.
+     * @param ModifiersInterface $modifiers The modifiers.
      *
      * @throws NotAllowedModifierException If modifiers are not allowed for this assert.
      *
      * @return AssertInterface Self.
      */
-    protected function setModifiers(Modifiers $modifiers): AssertInterface
+    protected function setModifiers(ModifiersInterface $modifiers): AssertInterface
     {
         $allowedModifiers = $this->getAllowedModifiers();
-        $notAllowedModifiesValues = Modifiers::NONE;
+        $notAllowedModifiesValues = ModifiersInterface::NONE;
 
         if ($modifiers->isCaseInsensitive() && !$allowedModifiers->isCaseInsensitive()) {
-            $notAllowedModifiesValues |= Modifiers::CASE_INSENSITIVE;
+            $notAllowedModifiesValues |= ModifiersInterface::CASE_INSENSITIVE;
         }
 
         if ($modifiers->isRegexp() && !$allowedModifiers->isRegexp()) {
-            $notAllowedModifiesValues |= Modifiers::REGEXP;
+            $notAllowedModifiesValues |= ModifiersInterface::REGEXP;
         }
 
-        if ($notAllowedModifiesValues !== Modifiers::NONE) {
+        if ($notAllowedModifiesValues !== ModifiersInterface::NONE) {
             throw new NotAllowedModifierException(new Modifiers($notAllowedModifiesValues));
         }
 
@@ -152,12 +153,12 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @since 1.0.0
      *
-     * @return Modifiers The allowed modifiers.
+     * @return ModifiersInterface The allowed modifiers.
      */
-    abstract protected function getAllowedModifiers(): Modifiers;
+    abstract protected function getAllowedModifiers(): ModifiersInterface;
 
     /**
-     * @var Modifiers My modifiers.
+     * @var ModifiersInterface My modifiers.
      */
     private $modifiers;
 

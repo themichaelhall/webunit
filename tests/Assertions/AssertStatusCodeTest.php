@@ -7,6 +7,7 @@ namespace MichaelHall\Webunit\Tests\Assertions;
 use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\PageResult;
@@ -47,13 +48,13 @@ class AssertStatusCodeTest extends TestCase
     public function assertionDataProvider()
     {
         return [
-            // Modifiers::NONE
-            [Modifiers::NONE, 200, true, ''],
-            [Modifiers::NONE, 404, false, 'Status code 404 does not equal 200'],
+            // ModifiersInterface::NONE
+            [ModifiersInterface::NONE, 200, true, ''],
+            [ModifiersInterface::NONE, 404, false, 'Status code 404 does not equal 200'],
 
-            // Modifiers::NOT
-            [Modifiers::NOT, 200, false, 'Status code 200 equals 200'],
-            [Modifiers::NOT, 404, true, ''],
+            // ModifiersInterface::NOT
+            [ModifiersInterface::NOT, 200, false, 'Status code 200 equals 200'],
+            [ModifiersInterface::NOT, 404, true, ''],
         ];
     }
 
@@ -85,12 +86,12 @@ class AssertStatusCodeTest extends TestCase
     public function assertionWithNotAllowedModifierDataProvider()
     {
         return [
-            [Modifiers::CASE_INSENSITIVE, Modifiers::CASE_INSENSITIVE],
-            [Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::CASE_INSENSITIVE],
-            [Modifiers::REGEXP, Modifiers::REGEXP],
-            [Modifiers::REGEXP | Modifiers::NOT, Modifiers::REGEXP],
-            [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
-            [Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE | Modifiers::NOT, Modifiers::REGEXP | Modifiers::CASE_INSENSITIVE],
+            [ModifiersInterface::CASE_INSENSITIVE, ModifiersInterface::CASE_INSENSITIVE],
+            [ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, ModifiersInterface::CASE_INSENSITIVE],
+            [ModifiersInterface::REGEXP, ModifiersInterface::REGEXP],
+            [ModifiersInterface::REGEXP | ModifiersInterface::NOT, ModifiersInterface::REGEXP],
+            [ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE, ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE],
+            [ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::NOT, ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE],
         ];
     }
 

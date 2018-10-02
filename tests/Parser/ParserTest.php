@@ -10,6 +10,7 @@ use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Parser\Parser;
 use PHPUnit\Framework\TestCase;
@@ -202,9 +203,9 @@ class ParserTest extends TestCase
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[1]);
         self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[1]->getModifiers()));
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
-        self::assertTrue((new Modifiers(Modifiers::NOT))->equals($testCases[0]->getAsserts()[2]->getModifiers()));
+        self::assertTrue((new Modifiers(ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[2]->getModifiers()));
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[3]);
-        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
+        self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
 
         self::assertSame(0, count($parseErrors));
 

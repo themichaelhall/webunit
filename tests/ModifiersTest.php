@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests;
 
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Modifiers;
 use PHPUnit\Framework\TestCase;
 
@@ -18,13 +19,13 @@ class ModifiersTest extends TestCase
     public function testIsNot()
     {
         self::assertFalse((new Modifiers())->isNot());
-        self::assertTrue((new Modifiers(Modifiers::NOT))->isNot());
-        self::assertFalse((new Modifiers(Modifiers::CASE_INSENSITIVE))->isNot());
-        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->isNot());
-        self::assertFalse((new Modifiers(Modifiers::REGEXP))->isNot());
+        self::assertTrue((new Modifiers(ModifiersInterface::NOT))->isNot());
+        self::assertFalse((new Modifiers(ModifiersInterface::CASE_INSENSITIVE))->isNot());
+        self::assertTrue((new Modifiers(Modifiers::NOT | ModifiersInterface::CASE_INSENSITIVE))->isNot());
+        self::assertFalse((new Modifiers(ModifiersInterface::REGEXP))->isNot());
         self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::REGEXP))->isNot());
-        self::assertFalse((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->isNot());
-        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->isNot());
+        self::assertFalse((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | Modifiers::REGEXP))->isNot());
+        self::assertTrue((new Modifiers(Modifiers::NOT | ModifiersInterface::CASE_INSENSITIVE | Modifiers::REGEXP))->isNot());
     }
 
     /**
@@ -34,12 +35,12 @@ class ModifiersTest extends TestCase
     {
         self::assertFalse((new Modifiers())->isCaseInsensitive());
         self::assertFalse((new Modifiers(Modifiers::NOT))->isCaseInsensitive());
-        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE))->isCaseInsensitive());
-        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->isCaseInsensitive());
+        self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE))->isCaseInsensitive());
+        self::assertTrue((new Modifiers(Modifiers::NOT | ModifiersInterface::CASE_INSENSITIVE))->isCaseInsensitive());
         self::assertFalse((new Modifiers(Modifiers::REGEXP))->isCaseInsensitive());
         self::assertFalse((new Modifiers(Modifiers::NOT | Modifiers::REGEXP))->isCaseInsensitive());
-        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->isCaseInsensitive());
-        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->isCaseInsensitive());
+        self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | Modifiers::REGEXP))->isCaseInsensitive());
+        self::assertTrue((new Modifiers(Modifiers::NOT | ModifiersInterface::CASE_INSENSITIVE | Modifiers::REGEXP))->isCaseInsensitive());
     }
 
     /**
@@ -49,12 +50,12 @@ class ModifiersTest extends TestCase
     {
         self::assertFalse((new Modifiers())->isRegexp());
         self::assertFalse((new Modifiers(Modifiers::NOT))->isRegexp());
-        self::assertFalse((new Modifiers(Modifiers::CASE_INSENSITIVE))->isRegexp());
-        self::assertFalse((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->isRegexp());
+        self::assertFalse((new Modifiers(ModifiersInterface::CASE_INSENSITIVE))->isRegexp());
+        self::assertFalse((new Modifiers(Modifiers::NOT | ModifiersInterface::CASE_INSENSITIVE))->isRegexp());
         self::assertTrue((new Modifiers(Modifiers::REGEXP))->isRegexp());
         self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::REGEXP))->isRegexp());
-        self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->isRegexp());
-        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE | Modifiers::REGEXP))->isRegexp());
+        self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | Modifiers::REGEXP))->isRegexp());
+        self::assertTrue((new Modifiers(Modifiers::NOT | ModifiersInterface::CASE_INSENSITIVE | Modifiers::REGEXP))->isRegexp());
     }
 
     /**
@@ -103,5 +104,14 @@ class ModifiersTest extends TestCase
         self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->equals($modifiers3->combinedWith($modifiers1)));
         self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT | Modifiers::REGEXP))->equals($modifiers3->combinedWith($modifiers2)));
         self::assertTrue((new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->equals($modifiers3->combinedWith($modifiers3)));
+    }
+
+    /**
+     * Test getValue method.
+     */
+    public function testGetValue()
+    {
+        self::assertSame(Modifiers::NONE, (new Modifiers())->getValue());
+        self::assertSame(Modifiers::CASE_INSENSITIVE | Modifiers::NOT, (new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->getValue());
     }
 }

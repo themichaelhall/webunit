@@ -18,6 +18,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
@@ -183,13 +184,13 @@ class Parser
      *
      * @param LocationInterface     $location    The location.
      * @param string                $command     The command, assuming a valid assert.
-     * @param Modifiers             $modifiers   The modifiers.
+     * @param ModifiersInterface    $modifiers   The modifiers.
      * @param null|string           $argument    The argument or null if no argument.
      * @param ParseErrorInterface[] $parseErrors The parse errors.
      *
      * @return AssertInterface|null The assert or null if there were errors.
      */
-    private static function tryParseAssert(LocationInterface $location, string $command, Modifiers $modifiers, ?string $argument, array &$parseErrors): ?AssertInterface
+    private static function tryParseAssert(LocationInterface $location, string $command, ModifiersInterface $modifiers, ?string $argument, array &$parseErrors): ?AssertInterface
     {
         $assertInfo = self::ASSERTS_INFO[$command];
         $className = $assertInfo[0];
@@ -262,9 +263,9 @@ class Parser
      *
      * @param string $command The command. May be altered.
      *
-     * @return Modifiers The modifiers.
+     * @return ModifiersInterface The modifiers.
      */
-    private static function stripModifiers(string &$command): Modifiers
+    private static function stripModifiers(string &$command): ModifiersInterface
     {
         $modifiers = new Modifiers();
         $strippedCommand = $command;
@@ -311,9 +312,9 @@ class Parser
      * modifier-char => modifier-value
      */
     private const MODIFIERS_INFO = [
-        '!' => Modifiers::NOT,
-        '^' => Modifiers::CASE_INSENSITIVE,
-        '~' => Modifiers::REGEXP,
+        '!' => ModifiersInterface::NOT,
+        '^' => ModifiersInterface::CASE_INSENSITIVE,
+        '~' => ModifiersInterface::REGEXP,
     ];
 
     /**

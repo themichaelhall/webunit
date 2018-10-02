@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
-use MichaelHall\Webunit\Modifiers;
-
 /**
  * Interface for assertions.
  *
@@ -31,9 +29,9 @@ interface AssertInterface
      *
      * @since 1.0.0
      *
-     * @return Modifiers The modifiers.
+     * @return ModifiersInterface The modifiers.
      */
-    public function getModifiers(): Modifiers;
+    public function getModifiers(): ModifiersInterface;
 
     /**
      * Test assertion against a page result.

@@ -11,6 +11,7 @@ namespace MichaelHall\Webunit\Assertions;
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -26,11 +27,11 @@ class AssertStatusCode extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @param LocationInterface $location   The location.
-     * @param int               $statusCode The status code.
-     * @param Modifiers         $modifiers  The modifiers.
+     * @param LocationInterface  $location   The location.
+     * @param int                $statusCode The status code.
+     * @param ModifiersInterface $modifiers  The modifiers.
      */
-    public function __construct(LocationInterface $location, int $statusCode, Modifiers $modifiers)
+    public function __construct(LocationInterface $location, int $statusCode, ModifiersInterface $modifiers)
     {
         parent::__construct($location, $modifiers);
 
@@ -74,11 +75,11 @@ class AssertStatusCode extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @return Modifiers The allowed modifiers.
+     * @return ModifiersInterface The allowed modifiers.
      */
-    protected function getAllowedModifiers(): Modifiers
+    protected function getAllowedModifiers(): ModifiersInterface
     {
-        return new Modifiers(Modifiers::NOT);
+        return new Modifiers(ModifiersInterface::NOT);
     }
 
     /**

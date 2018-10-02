@@ -8,65 +8,25 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit;
 
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
+
 /**
  * Class handling modifiers.
  *
  * @since 1.0.0
  */
-class Modifiers
+class Modifiers implements ModifiersInterface
 {
-    /**
-     * No modifiers.
-     *
-     * @since 1.0.0
-     */
-    const NONE = 0x0000;
-
-    /**
-     * Not modifier.
-     *
-     * @since 1.0.0
-     */
-    const NOT = 0x0001;
-
-    /**
-     * Case insensitive modifier.
-     *
-     * @since 1.0.0
-     */
-    const CASE_INSENSITIVE = 0x0002;
-
-    /**
-     * Regexp modifier.
-     *
-     * @since 1.0.0
-     */
-    const REGEXP = 0x0004;
-
     /**
      * Constructs modifiers.
      *
      * @since 1.0.0
      *
-     * @param int $modifiers The modifiers.
+     * @param int $value The value.
      */
-    public function __construct(int $modifiers = self::NONE)
+    public function __construct(int $value = ModifiersInterface::NONE)
     {
-        $this->modifiers = $modifiers;
-    }
-
-    /**
-     * Returns true if this equals other modifiers, false otherwise.
-     *
-     * @since 1.0.0
-     *
-     * @param Modifiers $modifiers The other modifiers.
-     *
-     * @return bool True if this equals other modifiers, false otherwise.
-     */
-    public function equals(self $modifiers): bool
-    {
-        return $this->modifiers === $modifiers->modifiers;
+        $this->value = $value;
     }
 
     /**
@@ -74,13 +34,39 @@ class Modifiers
      *
      * @since 1.0.0
      *
-     * @param Modifiers $other The other modifiers.
+     * @param ModifiersInterface $other The other modifiers.
      *
      * @return Modifiers The combined modifiers.
      */
-    public function combinedWith(self $other): self
+    public function combinedWith(ModifiersInterface $other): ModifiersInterface
     {
-        return new self($this->modifiers | $other->modifiers);
+        return new self($this->value | $other->getValue());
+    }
+
+    /**
+     * Returns true if this equals other modifiers, false otherwise.
+     *
+     * @since 1.0.0
+     *
+     * @param ModifiersInterface $modifiers The other modifiers.
+     *
+     * @return bool True if this equals other modifiers, false otherwise.
+     */
+    public function equals(ModifiersInterface $modifiers): bool
+    {
+        return $this->value === $modifiers->getValue();
+    }
+
+    /**
+     * Returns the value for this modifier.
+     *
+     * @since 1.0.0
+     *
+     * @return int The value.
+     */
+    public function getValue(): int
+    {
+        return $this->value;
     }
 
     /**
@@ -92,7 +78,7 @@ class Modifiers
      */
     public function isNot(): bool
     {
-        return ($this->modifiers & self::NOT) !== 0;
+        return ($this->value & ModifiersInterface::NOT) !== 0;
     }
 
     /**
@@ -102,9 +88,9 @@ class Modifiers
      *
      * @return bool True if this is a CASE_INSENSITIVE modifier, false otherwise.
      */
-    public function isCaseInsensitive()
+    public function isCaseInsensitive(): bool
     {
-        return ($this->modifiers & self::CASE_INSENSITIVE) !== 0;
+        return ($this->value & ModifiersInterface::CASE_INSENSITIVE) !== 0;
     }
 
     /**
@@ -114,9 +100,9 @@ class Modifiers
      *
      * @return bool True if this is a REGEXP modifier, false otherwise.
      */
-    public function isRegexp()
+    public function isRegexp(): bool
     {
-        return ($this->modifiers & self::REGEXP) !== 0;
+        return ($this->value & ModifiersInterface::REGEXP) !== 0;
     }
 
     /**
@@ -146,7 +132,7 @@ class Modifiers
     }
 
     /**
-     * @var int My modifiers.
+     * @var int My value.
      */
-    private $modifiers;
+    private $value;
 }

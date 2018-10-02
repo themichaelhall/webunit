@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Assertions;
 
 use MichaelHall\Webunit\Assertions\Base\AbstractAssert;
+use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\PageResultInterface;
 use MichaelHall\Webunit\Modifiers;
 
@@ -52,10 +53,10 @@ class AssertEmpty extends AbstractAssert
      *
      * @since 1.0.0
      *
-     * @return Modifiers The allowed modifiers.
+     * @return ModifiersInterface The allowed modifiers.
      */
-    protected function getAllowedModifiers(): Modifiers
+    protected function getAllowedModifiers(): ModifiersInterface
     {
-        return new Modifiers(Modifiers::NOT);
+        return new Modifiers(ModifiersInterface::NOT);
     }
 }
