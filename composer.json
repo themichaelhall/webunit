@@ -2,6 +2,7 @@
   "name": "michaelhall/webunit",
   "description": "Webunit test client",
   "license": "MIT",
+  "type": "project",
   "keywords": [
     "web",
     "unit"
@@ -15,11 +16,11 @@
   "require": {
     "php": ">=7.1",
     "ext-mbstring": "*",
-    "michaelhall/page-fetcher": "~1.0",
-    "datatypes/datatypes": "~2.0"
+    "michaelhall/page-fetcher": "^1.0",
+    "datatypes/datatypes": "^2.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "~6.0"
+    "phpunit/phpunit": "^7.0"
   },
   "autoload": {
     "psr-4": {
