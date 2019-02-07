@@ -178,6 +178,8 @@ class ConsoleApplicationTest extends TestCase
      */
     public function setUp()
     {
+        parent::setUp();
+
         $this->httpClient = new HttpClient(new class() implements RequestHandlerInterface
         {
             /**
@@ -210,6 +212,8 @@ class ConsoleApplicationTest extends TestCase
      */
     public function tearDown()
     {
+        parent::tearDown();
+
         $this->httpClient = null;
     }
 
