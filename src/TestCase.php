@@ -9,8 +9,8 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit;
 
 use DataTypes\Interfaces\UrlInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
-use MichaelHall\PageFetcher\PageFetcherRequest;
+use MichaelHall\HttpClient\HttpClientInterface;
+use MichaelHall\HttpClient\HttpClientRequest;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
@@ -84,19 +84,19 @@ class TestCase implements TestCaseInterface
      *
      * @since 1.0.0
      *
-     * @param PageFetcherInterface $pageFetcher The page fetcher.
-     * @param callable|null        $callback    An optional callback method to call after each assert. The method takes a AssertResultInterface as a parameter.
+     * @param HttpClientInterface $httpClient The HTTP client.
+     * @param callable|null       $callback   An optional callback method to call after each assert. The method takes a AssertResultInterface as a parameter.
      *
      * @return TestCaseResultInterface The result.
      */
-    public function run(PageFetcherInterface $pageFetcher, ?callable $callback = null): TestCaseResultInterface
+    public function run(HttpClientInterface $httpClient, ?callable $callback = null): TestCaseResultInterface
     {
-        $pageFetcherRequest = new PageFetcherRequest($this->url);
-        $pageFetcherResult = $pageFetcher->fetch($pageFetcherRequest);
+        $httpClientRequest = new HttpClientRequest($this->url);
+        $httpClientResponse = $httpClient->send($httpClientRequest);
 
         $pageResult = new PageResult(
-            $pageFetcherResult->getHttpCode(),
-            $pageFetcherResult->getContent()
+            $httpClientResponse->getHttpCode(),
+            $httpClientResponse->getContent()
         );
 
         foreach ($this->getAsserts() as $assert) {

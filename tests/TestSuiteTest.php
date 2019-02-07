@@ -6,11 +6,12 @@ namespace MichaelHall\Webunit\Tests;
 
 use DataTypes\FilePath;
 use DataTypes\Url;
-use MichaelHall\PageFetcher\FakePageFetcher;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherRequestInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
-use MichaelHall\PageFetcher\PageFetcherResponse;
+use MichaelHall\HttpClient\HttpClient;
+use MichaelHall\HttpClient\HttpClientInterface;
+use MichaelHall\HttpClient\HttpClientRequestInterface;
+use MichaelHall\HttpClient\HttpClientResponse;
+use MichaelHall\HttpClient\HttpClientResponseInterface;
+use MichaelHall\HttpClient\RequestHandlers\RequestHandlerInterface;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
@@ -61,7 +62,7 @@ class TestSuiteTest extends TestCase
     {
         $testSuite = new TestSuite();
 
-        $result = $testSuite->run($this->pageFetcher);
+        $result = $testSuite->run($this->httpClient);
 
         self::assertTrue($result->isSuccess());
         self::assertSame($testSuite, $result->getTestSuite());
@@ -90,7 +91,7 @@ class TestSuiteTest extends TestCase
         $testSuite->addTestCase($testCase1);
         $testSuite->addTestCase($testCase2);
 
-        $result = $testSuite->run($this->pageFetcher);
+        $result = $testSuite->run($this->httpClient);
 
         self::assertTrue($result->isSuccess());
         self::assertSame($testSuite, $result->getTestSuite());
@@ -128,7 +129,7 @@ class TestSuiteTest extends TestCase
         $testSuite->addTestCase($testCase2);
         $testSuite->addTestCase($testCase3);
 
-        $result = $testSuite->run($this->pageFetcher);
+        $result = $testSuite->run($this->httpClient);
 
         self::assertFalse($result->isSuccess());
         self::assertSame($testSuite, $result->getTestSuite());
@@ -177,7 +178,7 @@ class TestSuiteTest extends TestCase
 
         /** @var AssertResultInterface[] $callbackResult */
         $callbackResult = [];
-        $result = $testSuite->run($this->pageFetcher, function (AssertResultInterface $assertResult) use (&$callbackResult) {
+        $result = $testSuite->run($this->httpClient, function (AssertResultInterface $assertResult) use (&$callbackResult) {
             $callbackResult[] = $assertResult;
         });
 
@@ -219,18 +220,28 @@ class TestSuiteTest extends TestCase
      */
     public function setUp()
     {
-        $this->pageFetcher = new FakePageFetcher();
-        $this->pageFetcher->setResponseHandler(function (PageFetcherRequestInterface $request): PageFetcherResponseInterface {
-            switch ($request->getUrl()->getPath()) {
-                case '/foo':
-                    return new PageFetcherResponse(200, 'This is Foo page.');
-                case '/bar':
-                    return new PageFetcherResponse(200, 'This is Bar page.');
-                case '/baz':
-                    return new PageFetcherResponse(200, 'This is Baz page.');
-            }
+        $this->httpClient = new HttpClient(new class() implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request.
+             *
+             * @param HttpClientRequestInterface $request The request.
+             *
+             * @return HttpClientResponseInterface The response.
+             */
+            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
+            {
+                switch ($request->getUrl()->getPath()) {
+                    case '/foo':
+                        return new HttpClientResponse(200, 'This is Foo page.');
+                    case '/bar':
+                        return new HttpClientResponse(200, 'This is Bar page.');
+                    case '/baz':
+                        return new HttpClientResponse(200, 'This is Baz page.');
+                }
 
-            return new PageFetcherResponse(404);
+                return new HttpClientResponse();
+            }
         });
     }
 
@@ -239,11 +250,11 @@ class TestSuiteTest extends TestCase
      */
     public function tearDown()
     {
-        $this->pageFetcher = null;
+        $this->httpClient = null;
     }
 
     /**
-     * @var PageFetcherInterface My fake page fetcher.
+     * @var HttpClientInterface My HTTP client.
      */
-    private $pageFetcher;
+    private $httpClient;
 }

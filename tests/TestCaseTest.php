@@ -6,9 +6,11 @@ namespace MichaelHall\Webunit\Tests;
 
 use DataTypes\FilePath;
 use DataTypes\Url;
-use MichaelHall\PageFetcher\FakePageFetcher;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
-use MichaelHall\PageFetcher\PageFetcherResponse;
+use MichaelHall\HttpClient\HttpClient;
+use MichaelHall\HttpClient\HttpClientRequestInterface;
+use MichaelHall\HttpClient\HttpClientResponse;
+use MichaelHall\HttpClient\HttpClientResponseInterface;
+use MichaelHall\HttpClient\RequestHandlers\RequestHandlerInterface;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
@@ -116,12 +118,21 @@ class TestCaseTest extends TestCase
         $testCase->addAssert($assert4);
         $testCase->addAssert($assert5);
 
-        $pageFetcher = new FakePageFetcher();
-        $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
-            return new PageFetcherResponse(200, 'Foo baz');
+        $httpClient = new HttpClient(new class() implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request.
+             *
+             * @param HttpClientRequestInterface $request The request.
+             *
+             * @return HttpClientResponseInterface The response.
+             */
+            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
+            {
+                return new HttpClientResponse(200, 'Foo baz');
+            }
         });
-
-        $result = $testCase->run($pageFetcher);
+        $result = $testCase->run($httpClient);
 
         self::assertSame($testCase, $result->getTestCase());
         self::assertTrue($result->isSuccess());
@@ -148,12 +159,21 @@ class TestCaseTest extends TestCase
         $testCase->addAssert($assert4);
         $testCase->addAssert($assert5);
 
-        $pageFetcher = new FakePageFetcher();
-        $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
-            return new PageFetcherResponse(404, 'Foo Baz Bar');
+        $httpClient = new HttpClient(new class() implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request.
+             *
+             * @param HttpClientRequestInterface $request The request.
+             *
+             * @return HttpClientResponseInterface The response.
+             */
+            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
+            {
+                return new HttpClientResponse(404, 'Foo Baz Bar');
+            }
         });
-
-        $result = $testCase->run($pageFetcher);
+        $result = $testCase->run($httpClient);
 
         self::assertSame($testCase, $result->getTestCase());
         self::assertFalse($result->isSuccess());
@@ -178,14 +198,24 @@ class TestCaseTest extends TestCase
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
 
-        $pageFetcher = new FakePageFetcher();
-        $pageFetcher->setResponseHandler(function (): PageFetcherResponseInterface {
-            return new PageFetcherResponse(200, 'Foo baz');
+        $httpClient = new HttpClient(new class() implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request.
+             *
+             * @param HttpClientRequestInterface $request The request.
+             *
+             * @return HttpClientResponseInterface The response.
+             */
+            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
+            {
+                return new HttpClientResponse(200, 'Foo baz');
+            }
         });
 
         /** @var AssertResultInterface[] $callbackResult */
         $callbackResult = [];
-        $result = $testCase->run($pageFetcher, function (AssertResultInterface $assertResult) use (&$callbackResult) {
+        $result = $testCase->run($httpClient, function (AssertResultInterface $assertResult) use (&$callbackResult) {
             $callbackResult[] = $assertResult;
         });
 

@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Interfaces;
 
 use DataTypes\Interfaces\UrlInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
+use MichaelHall\HttpClient\HttpClientInterface;
 
 /**
  * Interface for a test case.
@@ -50,10 +50,10 @@ interface TestCaseInterface
      *
      * @since 1.0.0
      *
-     * @param PageFetcherInterface $pageFetcher The page fetcher.
-     * @param callable|null        $callback    An optional callback method to call after each assert. The method takes a AssertResultInterface as a parameter.
+     * @param HttpClientInterface $httpClient The HTTP client.
+     * @param callable|null       $callback   An optional callback method to call after each assert. The method takes a AssertResultInterface as a parameter.
      *
      * @return TestCaseResultInterface The result.
      */
-    public function run(PageFetcherInterface $pageFetcher, ?callable $callback = null): TestCaseResultInterface;
+    public function run(HttpClientInterface $httpClient, ?callable $callback = null): TestCaseResultInterface;
 }

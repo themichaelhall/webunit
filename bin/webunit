@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-use MichaelHall\PageFetcher\PageFetcher;
+use MichaelHall\HttpClient\HttpClient;
 use MichaelHall\Webunit\Application\ConsoleApplication;
 
 foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php'] as $autoload) {
@@ -19,6 +19,6 @@ foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php
     }
 }
 
-$application = new ConsoleApplication($argc, $argv, new PageFetcher());
+$application = new ConsoleApplication($argc, $argv, new HttpClient());
 
 return $application->run();

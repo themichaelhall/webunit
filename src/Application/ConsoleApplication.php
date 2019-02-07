@@ -11,7 +11,7 @@ namespace MichaelHall\Webunit\Application;
 use DataTypes\Exceptions\FilePathInvalidArgumentException;
 use DataTypes\FilePath;
 use DataTypes\Interfaces\FilePathInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
+use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
 use MichaelHall\Webunit\Parser\Parser;
@@ -70,15 +70,15 @@ class ConsoleApplication
      *
      * @since 1.0.0
      *
-     * @param int                  $argc        The command line argument count.
-     * @param string[]             $argv        The command line arguments.
-     * @param PageFetcherInterface $pageFetcher The page fetcher.
+     * @param int                 $argc       The command line argument count.
+     * @param string[]            $argv       The command line arguments.
+     * @param HttpClientInterface $httpClient The HTTP client.
      */
-    public function __construct(int $argc, array $argv, PageFetcherInterface $pageFetcher)
+    public function __construct(int $argc, array $argv, HttpClientInterface $httpClient)
     {
         $this->argc = $argc;
         $this->argv = $argv;
-        $this->pageFetcher = $pageFetcher;
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -122,7 +122,7 @@ class ConsoleApplication
             return self::RESULT_NO_TESTS_FOUND;
         }
 
-        $testResults = $testSuite->run($this->pageFetcher, function (AssertResultInterface $assertResult) {
+        $testResults = $testSuite->run($this->httpClient, function (AssertResultInterface $assertResult) {
             echo $assertResult->isSuccess() ? '.' : "\033[41m\033[1;37mF\033[0m";
         });
         echo PHP_EOL;
@@ -229,7 +229,7 @@ class ConsoleApplication
     private $argv;
 
     /**
-     * @var PageFetcherInterface My page fetcher.
+     * @var HttpClientInterface My HTTP client.
      */
-    private $pageFetcher;
+    private $httpClient;
 }

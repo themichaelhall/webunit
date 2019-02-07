@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests\Application;
 
 use DataTypes\FilePath;
-use MichaelHall\PageFetcher\FakePageFetcher;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherRequestInterface;
-use MichaelHall\PageFetcher\Interfaces\PageFetcherResponseInterface;
-use MichaelHall\PageFetcher\PageFetcherResponse;
+use MichaelHall\HttpClient\HttpClient;
+use MichaelHall\HttpClient\HttpClientInterface;
+use MichaelHall\HttpClient\HttpClientRequestInterface;
+use MichaelHall\HttpClient\HttpClientResponse;
+use MichaelHall\HttpClient\HttpClientResponseInterface;
+use MichaelHall\HttpClient\RequestHandlers\RequestHandlerInterface;
 use MichaelHall\Webunit\Application\ConsoleApplication;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +24,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testMissingTestFileArgument()
     {
-        $consoleApplication = new ConsoleApplication(1, ['webunit'], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(1, ['webunit'], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -43,7 +44,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testInvalidTestFileArgument()
     {
-        $consoleApplication = new ConsoleApplication(2, ['webunit', "Foo\0Bar"], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(2, ['webunit', "Foo\0Bar"], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -63,7 +64,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testMissingTestFile()
     {
-        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/missing.webunit'], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/missing.webunit'], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -85,7 +86,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testParseErrors()
     {
-        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/parse-error.webunit'], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/parse-error.webunit'], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -111,7 +112,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testEmptyTestSuite()
     {
-        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/no-tests.webunit'], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/no-tests.webunit'], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -131,7 +132,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testSuccessfulTestSuite()
     {
-        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/success.webunit'], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/success.webunit'], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -152,7 +153,7 @@ class ConsoleApplicationTest extends TestCase
      */
     public function testFailedTestSuite()
     {
-        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/fail.webunit'], $this->pageFetcher);
+        $consoleApplication = new ConsoleApplication(2, ['webunit', __DIR__ . '/../Helpers/WebunitTests/fail.webunit'], $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -177,21 +178,30 @@ class ConsoleApplicationTest extends TestCase
      */
     public function setUp()
     {
-        $this->pageFetcher = new FakePageFetcher();
+        $this->httpClient = new HttpClient(new class() implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request.
+             *
+             * @param HttpClientRequestInterface $request The request.
+             *
+             * @return HttpClientResponseInterface The response.
+             */
+            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
+            {
+                switch ($request->getUrl()->getPath()) {
+                    case '/':
+                        return new HttpClientResponse(200, 'Hello World!');
+                    case '/foo':
+                        return new HttpClientResponse(200, 'This is Foo page.');
+                    case '/bar':
+                        return new HttpClientResponse(200, 'This is Bar page.');
+                    case '/empty':
+                        return new HttpClientResponse(200, '');
+                }
 
-        $this->pageFetcher->setResponseHandler(function (PageFetcherRequestInterface $request): PageFetcherResponseInterface {
-            switch ($request->getUrl()->getPath()) {
-                case '/':
-                    return new PageFetcherResponse(200, 'Hello World!');
-                case '/foo':
-                    return new PageFetcherResponse(200, 'This is Foo page.');
-                case '/bar':
-                    return new PageFetcherResponse(200, 'This is Bar page.');
-                case '/empty':
-                    return new PageFetcherResponse(200, '');
+                return new HttpClientResponse(404);
             }
-
-            return new PageFetcherResponse(404);
         });
     }
 
@@ -200,11 +210,11 @@ class ConsoleApplicationTest extends TestCase
      */
     public function tearDown()
     {
-        $this->pageFetcher = null;
+        $this->httpClient = null;
     }
 
     /**
-     * @var PageFetcherInterface My page fetcher.
+     * @var HttpClientInterface My HTTP client.
      */
-    private $pageFetcher;
+    private $httpClient;
 }

@@ -16,7 +16,7 @@
   "require": {
     "php": ">=7.1",
     "ext-mbstring": "*",
-    "michaelhall/page-fetcher": "^1.0",
+    "michaelhall/http-client": "^1.0",
     "datatypes/datatypes": "^2.0"
   },
   "require-dev": {
