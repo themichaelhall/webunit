@@ -12,4 +12,4 @@ assert-empty
 
 get                https://example.com/not-found
 assert-status-code 404
-assert-empty
+assert-equals      Page not found.

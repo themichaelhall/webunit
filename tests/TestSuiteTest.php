@@ -8,10 +8,6 @@ use DataTypes\FilePath;
 use DataTypes\Url;
 use MichaelHall\HttpClient\HttpClient;
 use MichaelHall\HttpClient\HttpClientInterface;
-use MichaelHall\HttpClient\HttpClientRequestInterface;
-use MichaelHall\HttpClient\HttpClientResponse;
-use MichaelHall\HttpClient\HttpClientResponseInterface;
-use MichaelHall\HttpClient\RequestHandlers\RequestHandlerInterface;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
@@ -20,6 +16,7 @@ use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use MichaelHall\Webunit\TestSuite;
 use PHPUnit\Framework\TestCase;
 
@@ -222,29 +219,7 @@ class TestSuiteTest extends TestCase
     {
         parent::setUp();
 
-        $this->httpClient = new HttpClient(new class() implements RequestHandlerInterface
-        {
-            /**
-             * Handles the request.
-             *
-             * @param HttpClientRequestInterface $request The request.
-             *
-             * @return HttpClientResponseInterface The response.
-             */
-            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
-            {
-                switch ($request->getUrl()->getPath()) {
-                    case '/foo':
-                        return new HttpClientResponse(200, 'This is Foo page.');
-                    case '/bar':
-                        return new HttpClientResponse(200, 'This is Bar page.');
-                    case '/baz':
-                        return new HttpClientResponse(200, 'This is Baz page.');
-                }
-
-                return new HttpClientResponse();
-            }
-        });
+        $this->httpClient = new HttpClient(new TestRequestHandler());
     }
 
     /**

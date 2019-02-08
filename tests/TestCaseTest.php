@@ -7,10 +7,6 @@ namespace MichaelHall\Webunit\Tests;
 use DataTypes\FilePath;
 use DataTypes\Url;
 use MichaelHall\HttpClient\HttpClient;
-use MichaelHall\HttpClient\HttpClientRequestInterface;
-use MichaelHall\HttpClient\HttpClientResponse;
-use MichaelHall\HttpClient\HttpClientResponseInterface;
-use MichaelHall\HttpClient\RequestHandlers\RequestHandlerInterface;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
@@ -20,6 +16,7 @@ use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -107,31 +104,18 @@ class TestCaseTest extends TestCase
 
         $assert1 = new AssertContains($location, 'Foo', new Modifiers());
         $assert2 = new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT));
-        $assert3 = new AssertEquals($location, 'Foo Baz', new Modifiers(ModifiersInterface::CASE_INSENSITIVE));
+        $assert3 = new AssertEquals($location, 'this is foo page.', new Modifiers(ModifiersInterface::CASE_INSENSITIVE));
         $assert4 = new AssertEmpty($location, new Modifiers(ModifiersInterface::NOT));
         $assert5 = new AssertStatusCode($location, 200, new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
         $testCase->addAssert($assert4);
         $testCase->addAssert($assert5);
 
-        $httpClient = new HttpClient(new class() implements RequestHandlerInterface
-        {
-            /**
-             * Handles the request.
-             *
-             * @param HttpClientRequestInterface $request The request.
-             *
-             * @return HttpClientResponseInterface The response.
-             */
-            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
-            {
-                return new HttpClientResponse(200, 'Foo baz');
-            }
-        });
+        $httpClient = new HttpClient(new TestRequestHandler());
         $result = $testCase->run($httpClient);
 
         self::assertSame($testCase, $result->getTestCase());
@@ -146,40 +130,27 @@ class TestCaseTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $assert1 = new AssertContains($location, 'Foo', new Modifiers());
-        $assert2 = new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT));
+        $assert1 = new AssertContains($location, 'Page', new Modifiers());
+        $assert2 = new AssertContains($location, 'not found', new Modifiers(ModifiersInterface::NOT));
         $assert3 = new AssertEquals($location, 'Baz', new Modifiers());
         $assert4 = new AssertEmpty($location, new Modifiers(ModifiersInterface::NOT));
         $assert5 = new AssertStatusCode($location, 200, new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/not-found'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
         $testCase->addAssert($assert4);
         $testCase->addAssert($assert5);
 
-        $httpClient = new HttpClient(new class() implements RequestHandlerInterface
-        {
-            /**
-             * Handles the request.
-             *
-             * @param HttpClientRequestInterface $request The request.
-             *
-             * @return HttpClientResponseInterface The response.
-             */
-            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
-            {
-                return new HttpClientResponse(404, 'Foo Baz Bar');
-            }
-        });
+        $httpClient = new HttpClient(new TestRequestHandler());
         $result = $testCase->run($httpClient);
 
         self::assertSame($testCase, $result->getTestCase());
         self::assertFalse($result->isSuccess());
         self::assertFalse($result->getFailedAssertResult()->isSuccess());
         self::assertSame($assert2, $result->getFailedAssertResult()->getAssert());
-        self::assertSame('Content "Foo Baz Bar" contains "Bar"', $result->getFailedAssertResult()->getError());
+        self::assertSame('Content "Page not found." contains "not found"', $result->getFailedAssertResult()->getError());
     }
 
     /**
@@ -193,26 +164,12 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT));
         $assert3 = new AssertContains($location, 'Baz', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
 
-        $httpClient = new HttpClient(new class() implements RequestHandlerInterface
-        {
-            /**
-             * Handles the request.
-             *
-             * @param HttpClientRequestInterface $request The request.
-             *
-             * @return HttpClientResponseInterface The response.
-             */
-            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
-            {
-                return new HttpClientResponse(200, 'Foo baz');
-            }
-        });
-
+        $httpClient = new HttpClient(new TestRequestHandler());
         /** @var AssertResultInterface[] $callbackResult */
         $callbackResult = [];
         $result = $testCase->run($httpClient, function (AssertResultInterface $assertResult) use (&$callbackResult) {
@@ -221,7 +178,7 @@ class TestCaseTest extends TestCase
 
         self::assertSame($testCase, $result->getTestCase());
         self::assertFalse($result->isSuccess());
-        self::assertSame('Content "Foo baz" does not contain "Baz"', $result->getFailedAssertResult()->getError());
+        self::assertSame('Content "This is Foo page." does not contain "Baz"', $result->getFailedAssertResult()->getError());
 
         self::assertSame(4, count($callbackResult));
         self::assertTrue($callbackResult[0]->isSuccess());
@@ -234,7 +191,7 @@ class TestCaseTest extends TestCase
         self::assertSame('', $callbackResult[2]->getError());
         self::assertSame($assert2, $callbackResult[2]->getAssert());
         self::assertFalse($callbackResult[3]->isSuccess());
-        self::assertSame('Content "Foo baz" does not contain "Baz"', $callbackResult[3]->getError());
+        self::assertSame('Content "This is Foo page." does not contain "Baz"', $callbackResult[3]->getError());
         self::assertSame($assert3, $callbackResult[3]->getAssert());
     }
 }

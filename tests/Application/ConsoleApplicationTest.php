@@ -7,11 +7,8 @@ namespace MichaelHall\Webunit\Tests\Application;
 use DataTypes\FilePath;
 use MichaelHall\HttpClient\HttpClient;
 use MichaelHall\HttpClient\HttpClientInterface;
-use MichaelHall\HttpClient\HttpClientRequestInterface;
-use MichaelHall\HttpClient\HttpClientResponse;
-use MichaelHall\HttpClient\HttpClientResponseInterface;
-use MichaelHall\HttpClient\RequestHandlers\RequestHandlerInterface;
 use MichaelHall\Webunit\Application\ConsoleApplication;
+use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -167,7 +164,7 @@ class ConsoleApplicationTest extends TestCase
             'Webunit [dev] by Michael Hall.' . PHP_EOL .
             "..\033[41m\033[1;37mF\033[0m\e[41m\e[1;37mF\e[0m" . PHP_EOL .
             "{$filePath}:4: Test failed: https://example.com/foo: Content \"This is Foo page.\" contains \"foo\" (case insensitive)." . PHP_EOL .
-            "{$filePath}:6: Test failed: https://example.com/baz: Status code 404 was returned." . PHP_EOL .
+            "{$filePath}:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
             "\033[41m\033[1;37m2 tests failed.\033[0m" . PHP_EOL,
             $output
         );
@@ -180,31 +177,7 @@ class ConsoleApplicationTest extends TestCase
     {
         parent::setUp();
 
-        $this->httpClient = new HttpClient(new class() implements RequestHandlerInterface
-        {
-            /**
-             * Handles the request.
-             *
-             * @param HttpClientRequestInterface $request The request.
-             *
-             * @return HttpClientResponseInterface The response.
-             */
-            public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
-            {
-                switch ($request->getUrl()->getPath()) {
-                    case '/':
-                        return new HttpClientResponse(200, 'Hello World!');
-                    case '/foo':
-                        return new HttpClientResponse(200, 'This is Foo page.');
-                    case '/bar':
-                        return new HttpClientResponse(200, 'This is Bar page.');
-                    case '/empty':
-                        return new HttpClientResponse(200, '');
-                }
-
-                return new HttpClientResponse(404);
-            }
-        });
+        $this->httpClient = new HttpClient(new TestRequestHandler());
     }
 
     /**
