@@ -44,6 +44,20 @@ class Modifiers implements ModifiersInterface
     }
 
     /**
+     * Returns true if this contains other modifiers, false otherwise.
+     *
+     * @since 1.0.0
+     *
+     * @param ModifiersInterface $other The other modifiers.
+     *
+     * @return bool True if this contains other modifiers, false otherwise.
+     */
+    public function contains(ModifiersInterface $other): bool
+    {
+        return ($this->value & $other->getValue()) === $other->getValue();
+    }
+
+    /**
      * Returns true if this equals other modifiers, false otherwise.
      *
      * @since 1.0.0

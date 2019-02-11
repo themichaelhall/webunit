@@ -93,7 +93,8 @@ class Parser
             return;
         }
 
-        $modifiers = self::stripModifiers($command);
+        // todo: Only check modifiers if command is an assert.
+        $modifiers = self::stripModifiers($location, $command, $parseErrors);
 
         if (self::isAssert($command)) {
             $assert = self::tryParseAssert($location, $command, $modifiers, $parameter, $parseErrors);
@@ -261,11 +262,13 @@ class Parser
     /**
      * Strips the modifiers from the command and returns them.
      *
-     * @param string $command The command. May be altered.
+     * @param LocationInterface $location    The location.
+     * @param string            $command     The command. May be altered.
+     * @param array             $parseErrors The parse errors.
      *
      * @return ModifiersInterface The modifiers.
      */
-    private static function stripModifiers(string &$command): ModifiersInterface
+    private static function stripModifiers(LocationInterface $location, string &$command, array &$parseErrors): ModifiersInterface
     {
         $modifiers = new Modifiers();
         $strippedCommand = $command;
@@ -279,8 +282,11 @@ class Parser
             }
 
             $parsedModifier = new Modifiers(self::MODIFIERS_INFO[$ch]);
-            // fixme: Check duplicated modifiers.
-            $modifiers = $modifiers->combinedWith($parsedModifier);
+            if ($modifiers->contains($parsedModifier)) {
+                $parseErrors[] = new ParseError($location, 'Duplicate modifier: Modifier "' . $ch . '" is duplicated for assert "' . $command . '".');
+            } else {
+                $modifiers = $modifiers->combinedWith($parsedModifier);
+            }
 
             $strippedCommand = substr($strippedCommand, 0, -1);
         }

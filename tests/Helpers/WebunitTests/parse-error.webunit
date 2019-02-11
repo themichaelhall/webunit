@@ -8,3 +8,5 @@ assert-status-code -1
 
 assert-empty BAZ
 assert-empty
+
+assert-empty!!

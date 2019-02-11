@@ -55,6 +55,17 @@ interface ModifiersInterface
     public function combinedWith(self $other): self;
 
     /**
+     * Returns true if this contains other modifiers, false otherwise.
+     *
+     * @since 1.0.0
+     *
+     * @param ModifiersInterface $other The other modifiers.
+     *
+     * @return bool True if this contains other modifiers, false otherwise.
+     */
+    public function contains(self $other): bool;
+
+    /**
      * Returns true if this equals other modifiers, false otherwise.
      *
      * @since 1.0.0

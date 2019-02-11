@@ -114,4 +114,19 @@ class ModifiersTest extends TestCase
         self::assertSame(Modifiers::NONE, (new Modifiers())->getValue());
         self::assertSame(Modifiers::CASE_INSENSITIVE | Modifiers::NOT, (new Modifiers(Modifiers::CASE_INSENSITIVE | Modifiers::NOT))->getValue());
     }
+
+    /**
+     * Test contains method.
+     */
+    public function testContains()
+    {
+        self::assertTrue((new Modifiers())->contains(new Modifiers()));
+        self::assertFalse((new Modifiers())->contains(new Modifiers(Modifiers::NOT)));
+        self::assertTrue((new Modifiers(Modifiers::NOT))->contains(new Modifiers()));
+        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->contains(new Modifiers()));
+        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->contains(new Modifiers(Modifiers::NOT)));
+        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->contains(new Modifiers(Modifiers::CASE_INSENSITIVE)));
+        self::assertTrue((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->contains(new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE)));
+        self::assertFalse((new Modifiers(Modifiers::NOT | Modifiers::CASE_INSENSITIVE))->contains(new Modifiers(Modifiers::NOT | Modifiers::REGEXP)));
+    }
 }
