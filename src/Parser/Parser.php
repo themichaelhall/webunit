@@ -80,11 +80,9 @@ class Parser
 
         $lineParts = preg_split('/\s+/', $line, 2);
         $command = strtolower(trim($lineParts[0]));
-        $parameter = count($lineParts) > 1 ? trim($lineParts[1]) : null;
+        $argument = count($lineParts) > 1 ? trim($lineParts[1]) : null;
 
-        if (self::isTestCase($command)) {
-            $testCase = self::tryParseTestCase($location, $command, $parameter, $parseErrors);
-
+        if (self::tryParseTestCase($location, $command, $argument, $parseErrors, $testCase)) {
             if ($testCase !== null) {
                 $testSuite->addTestCase($testCase);
                 $currentTestCase = $testCase;
@@ -93,12 +91,7 @@ class Parser
             return;
         }
 
-        // todo: Only check modifiers if command is an assert.
-        $modifiers = self::stripModifiers($location, $command, $parseErrors);
-
-        if (self::isAssert($command)) {
-            $assert = self::tryParseAssert($location, $command, $modifiers, $parameter, $parseErrors);
-
+        if (self::tryParseAssert($location, $command, $argument, $parseErrors, $assert)) {
             if ($assert !== null) {
                 if ($currentTestCase !== null) {
                     $currentTestCase->addAssert($assert);
@@ -126,74 +119,67 @@ class Parser
     }
 
     /**
-     * Checks if a command is a test case.
-     *
-     * @param string $command The command.
-     *
-     * @return bool True if command is an test case, false otherwise.
-     */
-    private static function isTestCase(string $command): bool
-    {
-        return $command === 'get';
-    }
-
-    /**
      * Try parse a test case.
      *
-     * @param LocationInterface     $location    The location.
-     * @param string                $command     The command, assuming a valid test case.
-     * @param null|string           $parameter   The parameter or null if no parameter.
-     * @param ParseErrorInterface[] $parseErrors The parse errors.
+     * @param LocationInterface      $location    The location.
+     * @param string                 $command     The command.
+     * @param null|string            $argument    The argument or null if no argument.
+     * @param ParseErrorInterface[]  $parseErrors The parse errors.
+     * @param TestCaseInterface|null $testCase    The parsed test case or null if parsing failed.
      *
-     * @return TestCaseInterface|null The test case or null if there were errors.
+     * @return bool True if this was a test case, false otherwise.
      */
-    private static function tryParseTestCase(LocationInterface $location, string $command, ?string $parameter, array &$parseErrors): ?TestCaseInterface
+    private static function tryParseTestCase(LocationInterface $location, string $command, ?string $argument, array &$parseErrors, ?TestCaseInterface &$testCase): bool
     {
-        if ($parameter === null) {
+        $testCase = null;
+
+        if ($command !== 'get') {
+            return false;
+        }
+
+        if ($argument === null) {
             $parseErrors[] = new ParseError($location, 'Missing argument: Missing Url argument for "' . $command . '".');
 
-            return null;
+            return true;
         }
 
         $url = null;
 
         try {
-            $url = Url::parse($parameter);
+            $url = Url::parse($argument);
         } catch (UrlInvalidArgumentException $exception) {
-            $parseErrors[] = new ParseError($location, 'Invalid argument: Invalid Url argument "' . $parameter . '" for "' . $command . '": ' . $exception->getMessage());
+            $parseErrors[] = new ParseError($location, 'Invalid argument: Invalid Url argument "' . $argument . '" for "' . $command . '": ' . $exception->getMessage());
 
-            return null;
+            return true;
         }
 
-        return new TestCase($location, $url);
-    }
+        $testCase = new TestCase($location, $url);
 
-    /**
-     * Checks if a command is an assert.
-     *
-     * @param string $command The command.
-     *
-     * @return bool True if command is an assert, false otherwise.
-     */
-    private static function isAssert(string $command): bool
-    {
-        return isset(self::ASSERTS_INFO[$command]);
+        return true;
     }
 
     /**
      * Try parse an assert.
      *
-     * @param LocationInterface     $location    The location.
-     * @param string                $command     The command, assuming a valid assert.
-     * @param ModifiersInterface    $modifiers   The modifiers.
-     * @param null|string           $argument    The argument or null if no argument.
-     * @param ParseErrorInterface[] $parseErrors The parse errors.
+     * @param LocationInterface    $location    The location.
+     * @param string               $command     The command.
+     * @param string|null          $argument    The argument or null if no argument.
+     * @param array                $parseErrors The parse errors.
+     * @param AssertInterface|null $assert      The parses assert or null if parsing failed.
      *
-     * @return AssertInterface|null The assert or null if there were errors.
+     * @return bool True if this was an assert, false otherwise.
      */
-    private static function tryParseAssert(LocationInterface $location, string $command, ModifiersInterface $modifiers, ?string $argument, array &$parseErrors): ?AssertInterface
+    private static function tryParseAssert(LocationInterface $location, string $command, ?string $argument, array &$parseErrors, ?AssertInterface &$assert): bool
     {
-        $assertInfo = self::ASSERTS_INFO[$command];
+        $assert = null;
+
+        self::extractModifiers($command, $assertString, $modifiersString);
+
+        if (!isset(self::ASSERTS_INFO[$assertString])) {
+            return false;
+        }
+
+        $assertInfo = self::ASSERTS_INFO[$assertString];
         $className = $assertInfo[0];
         $argumentType = $assertInfo[1];
         $argumentName = $assertInfo[2];
@@ -212,19 +198,24 @@ class Parser
                     break;
             }
 
-            return null;
+            return true;
         }
 
-        // fixme: Handle invalid modifiers for assert.
+        self::tryParseModifiers($location, $assertString, $modifiersString, $parseErrors, $modifiers);
+        if ($modifiers === null) {
+            return true;
+        }
+
+        // todo: Handle invalid modifiers for assert.
         try {
-            return $argumentValue === null ?
+            $assert = $argumentValue === null ?
                 new $className($location, $modifiers) :
                 new $className($location, $argumentValue, $modifiers);
         } catch (InvalidParameterException $e) {
             $parseErrors[] = new ParseError($location, 'Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".');
         }
 
-        return null;
+        return true;
     }
 
     /**
@@ -260,40 +251,58 @@ class Parser
     }
 
     /**
-     * Strips the modifiers from the command and returns them.
+     * Extracts modifiers from a command.
      *
-     * @param LocationInterface $location    The location.
-     * @param string            $command     The command. May be altered.
-     * @param array             $parseErrors The parse errors.
-     *
-     * @return ModifiersInterface The modifiers.
+     * @param string      $command         The command.
+     * @param string|null $assertString    The resulting assert string.
+     * @param string|null $modifiersString The resulting modifiers string.
      */
-    private static function stripModifiers(LocationInterface $location, string &$command, array &$parseErrors): ModifiersInterface
+    private static function extractModifiers(string $command, ?string &$assertString, ?string &$modifiersString): void
     {
-        $modifiers = new Modifiers();
-        $strippedCommand = $command;
+        $assertString = '';
+        $modifiersString = '';
 
-        // fixme: Test just modifiers without assert, e.g. "!^".
-        while (true) {
-            $ch = $strippedCommand[strlen($strippedCommand) - 1];
+        for ($i = strlen($command) - 1; $i >= 0; $i--) {
+            $ch = $command[$i];
 
             if (!isset(self::MODIFIERS_INFO[$ch])) {
                 break;
             }
-
-            $parsedModifier = new Modifiers(self::MODIFIERS_INFO[$ch]);
-            if ($modifiers->contains($parsedModifier)) {
-                $parseErrors[] = new ParseError($location, 'Duplicate modifier: Modifier "' . $ch . '" is duplicated for assert "' . $command . '".');
-            } else {
-                $modifiers = $modifiers->combinedWith($parsedModifier);
-            }
-
-            $strippedCommand = substr($strippedCommand, 0, -1);
         }
 
-        $command = $strippedCommand;
+        $assertString = substr($command, 0, $i + 1);
+        $modifiersString = substr($command, $i + 1);
+    }
 
-        return $modifiers;
+    /**
+     * Try parse modifiers.
+     *
+     * @param LocationInterface       $location        The location.
+     * @param string                  $assertString    The assert command string.
+     * @param string                  $modifiersString The modifiers string to parse.
+     * @param array                   $parseErrors     The parse errors.
+     * @param ModifiersInterface|null $modifiers       The modifiers or null if parsing failed.
+     */
+    private static function tryParseModifiers(LocationInterface $location, string $assertString, string $modifiersString, array &$parseErrors, ?ModifiersInterface &$modifiers): void
+    {
+        $modifiers = new Modifiers();
+        $hasErrors = false;
+
+        for ($i = 0; $i < strlen($modifiersString); $i++) {
+            $ch = $modifiersString[$i];
+            $newModifier = new Modifiers(self::MODIFIERS_INFO[$ch]);
+
+            if ($modifiers->contains($newModifier)) {
+                $parseErrors[] = new ParseError($location, 'Duplicate modifier: Modifier "' . $ch . '" is duplicated for assert "' . $assertString . '".');
+                $hasErrors = true;
+            } else {
+                $modifiers = $modifiers->combinedWith($newModifier);
+            }
+        }
+
+        if ($hasErrors) {
+            $modifiers = null;
+        }
     }
 
     /**
@@ -301,7 +310,7 @@ class Parser
      *
      * The format is as follows:
      *
-     * name => [0 => argumentName|null, 1 => className]
+     * name => [0 => className, 1 => argumentType|null, 2 => argumentName|null]
      */
     private const ASSERTS_INFO = [
         'assert-contains'    => [AssertContains::class, 'string', 'content'],

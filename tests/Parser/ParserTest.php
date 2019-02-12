@@ -105,6 +105,8 @@ class ParserTest extends TestCase
                 'get',
                 'get FooBar',
                 'baz',
+                '^',
+                'get!',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -115,11 +117,13 @@ class ParserTest extends TestCase
         self::assertSame('http://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
-        self::assertSame(4, count($parseErrors));
+        self::assertSame(6, count($parseErrors));
         self::assertSame('foo.webunit:2: Syntax error: Invalid command "foo".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:4: Missing argument: Missing Url argument for "get".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:5: Invalid argument: Invalid Url argument "FooBar" for "get": Url "FooBar" is invalid: Scheme is missing.', $parseErrors[2]->__toString());
         self::assertSame('foo.webunit:6: Syntax error: Invalid command "baz".', $parseErrors[3]->__toString());
+        self::assertSame('foo.webunit:7: Syntax error: Invalid command "^".', $parseErrors[4]->__toString());
+        self::assertSame('foo.webunit:8: Syntax error: Invalid command "get!".', $parseErrors[5]->__toString());
         self::assertFalse($parseResult->isSuccess());
     }
 
@@ -233,17 +237,13 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases));
 
         self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
-        self::assertSame(3, count($testCases[0]->getAsserts()));
+        self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
-        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
-        self::assertTrue((new Modifiers(ModifiersInterface::NOT | ModifiersInterface::REGEXP))->equals($testCases[0]->getAsserts()[1]->getModifiers()));
-        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[2]);
-        self::assertTrue((new Modifiers(ModifiersInterface::NOT | ModifiersInterface::CASE_INSENSITIVE))->equals($testCases[0]->getAsserts()[2]->getModifiers()));
 
         self::assertSame(3, count($parseErrors));
-        self::assertSame('foo.webunit:2: Duplicate modifier: Modifier "~" is duplicated for assert "assert-contains~!~".', $parseErrors[0]->__toString());
-        self::assertSame('foo.webunit:3: Duplicate modifier: Modifier "^" is duplicated for assert "assert-contains!!^^".', $parseErrors[1]->__toString());
-        self::assertSame('foo.webunit:3: Duplicate modifier: Modifier "!" is duplicated for assert "assert-contains!!^^".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:2: Duplicate modifier: Modifier "~" is duplicated for assert "assert-contains".', $parseErrors[0]->__toString());
+        self::assertSame('foo.webunit:3: Duplicate modifier: Modifier "!" is duplicated for assert "assert-contains".', $parseErrors[1]->__toString());
+        self::assertSame('foo.webunit:3: Duplicate modifier: Modifier "^" is duplicated for assert "assert-contains".', $parseErrors[2]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }
