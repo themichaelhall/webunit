@@ -224,7 +224,7 @@ class Parser
 
             $isMultiple = count($invalidModifiers) > 1;
 
-            $parseErrors[] = new ParseError($location, 'Invalid modifier' . ($isMultiple ? 's' : '') . ': Modifier' . ($isMultiple ? 's' : '') . ' ' . join(', ', $invalidModifiers) . ' ' . ($isMultiple ? 'are' : 'is') . ' not allowed for assert "' . $assertString . '".');
+            $parseErrors[] = new ParseError($location, 'Invalid modifier' . ($isMultiple ? 's' : '') . ': Modifier' . ($isMultiple ? 's' : '') . ' ' . implode(', ', $invalidModifiers) . ' ' . ($isMultiple ? 'are' : 'is') . ' not allowed for assert "' . $assertString . '".');
         }
 
         return true;
