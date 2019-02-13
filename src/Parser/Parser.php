@@ -16,6 +16,7 @@ use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
+use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
@@ -206,13 +207,24 @@ class Parser
             return true;
         }
 
-        // todo: Handle invalid modifiers for assert.
         try {
             $assert = $argumentValue === null ?
                 new $className($location, $modifiers) :
                 new $className($location, $argumentValue, $modifiers);
         } catch (InvalidParameterException $e) {
             $parseErrors[] = new ParseError($location, 'Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".');
+        } catch (NotAllowedModifierException $e) {
+            $invalidModifiers = [];
+
+            foreach (self::MODIFIERS_INFO as $char => $value) {
+                if ($e->getModifiers()->contains(new Modifiers($value))) {
+                    $invalidModifiers[] = '"' . $char . '"';
+                }
+            }
+
+            $isMultiple = count($invalidModifiers) > 1;
+
+            $parseErrors[] = new ParseError($location, 'Invalid modifier' . ($isMultiple ? 's' : '') . ': Modifier' . ($isMultiple ? 's' : '') . ' ' . join(', ', $invalidModifiers) . ' ' . ($isMultiple ? 'are' : 'is') . ' not allowed for assert "' . $assertString . '".');
         }
 
         return true;
