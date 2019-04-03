@@ -6,6 +6,7 @@ namespace MichaelHall\Webunit\Tests\Assertions;
 
 use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Exceptions\InvalidRegexpException;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
@@ -128,12 +129,12 @@ class AssertEqualsTest extends TestCase
 
     /**
      * Test invalid regexp.
-     *
-     * @expectedException \MichaelHall\Webunit\Exceptions\InvalidRegexpException
-     * @expectedExceptionMessage Regexp "(Foo" is invalid.
      */
     public function testInvalidRegexp()
     {
+        self::expectException(InvalidRegexpException::class);
+        self::expectExceptionMessage('Regexp "(Foo" is invalid.');
+
         new AssertEquals(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP));
     }
 }

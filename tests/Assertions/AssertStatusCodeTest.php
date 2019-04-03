@@ -6,6 +6,7 @@ namespace MichaelHall\Webunit\Tests\Assertions;
 
 use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
+use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;
@@ -97,12 +98,12 @@ class AssertStatusCodeTest extends TestCase
 
     /**
      * Test assert with invalid status code.
-     *
-     * @expectedException \MichaelHall\Webunit\Exceptions\InvalidParameterException
-     * @expectedExceptionMessage Status code 0 must be in range 100-599
      */
     public function testAssertWithInvalidStatusCode()
     {
+        self::expectException(InvalidParameterException::class);
+        self::expectExceptionMessage('Status code 0 must be in range 100-599');
+
         new AssertStatusCode(new FileLocation(FilePath::parse('/tmp/tests'), 10), 0, new Modifiers());
     }
 }
