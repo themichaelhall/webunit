@@ -30,7 +30,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(2, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             "\033[41m\033[1;37mUsage: webunit testfile\033[0m" . PHP_EOL,
             $output
         );
@@ -50,7 +50,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(3, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             "\033[41m\033[1;37mInvalid file path \"Foo\0Bar\": File path \"Foo\0Bar\" is invalid: Filename \"Foo\0Bar\" contains invalid character \"\0\".\033[0m" . PHP_EOL,
             $output
         );
@@ -72,7 +72,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(3, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             "\033[41m\033[1;37mCould not open file \"{$filePath}\".\033[0m" . PHP_EOL,
             $output
         );
@@ -94,7 +94,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(4, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             "{$filePath}:4: Invalid argument: Invalid Url argument \"FooBar\" for \"get\": Url \"FooBar\" is invalid: Scheme is missing." . PHP_EOL .
             "{$filePath}:5: Syntax error: Invalid command \"baz\"." . PHP_EOL .
             "{$filePath}:7: Invalid argument: Status code -1 must be in range 100-599 for assert \"assert-status-code\"." . PHP_EOL .
@@ -119,7 +119,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(1, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             "\033[43m\033[30mNo tests found.\033[0m" . PHP_EOL,
             $output
         );
@@ -139,7 +139,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(0, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             '...........' . PHP_EOL .
             "\033[42m\033[30m4 tests completed successfully.\033[0m" . PHP_EOL,
             $output
@@ -162,7 +162,7 @@ class ConsoleApplicationTest extends TestCase
 
         self::assertSame(5, $result);
         self::assertSame(
-            'Webunit [dev] by Michael Hall.' . PHP_EOL .
+            'Webunit v1.0.0' . PHP_EOL .
             "..\033[41m\033[1;37mF\033[0m\e[41m\e[1;37mF\e[0m" . PHP_EOL .
             "{$filePath}:4: Test failed: https://example.com/foo: Content \"This is Foo page.\" contains \"foo\" (case insensitive)." . PHP_EOL .
             "{$filePath}:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
