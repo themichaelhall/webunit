@@ -33,7 +33,7 @@ class AssertContainsTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
         $assert = new AssertContains($location, $assertContent, new Modifiers($modifiers));
-        $pageResult = new PageResult(200, $content);
+        $pageResult = new PageResult(200, [], $content);
         $result = $assert->test($pageResult);
 
         self::assertSame($location, $assert->getLocation());

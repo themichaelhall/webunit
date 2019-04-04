@@ -28,7 +28,7 @@ class DefaultAssertTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('/tmp/tests'), 10);
         $assert = new DefaultAssert($location);
-        $pageResult = new PageResult($statusCode, '');
+        $pageResult = new PageResult($statusCode, [], '');
         $result = $assert->test($pageResult);
 
         self::assertSame($location, $assert->getLocation());
