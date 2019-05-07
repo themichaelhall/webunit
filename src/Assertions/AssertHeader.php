@@ -79,9 +79,9 @@ class AssertHeader extends AbstractAssert
             $headerString = '""';
         }
 
-        $result = 'Headers ' . $headerString . ' does not contain a header called "' . $this->headerName . '"';
+        $result = 'Headers ' . $headerString . ' ' . ($this->getModifiers()->isNot() ? 'contains' : 'does not contain') . ' a header with name "' . $this->headerName . '"';
         if ($this->headerValue !== null) {
-            $result .= ' with the value "' . $this->headerValue . '"';
+            $result .= ' and value "' . $this->headerValue . '"';
         }
 
         return $result;
@@ -109,7 +109,7 @@ class AssertHeader extends AbstractAssert
      */
     private function nameAndValueMatches(string $headerName, ?string $headerValue): bool
     {
-        if (mb_strtolower($headerName) !== mb_strtolower($this->headerName)) {
+        if (!$this->stringEqualsCaseInsensitive($this->headerName, $headerName)) {
             return false;
         }
 
@@ -121,7 +121,7 @@ class AssertHeader extends AbstractAssert
             return false;
         }
 
-        if ($headerValue !== $this->headerValue) {
+        if (!$this->stringEquals($this->headerValue, $headerValue)) {
             return false;
         }
 
