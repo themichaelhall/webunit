@@ -14,6 +14,7 @@ use DataTypes\Url;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
@@ -328,6 +329,7 @@ class Parser
         'assert-contains'    => [AssertContains::class, 'string', 'content'],
         'assert-empty'       => [AssertEmpty::class, null, null],
         'assert-equals'      => [AssertEquals::class, 'string', 'content'],
+        'assert-header'      => [AssertHeader::class, 'string', 'header'],
         'assert-status-code' => [AssertStatusCode::class, 'integer', 'status code'],
     ];
 

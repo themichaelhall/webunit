@@ -22,12 +22,14 @@ class PageResult implements PageResultInterface
      *
      * @since 1.0.0
      *
-     * @param int    $statusCode The status code.
-     * @param string $content    The content.
+     * @param int      $statusCode The status code.
+     * @param string[] $headers    The headers.
+     * @param string   $content    The content.
      */
-    public function __construct(int $statusCode = 200, string $content = '')
+    public function __construct(int $statusCode = 200, array $headers = [], string $content = '')
     {
         $this->statusCode = $statusCode;
+        $this->headers = $headers;
         $this->content = $content;
     }
 
@@ -41,6 +43,18 @@ class PageResult implements PageResultInterface
     public function getContent(): string
     {
         return $this->content;
+    }
+
+    /**
+     * Returns the headers.
+     *
+     * @since 1.1.0
+     *
+     * @return string[] The headers.
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
     }
 
     /**
@@ -59,6 +73,11 @@ class PageResult implements PageResultInterface
      * @var int My status code.
      */
     private $statusCode;
+
+    /**
+     * @var string[] My headers.
+     */
+    private $headers;
 
     /**
      * @var string My content.

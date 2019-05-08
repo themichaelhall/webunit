@@ -96,6 +96,7 @@ class TestCase implements TestCaseInterface
 
         $pageResult = new PageResult(
             $httpClientResponse->getHttpCode(),
+            $httpClientResponse->getHeaders(),
             $httpClientResponse->getContent()
         );
 

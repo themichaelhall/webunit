@@ -28,9 +28,10 @@ class PageResultTest extends TestCase
      */
     public function testConstructor()
     {
-        $pageResult = new PageResult(404, 'Foo');
+        $pageResult = new PageResult(404, ['Content-Length: 3', 'Server: Test'], 'Foo');
 
         self::assertSame(404, $pageResult->getStatusCode());
+        self::assertSame(['Content-Length: 3', 'Server: Test'], $pageResult->getHeaders());
         self::assertSame('Foo', $pageResult->getContent());
     }
 }

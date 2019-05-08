@@ -127,6 +127,57 @@ abstract class AbstractAssert implements AssertInterface
     }
 
     /**
+     * Returns true if value contains the expected value, taking the current modifiers into account.
+     *
+     * @since 1.0.0
+     *
+     * @param string $expected The expected value.
+     * @param string $value    The value.
+     *
+     * @return bool True if value contains the expected value, false otherwise.
+     */
+    protected function stringContains(string $expected, string $value): bool
+    {
+        if ($this->getModifiers()->isRegexp()) {
+            return preg_match('/' . $expected . '/' . ($this->getModifiers()->isCaseInsensitive() ? 'i' : ''), $value) === 1;
+        }
+
+        return $this->getModifiers()->isCaseInsensitive() ?
+            mb_stristr($value, $expected) !== false :
+            strpos($value, $expected) !== false;
+    }
+
+    /**
+     * Returns true if strings are equal, taking the current modifiers into account.
+     *
+     * @since 1.0.0
+     *
+     * @param string $expected The expected value.
+     * @param string $value    The value.
+     *
+     * @return bool True if strings are equal, false otherwise.
+     */
+    protected function stringEquals(string $expected, string $value): bool
+    {
+        return self::checkStringEquals($expected, $value, $this->modifiers->isCaseInsensitive(), $this->modifiers->isRegexp());
+    }
+
+    /**
+     * Returns true if strings are equal, always case insensitive, otherwise taking the current modifiers into account.
+     *
+     * @since 1.1.0
+     *
+     * @param string $expected The expected value.
+     * @param string $value    The value.
+     *
+     * @return bool True if strings are equal, false otherwise.
+     */
+    protected function stringEqualsCaseInsensitive(string $expected, string $value): bool
+    {
+        return self::checkStringEquals($expected, $value, true, $this->modifiers->isRegexp());
+    }
+
+    /**
      * Called when a test is performed on a page result.
      *
      * @since 1.0.0
@@ -156,6 +207,27 @@ abstract class AbstractAssert implements AssertInterface
      * @return ModifiersInterface The allowed modifiers.
      */
     abstract protected function getAllowedModifiers(): ModifiersInterface;
+
+    /**
+     * Checks if strings should be considered equal.
+     *
+     * @param string $expected          The expected value.
+     * @param string $value             The value.
+     * @param bool   $isCaseInsensitive If true, check case insensitive.
+     * @param bool   $isRegexp          If true, the expected value is a regular expression.
+     *
+     * @return bool True if strings are considered equal, false otherwise.
+     */
+    private static function checkStringEquals(string $expected, string $value, bool $isCaseInsensitive, bool $isRegexp): bool
+    {
+        if ($isRegexp) {
+            return preg_match('/^' . $expected . '$/' . ($isCaseInsensitive ? 'i' : ''), $value) === 1;
+        }
+
+        return $isCaseInsensitive ?
+            mb_strtolower($expected) === mb_strtolower($value) :
+            $expected === $value;
+    }
 
     /**
      * @var ModifiersInterface My modifiers.

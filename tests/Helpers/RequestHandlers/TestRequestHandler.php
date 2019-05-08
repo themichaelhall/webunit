@@ -23,19 +23,42 @@ class TestRequestHandler implements RequestHandlerInterface
      */
     public function handleRequest(HttpClientRequestInterface $request): HttpClientResponseInterface
     {
+        $responseCode = 200;
+        $responseText = '';
+        $responseHeaders = [];
+
         switch ($request->getUrl()->getPath()) {
             case '/':
-                return new HttpClientResponse(200, 'Hello World!');
+                $responseText = 'Hello World!';
+                break;
+
             case '/foo':
-                return new HttpClientResponse(200, 'This is Foo page.');
+                $responseText = 'This is Foo page.';
+                $responseHeaders[] = 'X-Foo: X-Bar';
+                break;
+
             case '/bar':
-                return new HttpClientResponse(200, 'This is Bar page.');
+                $responseText = 'This is Bar page.';
+                break;
+
             case '/baz':
-                return new HttpClientResponse(200, 'This is Baz page.');
+                $responseText = 'This is Baz page.';
+                break;
+
             case '/empty':
-                return new HttpClientResponse(200, '');
+                break;
+
+            default:
+                $responseCode = 404;
+                $responseText = 'Page not found.';
+                break;
         }
 
-        return new HttpClientResponse(404, 'Page not found.');
+        $response = new HttpClientResponse($responseCode, $responseText);
+        foreach ($responseHeaders as $responseHeader) {
+            $response->addHeader($responseHeader);
+        }
+
+        return $response;
     }
 }

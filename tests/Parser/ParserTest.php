@@ -8,6 +8,7 @@ use DataTypes\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;
+use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
@@ -150,6 +151,8 @@ class ParserTest extends TestCase
                 'assert-status-code foo',
                 'assert-status-code 600',
                 'assert-status-code 401',
+                'assert-header',
+                'assert-header https://example.com/bar',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -165,11 +168,12 @@ class ParserTest extends TestCase
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
 
         self::assertSame('https://example.com/foo', $testCases[1]->getUrl()->__toString());
-        self::assertSame(2, count($testCases[1]->getAsserts()));
+        self::assertSame(3, count($testCases[1]->getAsserts()));
         self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[0]);
         self::assertInstanceOf(AssertStatusCode::class, $testCases[1]->getAsserts()[1]);
+        self::assertInstanceOf(AssertHeader::class, $testCases[1]->getAsserts()[2]);
 
-        self::assertSame(7, count($parseErrors));
+        self::assertSame(8, count($parseErrors));
         self::assertSame('foo.webunit:1: Undefined test case: Test case is not defined for assert "assert-contains".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:4: Missing argument: Missing content argument for assert "assert-contains".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:7: Extra argument: "bar". No arguments are allowed for assert "assert-empty".', $parseErrors[2]->__toString());
@@ -177,6 +181,7 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:12: Missing argument: Missing status code argument for assert "assert-status-code".', $parseErrors[4]->__toString());
         self::assertSame('foo.webunit:13: Invalid argument: Status code "foo" must be of type integer for assert "assert-status-code".', $parseErrors[5]->__toString());
         self::assertSame('foo.webunit:14: Invalid argument: Status code 600 must be in range 100-599 for assert "assert-status-code".', $parseErrors[6]->__toString());
+        self::assertSame('foo.webunit:16: Missing argument: Missing header argument for assert "assert-header".', $parseErrors[7]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }
@@ -193,6 +198,7 @@ class ParserTest extends TestCase
                 'assert-empty',
                 'assert-empty!',
                 'assert-contains~^ Foo',
+                'assert-header!~^ Content-type: text/html',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -202,7 +208,7 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases));
 
         self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
-        self::assertSame(4, count($testCases[0]->getAsserts()));
+        self::assertSame(5, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[1]);
         self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[1]->getModifiers()));
@@ -210,6 +216,8 @@ class ParserTest extends TestCase
         self::assertTrue((new Modifiers(ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[2]->getModifiers()));
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[3]);
         self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
+        self::assertInstanceOf(AssertHeader::class, $testCases[0]->getAsserts()[4]);
+        self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP | ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[4]->getModifiers()));
 
         self::assertSame(0, count($parseErrors));
 

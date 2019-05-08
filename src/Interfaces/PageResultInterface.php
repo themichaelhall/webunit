@@ -25,6 +25,15 @@ interface PageResultInterface
     public function getContent(): string;
 
     /**
+     * Returns the headers.
+     *
+     * @since 1.1.0
+     *
+     * @return string[] The headers.
+     */
+    public function getHeaders(): array;
+
+    /**
      * Returns the status code.
      *
      * @since 1.0.0
