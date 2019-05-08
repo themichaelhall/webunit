@@ -4,3 +4,4 @@ GET                https://example.com/foo
 assert-contains!^  foo
 
 GET                https://example.com/foobar
+assert-header      Location: https://example.com/baz

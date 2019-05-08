@@ -140,7 +140,7 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(0, $result);
         self::assertSame(
             'Webunit v1.0.0' . PHP_EOL .
-            '...........' . PHP_EOL .
+            '............' . PHP_EOL .
             "\033[42m\033[30m4 tests completed successfully.\033[0m" . PHP_EOL,
             $output
         );
