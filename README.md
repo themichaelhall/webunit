@@ -113,6 +113,17 @@ Asserts that the content of the result is the same as the specified content. All
 assert-equals Foo
 ```
 
+### assert-header _header-name[: header-value]_
+
+Asserts that the result contains a header with the specified name and an optional value. Allowed modifiers are ```!```, ```^```, ```~```
+
+```
+assert-header Location
+assert-header Location: https://example.com/
+```
+
+Note: The header name is always case insensitive.
+
 ### assert-status-code _status-code_
 
 Asserts that the status code of the result is the same as the specified status code. Allowed modifier is ```!``` 
