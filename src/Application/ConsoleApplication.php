@@ -90,7 +90,7 @@ class ConsoleApplication
      */
     public function run(): int
     {
-        echo 'Webunit v1.0.0' . PHP_EOL;
+        echo 'Webunit v1.1.0' . PHP_EOL;
 
         if ($this->argc !== 2) {
             self::fail('Usage: webunit testfile');
