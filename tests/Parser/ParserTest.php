@@ -27,7 +27,8 @@ class ParserTest extends TestCase
     public function testParseWithEmptyTest()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 'get http://example.com/',
             ]
@@ -49,7 +50,8 @@ class ParserTest extends TestCase
     public function testParseWithWhitespaces()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 '',
                 "\t \r\n",
@@ -74,7 +76,8 @@ class ParserTest extends TestCase
     public function testParseWithComments()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 '# This is a comment',
                 '#',
@@ -98,7 +101,8 @@ class ParserTest extends TestCase
     public function testParseInvalidCommand()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 '#',
                 'foo bar',
@@ -134,7 +138,8 @@ class ParserTest extends TestCase
     public function testParseWithAsserts()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 'assert-contains foo',
                 '',
@@ -192,7 +197,8 @@ class ParserTest extends TestCase
     public function testParseAssertsWithModifiers()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 'get https://example.com/',
                 'assert-empty',
@@ -230,7 +236,8 @@ class ParserTest extends TestCase
     public function testParseWithModifiersErrors()
     {
         $parser = new Parser();
-        $parseResult = $parser->parse(FilePath::parse('foo.webunit'),
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
             [
                 'get https://example.com/',
                 'assert-contains~!~ Foo',
