@@ -126,7 +126,7 @@ Note: The header name is always case insensitive.
 
 ### assert-status-code _status-code_
 
-Asserts that the status code of the result is the same as the specified status code. Allowed modifier is ```!``` 
+Asserts that the status code of the result is the same as the specified status code. Allowed modifier is ```!```
 
 Note: This assert must be present for test a to pass if the result has a status code other than 200-299.
 
