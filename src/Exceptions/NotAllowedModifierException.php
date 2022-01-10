@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Exceptions;
 
+use LogicException;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 
 /**
@@ -15,7 +16,7 @@ use MichaelHall\Webunit\Interfaces\ModifiersInterface;
  *
  * @since 1.0.0
  */
-class NotAllowedModifierException extends \LogicException
+class NotAllowedModifierException extends LogicException
 {
     /**
      * Constructs the exception.

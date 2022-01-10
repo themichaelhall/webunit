@@ -46,7 +46,7 @@ class AssertStatusCodeTest extends TestCase
      *
      * @return array The data.
      */
-    public function assertionDataProvider()
+    public function assertionDataProvider(): array
     {
         return [
             // ModifiersInterface::NONE
@@ -84,7 +84,7 @@ class AssertStatusCodeTest extends TestCase
      *
      * @return array The data.
      */
-    public function assertionWithNotAllowedModifierDataProvider()
+    public function assertionWithNotAllowedModifierDataProvider(): array
     {
         return [
             [ModifiersInterface::CASE_INSENSITIVE, ModifiersInterface::CASE_INSENSITIVE],

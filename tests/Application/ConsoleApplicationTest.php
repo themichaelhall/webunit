@@ -73,7 +73,7 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(3, $result);
         self::assertSame(
             'Webunit v1.1.0' . PHP_EOL .
-            "\033[41m\033[1;37mCould not open file \"{$filePath}\".\033[0m" . PHP_EOL,
+            "\033[41m\033[1;37mCould not open file \"$filePath\".\033[0m" . PHP_EOL,
             $output
         );
     }
@@ -95,11 +95,11 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(4, $result);
         self::assertSame(
             'Webunit v1.1.0' . PHP_EOL .
-            "{$filePath}:4: Invalid argument: Invalid Url argument \"FooBar\" for \"get\": Url \"FooBar\" is invalid: Scheme is missing." . PHP_EOL .
-            "{$filePath}:5: Syntax error: Invalid command \"baz\"." . PHP_EOL .
-            "{$filePath}:7: Invalid argument: Status code -1 must be in range 100-599 for assert \"assert-status-code\"." . PHP_EOL .
-            "{$filePath}:9: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
-            "{$filePath}:12: Duplicate modifier: Modifier \"!\" is duplicated for assert \"assert-empty\"." . PHP_EOL .
+            "$filePath:4: Invalid argument: Invalid Url argument \"FooBar\" for \"get\": Url \"FooBar\" is invalid: Scheme is missing." . PHP_EOL .
+            "$filePath:5: Syntax error: Invalid command \"baz\"." . PHP_EOL .
+            "$filePath:7: Invalid argument: Status code -1 must be in range 100-599 for assert \"assert-status-code\"." . PHP_EOL .
+            "$filePath:9: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
+            "$filePath:12: Duplicate modifier: Modifier \"!\" is duplicated for assert \"assert-empty\"." . PHP_EOL .
             "\033[41m\033[1;37mParsing failed.\033[0m" . PHP_EOL,
             $output
         );
@@ -164,8 +164,8 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(
             'Webunit v1.1.0' . PHP_EOL .
             "..\033[41m\033[1;37mF\033[0m\e[41m\e[1;37mF\e[0m" . PHP_EOL .
-            "{$filePath}:4: Test failed: https://example.com/foo: Content \"This is Foo page.\" contains \"foo\" (case insensitive)." . PHP_EOL .
-            "{$filePath}:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
+            "$filePath:4: Test failed: https://example.com/foo: Content \"This is Foo page.\" contains \"foo\" (case insensitive)." . PHP_EOL .
+            "$filePath:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
             "\033[41m\033[1;37m2 tests failed.\033[0m" . PHP_EOL,
             $output
         );

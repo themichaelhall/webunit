@@ -8,12 +8,14 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Exceptions;
 
+use LogicException;
+
 /**
  * Exception thrown when a regexp is invalid.
  *
  * @since 1.0.0
  */
-class InvalidRegexpException extends \LogicException
+class InvalidRegexpException extends LogicException
 {
     /**
      * Constructs the exception.

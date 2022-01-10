@@ -43,7 +43,7 @@ interface TestCaseInterface
      *
      * @return UrlInterface The url.
      */
-    public function getUrl();
+    public function getUrl(): UrlInterface;
 
     /**
      * Runs the test case.

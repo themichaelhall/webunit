@@ -12,7 +12,6 @@ use MichaelHall\Webunit\Application\ConsoleApplication;
 
 foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php'] as $autoload) {
     if (file_exists($autoload)) {
-        /** @noinspection PhpIncludeInspection */
         require $autoload;
 
         break;

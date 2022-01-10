@@ -41,7 +41,7 @@ class DefaultAssertTest extends TestCase
      *
      * @return array The data.
      */
-    public function assertionDataProvider()
+    public function assertionDataProvider(): array
     {
         return [
             [100, false, 'Status code 100 was returned'],

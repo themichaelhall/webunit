@@ -45,7 +45,7 @@ class AssertHeaderTest extends TestCase
      *
      * @return array The data.
      */
-    public function assertionDataProvider()
+    public function assertionDataProvider(): array
     {
         return [
             // ModifiersInterface::NONE

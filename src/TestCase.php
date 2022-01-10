@@ -74,7 +74,7 @@ class TestCase implements TestCaseInterface
      *
      * @return UrlInterface The url.
      */
-    public function getUrl()
+    public function getUrl(): UrlInterface
     {
         return $this->url;
     }

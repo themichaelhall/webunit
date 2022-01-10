@@ -145,8 +145,6 @@ class Parser
             return true;
         }
 
-        $url = null;
-
         try {
             $url = Url::parse($argument);
         } catch (UrlInvalidArgumentException $exception) {

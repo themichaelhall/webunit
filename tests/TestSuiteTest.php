@@ -79,7 +79,7 @@ class TestSuiteTest extends TestCase
         $testCase1->addAssert(new AssertEquals($location, 'This is Foo page.', new Modifiers()));
         $testCase1->addAssert(new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT)));
         $testCase1->addAssert(new AssertEmpty($location, new Modifiers(ModifiersInterface::NOT)));
-        $testCase1->addAssert(new AssertHeader($location, 'x-f[o]+:X-BAR', new Modifiers(ModifiersInterface::REGEXP | Modifiers::CASE_INSENSITIVE)));
+        $testCase1->addAssert(new AssertHeader($location, 'x-f[o]+:X-BAR', new Modifiers(ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE)));
 
         $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/bar'));
         $testCase2->addAssert(new AssertContains($location, 'Foo', new Modifiers(ModifiersInterface::NOT)));

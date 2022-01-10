@@ -24,8 +24,8 @@ class TestCaseResult implements TestCaseResultInterface
      *
      * @since 1.0.0
      *
-     * @param TestCaseInterface     $testCase           The test case.
-     * @param AssertResultInterface $failedAssertResult The failed assert result or null if no assert failed.
+     * @param TestCaseInterface          $testCase           The test case.
+     * @param AssertResultInterface|null $failedAssertResult The failed assert result or null if no assert failed.
      */
     public function __construct(TestCaseInterface $testCase, ?AssertResultInterface $failedAssertResult = null)
     {
