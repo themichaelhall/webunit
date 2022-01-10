@@ -12,7 +12,7 @@ Webunit is a command line client for automated web application tests.
 
 ## Requirements
 
-- PHP >= 7.1
+- PHP >= 7.3
 
 ## Install with Composer
 

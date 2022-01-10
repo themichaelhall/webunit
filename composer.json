@@ -14,13 +14,13 @@
     }
   ],
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.3",
     "ext-mbstring": "*",
     "michaelhall/http-client": "^1.0",
     "datatypes/datatypes": "^2.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.5||^8.0"
+    "phpunit/phpunit": "^9.0"
   },
   "autoload": {
     "psr-4": {
