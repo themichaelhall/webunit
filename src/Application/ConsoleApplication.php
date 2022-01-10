@@ -1,9 +1,11 @@
 <?php
+
 /**
  * This file is a part of the webunit package.
  *
  * Read more at https://github.com/themichaelhall/webunit
  */
+
 declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Application;
@@ -28,42 +30,42 @@ class ConsoleApplication
      *
      * @since 1.0.0
      */
-    const RESULT_OK = 0;
+    public const RESULT_OK = 0;
 
     /**
      * No tests found.
      *
      * @since 1.0.0
      */
-    const RESULT_NO_TESTS_FOUND = 1;
+    public const RESULT_NO_TESTS_FOUND = 1;
 
     /**
      * Command line parameter error.
      *
      * @since 1.0.0
      */
-    const RESULT_PARAMETER_ERROR = 2;
+    public const RESULT_PARAMETER_ERROR = 2;
 
     /**
      * Error while reading the test file.
      *
      * @since 1.0.0
      */
-    const RESULT_READ_TEST_FILE_ERROR = 3;
+    public const RESULT_READ_TEST_FILE_ERROR = 3;
 
     /**
      * Error while parsing the test file.
      *
      * @since 1.0.0
      */
-    const RESULT_PARSE_TEST_FILE_ERROR = 4;
+    public const RESULT_PARSE_TEST_FILE_ERROR = 4;
 
     /**
      * Tests failed.
      *
      * @since 1.0.0
      */
-    const RESULT_TESTS_FAILED = 5;
+    public const RESULT_TESTS_FAILED = 5;
 
     /**
      * Constructs the console application.

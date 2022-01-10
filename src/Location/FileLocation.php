@@ -1,9 +1,11 @@
 <?php
+
 /**
  * This file is a part of the webunit package.
  *
  * Read more at https://github.com/themichaelhall/webunit
  */
+
 declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Location;

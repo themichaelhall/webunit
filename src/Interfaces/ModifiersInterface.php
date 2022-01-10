@@ -1,9 +1,11 @@
 <?php
+
 /**
  * This file is a part of the webunit package.
  *
  * Read more at https://github.com/themichaelhall/webunit
  */
+
 declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
@@ -20,28 +22,28 @@ interface ModifiersInterface
      *
      * @since 1.0.0
      */
-    const NONE = 0x0000;
+    public const NONE = 0x0000;
 
     /**
      * Not modifier.
      *
      * @since 1.0.0
      */
-    const NOT = 0x0001;
+    public const NOT = 0x0001;
 
     /**
      * Case insensitive modifier.
      *
      * @since 1.0.0
      */
-    const CASE_INSENSITIVE = 0x0002;
+    public const CASE_INSENSITIVE = 0x0002;
 
     /**
      * Regexp modifier.
      *
      * @since 1.0.0
      */
-    const REGEXP = 0x0004;
+    public const REGEXP = 0x0004;
 
     /**
      * Combines this with other modifiers.
