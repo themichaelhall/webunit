@@ -1,5 +1,6 @@
 # Webunit
 
+[![Tests](https://github.com/themichaelhall/webunit/workflows/tests/badge.svg?branch=master)](https://github.com/themichaelhall/webunit/actions)
 [![Build Status](https://travis-ci.org/themichaelhall/webunit.svg?branch=master)](https://travis-ci.org/themichaelhall/webunit)
 [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/themichaelhall/webunit?branch=master&svg=true)](https://ci.appveyor.com/project/themichaelhall/webunit/branch/master)
 [![codecov.io](https://codecov.io/gh/themichaelhall/webunit/coverage.svg?branch=master)](https://codecov.io/gh/themichaelhall/webunit?branch=master)
