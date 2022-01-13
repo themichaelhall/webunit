@@ -39,7 +39,7 @@ class TestCaseTest extends TestCase
     }
 
     /**
-     * Test test case with asserts.
+     * Test case with asserts.
      */
     public function testWithAsserts()
     {
@@ -65,7 +65,7 @@ class TestCaseTest extends TestCase
     }
 
     /**
-     * Test test case with status code assert (should remove default assert).
+     * Test case with status code assert (should remove default assert).
      */
     public function testStatusCodeAssertRemovesDefaultAssert()
     {

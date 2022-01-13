@@ -32,7 +32,7 @@ The tests in the test file consists of one or more test cases. Every test case s
 get https://example.org/
 ```
 
-This test will be successful if the Url ```https://example.org/``` is functional and does not return an error or redirect status code. Otherwise the test will fail.
+This test will be successful if the Url ```https://example.org/``` is functional and does not return an error or redirect status code. Otherwise, the test will fail.
 
 A test case can also contain specific assertions:
 
@@ -53,7 +53,7 @@ get                    https://example.org/foobar
 assert-status-code     404
 ```
 
-Some of the assertions can be modified with modifier characters:
+Some assertions can be modified with modifier characters:
 
 ```
 get                    https://example.org/
@@ -120,13 +120,13 @@ assert-header Location
 assert-header Location: https://example.com/
 ```
 
-Note: The header name is always case insensitive.
+Note: The header name is always case-insensitive.
 
 ### assert-status-code _status-code_
 
 Asserts that the status code of the result is the same as the specified status code. Allowed modifier is ```!```
 
-Note: This assert must be present for test a to pass if the result has a status code other than 200-299.
+Note: This assert must be present for a test to pass if the result has a status code other than 200-299.
 
 ```
 assert-status-code 301

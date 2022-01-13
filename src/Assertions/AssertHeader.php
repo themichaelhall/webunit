@@ -73,9 +73,12 @@ class AssertHeader extends AbstractAssert
      */
     protected function onFail(PageResultInterface $pageResult): string
     {
-        $headerString = implode(', ', array_map(function (string $s) {
-            return '"' . $s . '"';
-        }, $pageResult->getHeaders()));
+        $headerString = implode(
+            ', ',
+            array_map(function (string $s) {
+                return '"' . $s . '"';
+            }, $pageResult->getHeaders())
+        );
 
         if ($headerString === '') {
             $headerString = '""';

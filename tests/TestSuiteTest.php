@@ -37,7 +37,7 @@ class TestSuiteTest extends TestCase
     }
 
     /**
-     * Test test suite with test cases.
+     * Test suite with test cases.
      */
     public function testWithTestCases()
     {

@@ -165,7 +165,7 @@ abstract class AbstractAssert implements AssertInterface
     }
 
     /**
-     * Returns true if strings are equal, always case insensitive, otherwise taking the current modifiers into account.
+     * Returns true if strings are equal, always case-insensitive, otherwise taking the current modifiers into account.
      *
      * @since 1.1.0
      *
@@ -215,7 +215,7 @@ abstract class AbstractAssert implements AssertInterface
      *
      * @param string $expected          The expected value.
      * @param string $value             The value.
-     * @param bool   $isCaseInsensitive If true, check case insensitive.
+     * @param bool   $isCaseInsensitive If true, check case-insensitive.
      * @param bool   $isRegexp          If true, the expected value is a regular expression.
      *
      * @return bool True if strings are considered equal, false otherwise.
