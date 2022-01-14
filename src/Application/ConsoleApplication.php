@@ -68,6 +68,13 @@ class ConsoleApplication
     public const RESULT_TESTS_FAILED = 5;
 
     /**
+     * The current version of webunit.
+     *
+     * @since 1.2.0
+     */
+    public const WEBUNIT_VERSION = '1.2.0';
+
+    /**
      * Constructs the console application.
      *
      * @since 1.0.0
@@ -92,7 +99,7 @@ class ConsoleApplication
      */
     public function run(): int
     {
-        echo 'Webunit v1.1.0' . PHP_EOL;
+        echo 'Webunit v' . self::WEBUNIT_VERSION . PHP_EOL;
 
         if ($this->argc !== 2) {
             self::fail('Usage: webunit testfile');
