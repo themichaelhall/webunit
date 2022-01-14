@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
-use DataTypes\FilePath;
+use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Location\FileLocation;

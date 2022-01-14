@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Location;
 
-use DataTypes\Interfaces\FilePathInterface;
+use DataTypes\System\FilePathInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 
 /**

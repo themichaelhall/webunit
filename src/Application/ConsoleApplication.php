@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Application;
 
-use DataTypes\Exceptions\FilePathInvalidArgumentException;
-use DataTypes\FilePath;
-use DataTypes\Interfaces\FilePathInterface;
+use DataTypes\System\Exceptions\FilePathInvalidArgumentException;
+use DataTypes\System\FilePath;
+use DataTypes\System\FilePathInterface;
 use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;

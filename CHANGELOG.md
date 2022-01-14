@@ -1,5 +1,6 @@
 ## Unreleased
 - Changed required PHP version to >= 7.3.
+- Changed required datatypes version to 2.4.
 
 ## [1.1.0] - 2019-05-08
 - Add assert-header.

@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
-use DataTypes\Interfaces\UrlInterface;
+use DataTypes\Net\UrlInterface;
 use MichaelHall\HttpClient\HttpClientInterface;
 
 /**

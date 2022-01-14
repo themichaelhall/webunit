@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Location;
 
-use DataTypes\FilePath;
+use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Location\FileLocation;
 use PHPUnit\Framework\TestCase;
 

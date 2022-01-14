@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Assertions;
 
-use DataTypes\FilePath;
+use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Exceptions\InvalidRegexpException;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;

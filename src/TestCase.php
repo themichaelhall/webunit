@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit;
 
-use DataTypes\Interfaces\UrlInterface;
+use DataTypes\Net\UrlInterface;
 use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\HttpClient\HttpClientRequest;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
@@ -122,9 +122,11 @@ class TestCase implements TestCaseInterface
      */
     private function removeDefaultAssert(): void
     {
-        $this->asserts = array_values(array_filter($this->asserts, function (AssertInterface $assert) {
-            return !($assert instanceof DefaultAssert);
-        }));
+        $this->asserts = array_values(
+            array_filter($this->asserts, function (AssertInterface $assert) {
+                return !($assert instanceof DefaultAssert);
+            })
+        );
     }
 
     /**

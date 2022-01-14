@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Parser;
 
-use DataTypes\FilePath;
+use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Parser\ParseError;
 use PHPUnit\Framework\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Parser;
 
-use DataTypes\FilePath;
+use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;

@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Parser;
 
-use DataTypes\Exceptions\UrlInvalidArgumentException;
-use DataTypes\Interfaces\FilePathInterface;
-use DataTypes\Url;
+use DataTypes\Net\Exceptions\UrlInvalidArgumentException;
+use DataTypes\Net\Url;
+use DataTypes\System\FilePathInterface;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
 use MichaelHall\Webunit\Assertions\AssertEquals;

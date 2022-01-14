@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Application;
 
-use DataTypes\FilePath;
+use DataTypes\System\FilePath;
 use MichaelHall\HttpClient\HttpClient;
 use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\Webunit\Application\ConsoleApplication;
