@@ -53,7 +53,7 @@ abstract class AbstractContentAssert extends AbstractAssert
      *
      * @return string The content.
      */
-    protected function getContent(): string
+    public function getContent(): string
     {
         return $this->content;
     }

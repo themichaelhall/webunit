@@ -134,6 +134,8 @@ class ParserTest extends TestCase
 
     /**
      * Test parse with asserts.
+     *
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function testParseWithAsserts()
     {
@@ -170,11 +172,13 @@ class ParserTest extends TestCase
         self::assertSame(3, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
+        self::assertSame('foo', $testCases[0]->getAsserts()[1]->getContent());
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
 
         self::assertSame('https://example.com/foo', $testCases[1]->getUrl()->__toString());
         self::assertSame(3, count($testCases[1]->getAsserts()));
         self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[0]);
+        self::assertSame('baz', $testCases[1]->getAsserts()[0]->getContent());
         self::assertInstanceOf(AssertStatusCode::class, $testCases[1]->getAsserts()[1]);
         self::assertInstanceOf(AssertHeader::class, $testCases[1]->getAsserts()[2]);
 
@@ -193,6 +197,8 @@ class ParserTest extends TestCase
 
     /**
      * Test parse asserts with modifiers.
+     *
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function testParseAssertsWithModifiers()
     {
@@ -221,6 +227,7 @@ class ParserTest extends TestCase
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
         self::assertTrue((new Modifiers(ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[2]->getModifiers()));
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[3]);
+        self::assertSame('Foo', $testCases[0]->getAsserts()[3]->getContent());
         self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
         self::assertInstanceOf(AssertHeader::class, $testCases[0]->getAsserts()[4]);
         self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP | ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[4]->getModifiers()));
