@@ -159,7 +159,7 @@ class ParserTest extends TestCase
                 'assert-status-code 600',
                 'assert-status-code 401',
                 'assert-header',
-                'assert-header https://example.com/bar',
+                'assert-header Location',
             ]
         );
         $testSuite = $parseResult->getTestSuite();
@@ -181,6 +181,8 @@ class ParserTest extends TestCase
         self::assertSame('baz', $testCases[1]->getAsserts()[0]->getContent());
         self::assertInstanceOf(AssertStatusCode::class, $testCases[1]->getAsserts()[1]);
         self::assertInstanceOf(AssertHeader::class, $testCases[1]->getAsserts()[2]);
+        self::assertSame('Location', $testCases[1]->getAsserts()[2]->getHeaderName());
+        self::assertNull($testCases[1]->getAsserts()[2]->getHeaderValue());
 
         self::assertSame(8, count($parseErrors));
         self::assertSame('foo.webunit:1: Undefined test case: Test case is not defined for assert "assert-contains".', $parseErrors[0]->__toString());
@@ -230,6 +232,8 @@ class ParserTest extends TestCase
         self::assertSame('Foo', $testCases[0]->getAsserts()[3]->getContent());
         self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
         self::assertInstanceOf(AssertHeader::class, $testCases[0]->getAsserts()[4]);
+        self::assertSame('Content-type', $testCases[0]->getAsserts()[4]->getHeaderName());
+        self::assertSame('text/html', $testCases[0]->getAsserts()[4]->getHeaderValue());
         self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP | ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[4]->getModifiers()));
 
         self::assertSame(0, count($parseErrors));

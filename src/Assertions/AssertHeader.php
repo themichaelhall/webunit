@@ -40,6 +40,30 @@ class AssertHeader extends AbstractAssert
     }
 
     /**
+     * Returns the header name.
+     *
+     * @since 1.3.0
+     *
+     * @return string The header name.
+     */
+    public function getHeaderName(): string
+    {
+        return $this->headerName;
+    }
+
+    /**
+     * Returns the header value or null if no header value is set.
+     *
+     * @since 1.3.0
+     *
+     * @return string|null The header value or null if no header value is set.
+     */
+    public function getHeaderValue(): ?string
+    {
+        return $this->headerValue;
+    }
+
+    /**
      * Called when a test is performed on a page result.
      *
      * @since 1.1.0
