@@ -180,6 +180,7 @@ class ParserTest extends TestCase
         self::assertInstanceOf(AssertEquals::class, $testCases[1]->getAsserts()[0]);
         self::assertSame('baz', $testCases[1]->getAsserts()[0]->getContent());
         self::assertInstanceOf(AssertStatusCode::class, $testCases[1]->getAsserts()[1]);
+        self::assertSame(401, $testCases[1]->getAsserts()[1]->getStatusCode());
         self::assertInstanceOf(AssertHeader::class, $testCases[1]->getAsserts()[2]);
         self::assertSame('Location', $testCases[1]->getAsserts()[2]->getHeaderName());
         self::assertNull($testCases[1]->getAsserts()[2]->getHeaderValue());

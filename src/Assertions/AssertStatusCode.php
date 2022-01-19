@@ -45,6 +45,18 @@ class AssertStatusCode extends AbstractAssert
     }
 
     /**
+     * Returns the status code.
+     *
+     * @since 1.3.0
+     *
+     * @return int The status code.
+     */
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    /**
      * Called when a test is performed on a page result.
      *
      * @since 1.0.0
