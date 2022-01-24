@@ -23,6 +23,7 @@ use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
+use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
@@ -44,12 +45,13 @@ class Parser
      *
      * @since 1.0.0
      *
-     * @param FilePathInterface $filePath The file path.
-     * @param string[]          $content  The content.
+     * @param FilePathInterface     $filePath     The file path.
+     * @param string[]              $content      The content.
+     * @param ParseContextInterface $parseContext The parse context.
      *
      * @return ParseResultInterface The parse result.
      */
-    public function parse(FilePathInterface $filePath, array $content): ParseResultInterface
+    public function parse(FilePathInterface $filePath, array $content, ParseContextInterface $parseContext): ParseResultInterface
     {
         $testSuite = new TestSuite();
         $currentTestCase = null;
@@ -61,7 +63,7 @@ class Parser
             $lineNumber++;
             $location = new FileLocation($filePath, $lineNumber);
 
-            self::parseLine($location, $line, $testSuite, $currentTestCase, $parseErrors);
+            self::parseLine($location, $line, $parseContext, $testSuite, $currentTestCase, $parseErrors);
         }
 
         return new ParseResult($testSuite, $parseErrors);
@@ -72,11 +74,12 @@ class Parser
      *
      * @param LocationInterface      $location        The location.
      * @param string                 $line            The line.
+     * @param ParseContextInterface  $parseContext    The parse context.
      * @param TestSuiteInterface     $testSuite       The test suite.
      * @param TestCaseInterface|null $currentTestCase The current test case that is parsing or null if no test case is parsing.
      * @param ParseErrorInterface[]  $parseErrors     The current parse errors.
      */
-    private static function parseLine(LocationInterface $location, string $line, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase, array &$parseErrors): void
+    private static function parseLine(LocationInterface $location, string $line, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase, array &$parseErrors): void
     {
         if (self::isEmptyOrComment($line)) {
             return;
@@ -85,6 +88,10 @@ class Parser
         $lineParts = preg_split('/\s+/', $line, 2);
         $command = strtolower(trim($lineParts[0]));
         $argument = count($lineParts) > 1 ? trim($lineParts[1]) : null;
+
+        if ($argument !== null) {
+            $argument = self::replaceVariables($argument, $parseContext);
+        }
 
         if (self::tryParseTestCase($location, $command, $argument, $parseErrors, $testCase)) {
             if ($testCase !== null) {
@@ -120,6 +127,29 @@ class Parser
     private static function isEmptyOrComment(string $line): bool
     {
         return $line === '' || $line[0] === '#';
+    }
+
+    /**
+     * Replaces variables like {{ Foo }} in a text with the actual variable content.
+     *
+     * @param string                $content      The text content.
+     * @param ParseContextInterface $parseContext The parse context.
+     *
+     * @return string The text content with variables replaces with the actual variable content.
+     */
+    private static function replaceVariables(string $content, ParseContextInterface $parseContext): string
+    {
+        $result = preg_replace_callback(
+            '/{{(.*?)}}/',
+            function (array $matches) use ($parseContext): string {
+                $name = trim($matches[1]);
+
+                return $parseContext->getVariable($name);
+            },
+            $content,
+        );
+
+        return $result;
     }
 
     /**

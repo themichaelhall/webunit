@@ -13,6 +13,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
 use PHPUnit\Framework\TestCase;
 
@@ -27,11 +28,13 @@ class ParserTest extends TestCase
     public function testParseWithEmptyTest()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
                 'get http://example.com/',
-            ]
+            ],
+            $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
@@ -50,6 +53,7 @@ class ParserTest extends TestCase
     public function testParseWithWhitespaces()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
@@ -57,7 +61,8 @@ class ParserTest extends TestCase
                 "\t \r\n",
                 "  get \thttp://example.com/ \t",
                 ' ',
-            ]
+            ],
+            $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
@@ -76,13 +81,15 @@ class ParserTest extends TestCase
     public function testParseWithComments()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
                 '# This is a comment',
                 '#',
                 'get http://example.com/',
-            ]
+            ],
+            $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
@@ -101,6 +108,7 @@ class ParserTest extends TestCase
     public function testParseInvalidCommand()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
@@ -112,7 +120,8 @@ class ParserTest extends TestCase
                 'baz',
                 '^',
                 'get!',
-            ]
+            ],
+            $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
@@ -140,6 +149,7 @@ class ParserTest extends TestCase
     public function testParseWithAsserts()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
@@ -160,7 +170,8 @@ class ParserTest extends TestCase
                 'assert-status-code 401',
                 'assert-header',
                 'assert-header Location',
-            ]
+            ],
+            $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
@@ -206,6 +217,7 @@ class ParserTest extends TestCase
     public function testParseAssertsWithModifiers()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
@@ -214,7 +226,8 @@ class ParserTest extends TestCase
                 'assert-empty!',
                 'assert-contains~^ Foo',
                 'assert-header!~^ Content-type: text/html',
-            ]
+            ],
+            $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
@@ -248,6 +261,7 @@ class ParserTest extends TestCase
     public function testParseWithModifiersErrors()
     {
         $parser = new Parser();
+        $parseContext = new ParseContext();
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
@@ -256,7 +270,8 @@ class ParserTest extends TestCase
                 'assert-contains!!^^ Bar',
                 'assert-empty~',
                 'assert-empty~^',
-            ]
+            ],
+            $parseContext,
         );
 
         $testSuite = $parseResult->getTestSuite();
@@ -277,5 +292,69 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:5: Invalid modifiers: Modifiers "^", "~" are not allowed for assert "assert-empty".', $parseErrors[4]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
+    }
+
+    /**
+     * Test parse with variables.
+     *
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
+     */
+    public function testParseWithVariables()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseContext->setVariable('Url', 'https://example.com/foo/bar');
+        $parseContext->setVariable('Content_1', 'FOO');
+        $parseContext->setVariable('Content_2', 'BAR');
+        $parseContext->setVariable('Content_3', '');
+        $parseContext->setVariable('headerName', 'X-Test-Header');
+        $parseContext->setVariable('headerValue', '12345');
+        $parseContext->setVariable('STATUS_CODE', '201');
+
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'get {{ Url }}',
+                'assert-contains {{ Content_1 }}',
+                'assert-contains! {Content_1}}',
+                'assert-contains {{ Content_1 }',
+                "assert-equals~^ {{Content_1}}{{ \t Content_2 \t}}{{ Content_3 }}",
+                'assert-header {{ headerName }}:{{headerValue}}',
+                'assert-status-code {{STATUS_CODE}} ',
+            ],
+            $parseContext,
+        );
+
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(1, count($testCases));
+
+        self::assertSame('https://example.com/foo/bar', $testCases[0]->getUrl()->__toString());
+        self::assertSame(6, count($testCases[0]->getAsserts()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame('FOO', $testCases[0]->getAsserts()[0]->getContent());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[0]->getModifiers()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
+        self::assertSame('{Content_1}}', $testCases[0]->getAsserts()[1]->getContent());
+        self::assertTrue((new Modifiers(ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[1]->getModifiers()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[2]);
+        self::assertSame('{{ Content_1 }', $testCases[0]->getAsserts()[2]->getContent());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[2]->getModifiers()));
+        self::assertInstanceOf(AssertEquals::class, $testCases[0]->getAsserts()[3]);
+        self::assertSame('FOOBAR', $testCases[0]->getAsserts()[3]->getContent());
+        self::assertTrue((new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP))->equals($testCases[0]->getAsserts()[3]->getModifiers()));
+        self::assertInstanceOf(AssertHeader::class, $testCases[0]->getAsserts()[4]);
+        self::assertSame('X-Test-Header', $testCases[0]->getAsserts()[4]->getHeaderName());
+        self::assertSame('12345', $testCases[0]->getAsserts()[4]->getHeaderValue());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[4]->getModifiers()));
+        self::assertInstanceOf(AssertStatusCode::class, $testCases[0]->getAsserts()[5]);
+        self::assertSame(201, $testCases[0]->getAsserts()[5]->getStatusCode());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[5]->getModifiers()));
+
+        self::assertSame(0, count($parseErrors));
+
+        self::assertTrue($parseResult->isSuccess());
     }
 }

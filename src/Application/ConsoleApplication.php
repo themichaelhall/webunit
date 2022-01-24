@@ -16,6 +16,7 @@ use DataTypes\System\FilePathInterface;
 use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
+use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
 
 /**
@@ -113,7 +114,8 @@ class ConsoleApplication
         }
 
         $parser = new Parser();
-        $parseResult = $parser->parse($filePath, $content);
+        $parseContext = new ParseContext();
+        $parseResult = $parser->parse($filePath, $content, $parseContext);
         if (!$parseResult->isSuccess()) {
             foreach ($parseResult->getParseErrors() as $parseError) {
                 echo $parseError . PHP_EOL;
