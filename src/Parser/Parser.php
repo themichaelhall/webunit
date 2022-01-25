@@ -90,7 +90,10 @@ class Parser
         $argument = count($lineParts) > 1 ? trim($lineParts[1]) : null;
 
         if ($argument !== null) {
-            $argument = self::replaceVariables($argument, $parseContext);
+            $argument = self::replaceVariables($location, $argument, $parseContext, $parseErrors);
+            if ($argument === null) {
+                return;
+            }
         }
 
         if (self::tryParseTestCase($location, $command, $argument, $parseErrors, $testCase)) {
@@ -134,22 +137,40 @@ class Parser
      *
      * @param string                $content      The text content.
      * @param ParseContextInterface $parseContext The parse context.
+     * @param ParseErrorInterface[] $parseErrors  The parse errors.
      *
-     * @return string The text content with variables replaces with the actual variable content.
+     * @return string|null The text content with variables replaces with the actual variable content or null if replace failed.
      */
-    private static function replaceVariables(string $content, ParseContextInterface $parseContext): string
+    private static function replaceVariables(LocationInterface $location, string $content, ParseContextInterface $parseContext, array &$parseErrors): ?string
     {
+        $hasErrors = false;
         $result = preg_replace_callback(
             '/{{(.*?)}}/',
-            function (array $matches) use ($parseContext): string {
+            function (array $matches) use ($location, $parseContext, &$parseErrors, &$hasErrors): string {
                 $name = trim($matches[1]);
+                $error = null;
+
+                if ($name === '') {
+                    $error = 'Missing variable: Missing variable name in "' . $matches[0] . '".';
+                } elseif (!preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $name)) {
+                    $error = 'Invalid variable: Invalid variable name "' . $name . '" in "' . $matches[0] . '".';
+                } elseif (!$parseContext->hasVariable($name)) {
+                    $error = 'Invalid variable: No variable with name "' . $name . '" is set in "' . $matches[0] . '".';
+                }
+
+                if ($error !== null) {
+                    $hasErrors = true;
+                    $parseErrors[] = new ParseError($location, $error);
+
+                    return '';
+                }
 
                 return $parseContext->getVariable($name);
             },
             $content,
         );
 
-        return $result;
+        return !$hasErrors ? $result : null;
     }
 
     /**
