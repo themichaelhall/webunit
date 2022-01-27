@@ -96,6 +96,10 @@ class Parser
             }
         }
 
+        if (self::tryParseSet($command, $argument, $parseContext)) {
+            return;
+        }
+
         if (self::tryParseTestCase($location, $command, $argument, $parseErrors, $testCase)) {
             if ($testCase !== null) {
                 $testSuite->addTestCase($testCase);
@@ -171,6 +175,30 @@ class Parser
         );
 
         return !$hasErrors ? $result : null;
+    }
+
+    /**
+     * Try parse a set command.
+     *
+     * @param string                $command      The command.
+     * @param string|null           $argument     The argument or null if no argument.
+     * @param ParseContextInterface $parseContext The parse context.
+     *
+     * @return bool
+     */
+    private static function tryParseSet(string $command, ?string $argument, ParseContextInterface $parseContext): bool
+    {
+        if ($command !== 'set') {
+            return false;
+        }
+
+        $argumentParts = explode('=', $argument, 2);
+        $variableName = trim($argumentParts[0]);
+        $variableValue = trim($argumentParts[1]);
+
+        $parseContext->setVariable($variableName, $variableValue);
+
+        return true;
     }
 
     /**

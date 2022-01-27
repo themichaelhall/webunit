@@ -400,4 +400,67 @@ class ParserTest extends TestCase
 
         self::assertFalse($parseResult->isSuccess());
     }
+
+    /**
+     * Test parse with set commands and variables.
+     *
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
+     */
+    public function testParseWithSetAndVariables()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseContext->setVariable('Host', 'example.com');
+        $parseContext->setVariable('Path', '/foo/bar');
+        $parseContext->setVariable('Content_2', 'BAR');
+
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'set Url=https://{{ Host }}{{ Path }}',
+                "SET Content_1 \t = \tFOO \t",
+                'set Content_3 = ',
+                'get {{ Url }}',
+                'assert-contains {{ Content_1 }}',
+                'assert-contains! {Content_1}}',
+                'assert-contains {{ Content_1 }',
+                'set STATUS_CODE = 201',
+                'assert-status-code {{STATUS_CODE}} ',
+            ],
+            $parseContext,
+        );
+
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(1, count($testCases));
+
+        self::assertSame('https://example.com/foo/bar', $testCases[0]->getUrl()->__toString());
+        self::assertSame(4, count($testCases[0]->getAsserts()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame('FOO', $testCases[0]->getAsserts()[0]->getContent());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[0]->getModifiers()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
+        self::assertSame('{Content_1}}', $testCases[0]->getAsserts()[1]->getContent());
+        self::assertTrue((new Modifiers(ModifiersInterface::NOT))->equals($testCases[0]->getAsserts()[1]->getModifiers()));
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[2]);
+        self::assertSame('{{ Content_1 }', $testCases[0]->getAsserts()[2]->getContent());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[2]->getModifiers()));
+        self::assertInstanceOf(AssertStatusCode::class, $testCases[0]->getAsserts()[3]);
+        self::assertSame(201, $testCases[0]->getAsserts()[3]->getStatusCode());
+        self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[3]->getModifiers()));
+
+        self::assertSame(0, count($parseErrors));
+
+        self::assertTrue($parseResult->isSuccess());
+
+        self::assertSame('example.com', $parseContext->getVariable('Host'));
+        self::assertSame('/foo/bar', $parseContext->getVariable('Path'));
+        self::assertSame('https://example.com/foo/bar', $parseContext->getVariable('Url'));
+        self::assertSame('FOO', $parseContext->getVariable('Content_1'));
+        self::assertSame('BAR', $parseContext->getVariable('Content_2'));
+        self::assertSame('', $parseContext->getVariable('Content_3'));
+        self::assertSame('201', $parseContext->getVariable('STATUS_CODE'));
+    }
 }
