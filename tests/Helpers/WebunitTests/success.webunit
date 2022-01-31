@@ -10,7 +10,9 @@ assert-contains!^  Bar
 assert-equals^~    .*foo.*
 assert-header      x-foo: X-Bar
 
-get                {{ BaseUrl }}empty
+set-default        EmptyPath = empty
+
+get                {{ BaseUrl }}{{ EmptyPath}}
 assert-empty
 
 get                {{ BaseUrl }}not-found

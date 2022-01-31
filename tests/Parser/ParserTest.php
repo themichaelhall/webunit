@@ -417,8 +417,10 @@ class ParserTest extends TestCase
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
             [
+                'set-default Host=example.org',
                 'set Url=https://{{ Host }}{{ Path }}',
-                "SET Content_1 \t = \tFOO \t",
+                "SET-DEFAULT Content_1 \t = \tFOO \t",
+                'set-default Content_1=Foo',
                 'set Content_3 = ',
                 'get {{ Url }}',
                 'assert-contains {{ Content_1 }}',

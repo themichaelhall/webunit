@@ -188,13 +188,24 @@ class Parser
      */
     private static function tryParseSet(string $command, ?string $argument, ParseContextInterface $parseContext): bool
     {
-        if ($command !== 'set') {
-            return false;
+        switch ($command) {
+            case 'set':
+                $isDefaultSet = false;
+                break;
+            case 'set-default':
+                $isDefaultSet = true;
+                break;
+            default:
+                return false;
         }
 
         $argumentParts = explode('=', $argument, 2);
         $variableName = trim($argumentParts[0]);
         $variableValue = trim($argumentParts[1]);
+
+        if ($isDefaultSet && $parseContext->hasVariable($variableName)) {
+            return true;
+        }
 
         $parseContext->setVariable($variableName, $variableValue);
 
