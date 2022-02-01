@@ -96,7 +96,7 @@ class Parser
             }
         }
 
-        if (self::tryParseSet($command, $argument, $parseContext)) {
+        if (self::tryParseSet($location, $command, $argument, $parseContext, $parseErrors)) {
             return;
         }
 
@@ -139,6 +139,7 @@ class Parser
     /**
      * Replaces variables like {{ Foo }} in a text with the actual variable content.
      *
+     * @param LocationInterface     $location     The location.
      * @param string                $content      The text content.
      * @param ParseContextInterface $parseContext The parse context.
      * @param ParseErrorInterface[] $parseErrors  The parse errors.
@@ -151,15 +152,15 @@ class Parser
         $result = preg_replace_callback(
             '/{{(.*?)}}/',
             function (array $matches) use ($location, $parseContext, &$parseErrors, &$hasErrors): string {
-                $name = trim($matches[1]);
+                $variableName = trim($matches[1]);
                 $error = null;
 
-                if ($name === '') {
+                if ($variableName === '') {
                     $error = 'Missing variable: Missing variable name in "' . $matches[0] . '".';
-                } elseif (!preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $name)) {
-                    $error = 'Invalid variable: Invalid variable name "' . $name . '" in "' . $matches[0] . '".';
-                } elseif (!$parseContext->hasVariable($name)) {
-                    $error = 'Invalid variable: No variable with name "' . $name . '" is set in "' . $matches[0] . '".';
+                } elseif (!self::isValidVariableName($variableName)) {
+                    $error = 'Invalid variable: Invalid variable name "' . $variableName . '" in "' . $matches[0] . '".';
+                } elseif (!$parseContext->hasVariable($variableName)) {
+                    $error = 'Invalid variable: No variable with name "' . $variableName . '" is set in "' . $matches[0] . '".';
                 }
 
                 if ($error !== null) {
@@ -169,7 +170,7 @@ class Parser
                     return '';
                 }
 
-                return $parseContext->getVariable($name);
+                return $parseContext->getVariable($variableName);
             },
             $content,
         );
@@ -180,13 +181,15 @@ class Parser
     /**
      * Try parse a set command.
      *
+     * @param LocationInterface     $location     The location.
      * @param string                $command      The command.
      * @param string|null           $argument     The argument or null if no argument.
      * @param ParseContextInterface $parseContext The parse context.
+     * @param ParseErrorInterface[] $parseErrors  The parse errors.
      *
      * @return bool
      */
-    private static function tryParseSet(string $command, ?string $argument, ParseContextInterface $parseContext): bool
+    private static function tryParseSet(LocationInterface $location, string $command, ?string $argument, ParseContextInterface $parseContext, array &$parseErrors): bool
     {
         switch ($command) {
             case 'set':
@@ -199,9 +202,32 @@ class Parser
                 return false;
         }
 
+        if ($argument === null) {
+            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable name and value for "' . $command . '".');
+
+            return true;
+        }
+
         $argumentParts = explode('=', $argument, 2);
         $variableName = trim($argumentParts[0]);
-        $variableValue = trim($argumentParts[1]);
+        if ($variableName === '') {
+            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable name for "' . $command . '" in "' . $argument . '".');
+
+            return true;
+        }
+
+        if (!self::isValidVariableName($variableName)) {
+            $parseErrors[] = new ParseError($location, 'Invalid variable: Invalid variable name "' . $variableName . '" for "' . $command . '" in "' . $argument . '".');
+
+            return true;
+        }
+
+        $variableValue = count($argumentParts) > 1 ? trim($argumentParts[1]) : null;
+        if ($variableValue === null) {
+            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable value for "' . $command . '" in "' . $argument . '".');
+
+            return true;
+        }
 
         if ($isDefaultSet && $parseContext->hasVariable($variableName)) {
             return true;
@@ -406,6 +432,18 @@ class Parser
         if ($hasErrors) {
             $modifiers = null;
         }
+    }
+
+    /**
+     * Checks if a variable name is valid.
+     *
+     * @param string $variableName The variable name.
+     *
+     * @return bool True if variable name is valid, false otherwise.
+     */
+    private static function isValidVariableName(string $variableName): bool
+    {
+        return preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $variableName) === 1;
     }
 
     /**

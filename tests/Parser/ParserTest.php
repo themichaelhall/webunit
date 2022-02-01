@@ -426,7 +426,7 @@ class ParserTest extends TestCase
                 'assert-contains {{ Content_1 }}',
                 'assert-contains! {Content_1}}',
                 'assert-contains {{ Content_1 }',
-                'set STATUS_CODE = 201',
+                'Set STATUS_CODE = 201',
                 'assert-status-code {{STATUS_CODE}} ',
             ],
             $parseContext,
@@ -464,5 +464,55 @@ class ParserTest extends TestCase
         self::assertSame('BAR', $parseContext->getVariable('Content_2'));
         self::assertSame('', $parseContext->getVariable('Content_3'));
         self::assertSame('201', $parseContext->getVariable('STATUS_CODE'));
+    }
+
+    /**
+     * Test parse failure with set and variables.
+     */
+    public function testParseFailureWithSetAndVariables()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'set ',
+                "  SET-DEFAULT\t",
+                'SET=BAR',
+                'SET-DEFAULT=BAR',
+                'set  = Bar',
+                "Set-Default \t=\t Bar",
+                'SET Foo',
+                ' SET-default Foo ',
+                'set Foo: Bar',
+                'set-default Foo:Bar',
+                'set F*o = Bar',
+                'set-default F#o = B*r',
+            ],
+            $parseContext,
+        );
+
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(0, count($testCases));
+
+        self::assertSame(12, count($parseErrors));
+
+        self::assertSame('foo.webunit:1: Missing variable: Missing variable name and value for "set".', $parseErrors[0]->__toString());
+        self::assertSame('foo.webunit:2: Missing variable: Missing variable name and value for "set-default".', $parseErrors[1]->__toString());
+        self::assertSame('foo.webunit:3: Syntax error: Invalid command "set=bar".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:4: Syntax error: Invalid command "set-default=bar".', $parseErrors[3]->__toString());
+        self::assertSame('foo.webunit:5: Missing variable: Missing variable name for "set" in "= Bar".', $parseErrors[4]->__toString());
+        self::assertSame("foo.webunit:6: Missing variable: Missing variable name for \"set-default\" in \"=\t Bar\".", $parseErrors[5]->__toString());
+        self::assertSame('foo.webunit:7: Missing variable: Missing variable value for "set" in "Foo".', $parseErrors[6]->__toString());
+        self::assertSame('foo.webunit:8: Missing variable: Missing variable value for "set-default" in "Foo".', $parseErrors[7]->__toString());
+        self::assertSame('foo.webunit:9: Invalid variable: Invalid variable name "Foo: Bar" for "set" in "Foo: Bar".', $parseErrors[8]->__toString());
+        self::assertSame('foo.webunit:10: Invalid variable: Invalid variable name "Foo:Bar" for "set-default" in "Foo:Bar".', $parseErrors[9]->__toString());
+        self::assertSame('foo.webunit:11: Invalid variable: Invalid variable name "F*o" for "set" in "F*o = Bar".', $parseErrors[10]->__toString());
+        self::assertSame('foo.webunit:12: Invalid variable: Invalid variable name "F#o" for "set-default" in "F#o = B*r".', $parseErrors[11]->__toString());
+
+        self::assertFalse($parseResult->isSuccess());
     }
 }

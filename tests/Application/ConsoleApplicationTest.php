@@ -98,8 +98,10 @@ class ConsoleApplicationTest extends TestCase
             "$filePath:4: Invalid argument: Invalid Url argument \"FooBar\" for \"get\": Url \"FooBar\" is invalid: Scheme is missing." . PHP_EOL .
             "$filePath:5: Syntax error: Invalid command \"baz\"." . PHP_EOL .
             "$filePath:7: Invalid argument: Status code -1 must be in range 100-599 for assert \"assert-status-code\"." . PHP_EOL .
-            "$filePath:9: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
-            "$filePath:12: Duplicate modifier: Modifier \"!\" is duplicated for assert \"assert-empty\"." . PHP_EOL .
+            "$filePath:9: Missing variable: Missing variable value for \"set\" in \"FOO\"." . PHP_EOL .
+            "$filePath:10: Invalid variable: Invalid variable name \"{Bar}\" for \"set-default\" in \"{Bar} = Baz\"." . PHP_EOL .
+            "$filePath:12: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
+            "$filePath:15: Duplicate modifier: Modifier \"!\" is duplicated for assert \"assert-empty\"." . PHP_EOL .
             "\033[41m\033[1;37mParsing failed.\033[0m" . PHP_EOL,
             $output
         );
