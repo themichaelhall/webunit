@@ -70,6 +70,20 @@ class Parser
     }
 
     /**
+     * Checks if a variable name is valid.
+     *
+     * @since 1.3.0
+     *
+     * @param string $variableName The variable name.
+     *
+     * @return bool True if variable name is valid, false otherwise.
+     */
+    public static function isValidVariableName(string $variableName): bool
+    {
+        return preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $variableName) === 1;
+    }
+
+    /**
      * Parses a line.
      *
      * @param LocationInterface      $location        The location.
@@ -432,18 +446,6 @@ class Parser
         if ($hasErrors) {
             $modifiers = null;
         }
-    }
-
-    /**
-     * Checks if a variable name is valid.
-     *
-     * @param string $variableName The variable name.
-     *
-     * @return bool True if variable name is valid, false otherwise.
-     */
-    private static function isValidVariableName(string $variableName): bool
-    {
-        return preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $variableName) === 1;
     }
 
     /**

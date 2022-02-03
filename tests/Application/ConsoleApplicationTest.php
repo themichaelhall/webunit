@@ -17,11 +17,16 @@ use PHPUnit\Framework\TestCase;
 class ConsoleApplicationTest extends TestCase
 {
     /**
-     * Test running application with missing file argument.
+     * Test various command line parameter errors.
+     *
+     * @dataProvider commandLineParameterErrorsDataProvider
+     *
+     * @param array  $commandLineParameters The command line parameters.
+     * @param string $expectedErrorMessage  The expected error message.
      */
-    public function testMissingTestFileArgument()
+    public function testCommandLineParameterErrors(array $commandLineParameters, string $expectedErrorMessage)
     {
-        $consoleApplication = new ConsoleApplication(['webunit'], $this->httpClient);
+        $consoleApplication = new ConsoleApplication($commandLineParameters, $this->httpClient);
 
         ob_start();
         $result = $consoleApplication->run();
@@ -31,31 +36,32 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(2, $result);
         self::assertSame(
             'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
-            "\033[41m\033[1;37mMissing testfile argument.\033[0m" . PHP_EOL .
+            "\033[41m\033[1;37m" . $expectedErrorMessage . "\033[0m" . PHP_EOL .
             'Usage: webunit [options] testfile' . PHP_EOL,
             $output
         );
     }
 
     /**
-     * Test running application with invalid file argument.
+     * Data provider for command line parameter errors test.
+     *
+     * @return array[]
      */
-    public function testInvalidTestFileArgument()
+    public function commandLineParameterErrorsDataProvider(): array
     {
-        $consoleApplication = new ConsoleApplication(['webunit', "Foo\0Bar"], $this->httpClient);
-
-        ob_start();
-        $result = $consoleApplication->run();
-        $output = ob_get_contents();
-        ob_end_clean();
-
-        self::assertSame(2, $result);
-        self::assertSame(
-            'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
-            "\033[41m\033[1;37mInvalid path to testfile \"Foo\0Bar\": File path \"Foo\0Bar\" is invalid: Filename \"Foo\0Bar\" contains invalid character \"\0\".\033[0m" . PHP_EOL .
-            'Usage: webunit [options] testfile' . PHP_EOL,
-            $output
-        );
+        return [
+            [['webunit'], 'Missing testfile parameter.'],
+            [['webunit', '--set=foo=bar'], 'Missing testfile parameter.'],
+            [['webunit', "Foo\0Bar"], "Invalid path to testfile \"Foo\0Bar\": File path \"Foo\0Bar\" is invalid: Filename \"Foo\0Bar\" contains invalid character \"\0\"."],
+            [['webunit', 'testfile', 'testfile2'], 'Extra testfile parameter "testfile2".'],
+            [['webunit', 'testfile', '--'], 'Invalid option "--".'],
+            [['webunit', '--foo', 'testfile'], 'Invalid option "--foo".'],
+            [['webunit', '--Set', 'testfile'], 'Invalid option "--Set".'],
+            [['webunit', '--set', 'testfile'], 'Missing value for option "--set".'],
+            [['webunit', '--set=', 'testfile'], 'Invalid value for option "--set=": Missing variable name.'],
+            [['webunit', '--set=F*o=Bar', 'testfile'], 'Invalid value for option "--set=F*o=Bar": Invalid variable name "F*o".'],
+            [['webunit', '--set=Foo', 'testfile'], 'Invalid value for option "--set=Foo": Missing variable value.'],
+        ];
     }
 
     /**

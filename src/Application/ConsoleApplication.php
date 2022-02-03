@@ -169,8 +169,23 @@ class ConsoleApplication
 
                 switch ($optionName) {
                     case '--set':
-                        $this->parseSetCommandLineParameter($optionValue, $parseContext);
+                        if ($optionValue === null) {
+                            $error = 'Missing value for option "' . $parameter . '".';
+
+                            return false;
+                        }
+
+                        if (!$this->parseSetCommandLineParameter($optionValue, $parseContext, $error)) {
+                            $error = 'Invalid value for option "' . $parameter . '": ' . $error;
+
+                            return false;
+                        }
                         break;
+
+                    default:
+                        $error = 'Invalid option "' . $parameter . '".';
+
+                        return false;
                 }
 
                 continue;
@@ -182,7 +197,7 @@ class ConsoleApplication
         }
 
         if ($testfilePath === null) {
-            $error = 'Missing testfile argument.';
+            $error = 'Missing testfile parameter.';
 
             return false;
         }
@@ -196,13 +211,33 @@ class ConsoleApplication
      * @param string                $value        The --set command line parameter value.
      * @param ParseContextInterface $parseContext The parse context.
      */
-    private function parseSetCommandLineParameter(string $value, ParseContextInterface $parseContext): void
+    private function parseSetCommandLineParameter(string $value, ParseContextInterface $parseContext, ?string &$error): bool
     {
         $variableParts = explode('=', $value, 2);
+
         $variableName = trim($variableParts[0]);
-        $variableValue = trim($variableParts[1]);
+        if ($variableName === '') {
+            $error = 'Missing variable name.';
+
+            return false;
+        }
+
+        if (!Parser::isValidVariableName($variableName)) {
+            $error = 'Invalid variable name "' . $variableName . '".';
+
+            return false;
+        }
+
+        $variableValue = count($variableParts) > 1 ? trim($variableParts[1]) : null;
+        if ($variableValue === null) {
+            $error = 'Missing variable value.';
+
+            return false;
+        }
 
         $parseContext->setVariable($variableName, $variableValue);
+
+        return true;
     }
 
     /**
@@ -216,6 +251,12 @@ class ConsoleApplication
      */
     private function parseTestfilePathCommandLineParameter(string $value, ?FilePathInterface &$testfilePath, ?string &$error): bool
     {
+        if ($testfilePath !== null) {
+            $error = 'Extra testfile parameter "' . $value . '".';
+
+            return false;
+        }
+
         try {
             $testfilePath = FilePath::parse($value);
         } catch (FilePathInvalidArgumentException $exception) {
@@ -304,12 +345,12 @@ class ConsoleApplication
     }
 
     /**
-     * @var string[] My command line arguments.
+     * @var string[] The command line parameters.
      */
     private $commandLineParameters;
 
     /**
-     * @var HttpClientInterface My HTTP client.
+     * @var HttpClientInterface The HTTP client.
      */
     private $httpClient;
 }
