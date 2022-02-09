@@ -22,4 +22,4 @@ foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php
 
 $application = new ConsoleApplication($argv, new HttpClient());
 
-return $application->run();
+exit($application->run());
