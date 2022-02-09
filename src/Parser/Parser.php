@@ -23,6 +23,7 @@ use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
+use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
@@ -44,12 +45,13 @@ class Parser
      *
      * @since 1.0.0
      *
-     * @param FilePathInterface $filePath The file path.
-     * @param string[]          $content  The content.
+     * @param FilePathInterface     $filePath     The file path.
+     * @param string[]              $content      The content.
+     * @param ParseContextInterface $parseContext The parse context.
      *
      * @return ParseResultInterface The parse result.
      */
-    public function parse(FilePathInterface $filePath, array $content): ParseResultInterface
+    public function parse(FilePathInterface $filePath, array $content, ParseContextInterface $parseContext): ParseResultInterface
     {
         $testSuite = new TestSuite();
         $currentTestCase = null;
@@ -61,10 +63,24 @@ class Parser
             $lineNumber++;
             $location = new FileLocation($filePath, $lineNumber);
 
-            self::parseLine($location, $line, $testSuite, $currentTestCase, $parseErrors);
+            self::parseLine($location, $line, $parseContext, $testSuite, $currentTestCase, $parseErrors);
         }
 
         return new ParseResult($testSuite, $parseErrors);
+    }
+
+    /**
+     * Checks if a variable name is valid.
+     *
+     * @since 1.3.0
+     *
+     * @param string $variableName The variable name.
+     *
+     * @return bool True if variable name is valid, false otherwise.
+     */
+    public static function isValidVariableName(string $variableName): bool
+    {
+        return preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $variableName) === 1;
     }
 
     /**
@@ -72,11 +88,12 @@ class Parser
      *
      * @param LocationInterface      $location        The location.
      * @param string                 $line            The line.
+     * @param ParseContextInterface  $parseContext    The parse context.
      * @param TestSuiteInterface     $testSuite       The test suite.
      * @param TestCaseInterface|null $currentTestCase The current test case that is parsing or null if no test case is parsing.
      * @param ParseErrorInterface[]  $parseErrors     The current parse errors.
      */
-    private static function parseLine(LocationInterface $location, string $line, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase, array &$parseErrors): void
+    private static function parseLine(LocationInterface $location, string $line, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase, array &$parseErrors): void
     {
         if (self::isEmptyOrComment($line)) {
             return;
@@ -85,6 +102,17 @@ class Parser
         $lineParts = preg_split('/\s+/', $line, 2);
         $command = strtolower(trim($lineParts[0]));
         $argument = count($lineParts) > 1 ? trim($lineParts[1]) : null;
+
+        if ($argument !== null) {
+            $argument = self::replaceVariables($location, $argument, $parseContext, $parseErrors);
+            if ($argument === null) {
+                return;
+            }
+        }
+
+        if (self::tryParseSet($location, $command, $argument, $parseContext, $parseErrors)) {
+            return;
+        }
 
         if (self::tryParseTestCase($location, $command, $argument, $parseErrors, $testCase)) {
             if ($testCase !== null) {
@@ -120,6 +148,108 @@ class Parser
     private static function isEmptyOrComment(string $line): bool
     {
         return $line === '' || $line[0] === '#';
+    }
+
+    /**
+     * Replaces variables like {{ Foo }} in a text with the actual variable content.
+     *
+     * @param LocationInterface     $location     The location.
+     * @param string                $content      The text content.
+     * @param ParseContextInterface $parseContext The parse context.
+     * @param ParseErrorInterface[] $parseErrors  The parse errors.
+     *
+     * @return string|null The text content with variables replaces with the actual variable content or null if replace failed.
+     */
+    private static function replaceVariables(LocationInterface $location, string $content, ParseContextInterface $parseContext, array &$parseErrors): ?string
+    {
+        $hasErrors = false;
+        $result = preg_replace_callback(
+            '/{{(.*?)}}/',
+            function (array $matches) use ($location, $parseContext, &$parseErrors, &$hasErrors): string {
+                $variableName = trim($matches[1]);
+                $error = null;
+
+                if ($variableName === '') {
+                    $error = 'Missing variable: Missing variable name in "' . $matches[0] . '".';
+                } elseif (!self::isValidVariableName($variableName)) {
+                    $error = 'Invalid variable: Invalid variable name "' . $variableName . '" in "' . $matches[0] . '".';
+                } elseif (!$parseContext->hasVariable($variableName)) {
+                    $error = 'Invalid variable: No variable with name "' . $variableName . '" is set in "' . $matches[0] . '".';
+                }
+
+                if ($error !== null) {
+                    $hasErrors = true;
+                    $parseErrors[] = new ParseError($location, $error);
+
+                    return '';
+                }
+
+                return $parseContext->getVariable($variableName);
+            },
+            $content,
+        );
+
+        return !$hasErrors ? $result : null;
+    }
+
+    /**
+     * Try parse a set command.
+     *
+     * @param LocationInterface     $location     The location.
+     * @param string                $command      The command.
+     * @param string|null           $argument     The argument or null if no argument.
+     * @param ParseContextInterface $parseContext The parse context.
+     * @param ParseErrorInterface[] $parseErrors  The parse errors.
+     *
+     * @return bool
+     */
+    private static function tryParseSet(LocationInterface $location, string $command, ?string $argument, ParseContextInterface $parseContext, array &$parseErrors): bool
+    {
+        switch ($command) {
+            case 'set':
+                $isDefaultSet = false;
+                break;
+            case 'set-default':
+                $isDefaultSet = true;
+                break;
+            default:
+                return false;
+        }
+
+        if ($argument === null) {
+            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable name and value for "' . $command . '".');
+
+            return true;
+        }
+
+        $argumentParts = explode('=', $argument, 2);
+        $variableName = trim($argumentParts[0]);
+        if ($variableName === '') {
+            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable name for "' . $command . '" in "' . $argument . '".');
+
+            return true;
+        }
+
+        if (!self::isValidVariableName($variableName)) {
+            $parseErrors[] = new ParseError($location, 'Invalid variable: Invalid variable name "' . $variableName . '" for "' . $command . '" in "' . $argument . '".');
+
+            return true;
+        }
+
+        $variableValue = count($argumentParts) > 1 ? trim($argumentParts[1]) : null;
+        if ($variableValue === null) {
+            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable value for "' . $command . '" in "' . $argument . '".');
+
+            return true;
+        }
+
+        if ($isDefaultSet && $parseContext->hasVariable($variableName)) {
+            return true;
+        }
+
+        $parseContext->setVariable($variableName, $variableValue);
+
+        return true;
     }
 
     /**

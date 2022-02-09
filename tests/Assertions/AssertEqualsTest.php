@@ -37,6 +37,7 @@ class AssertEqualsTest extends TestCase
         $result = $assert->test($pageResult);
 
         self::assertSame($location, $assert->getLocation());
+        self::assertSame($assertContent, $assert->getContent());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }

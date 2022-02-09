@@ -6,6 +6,9 @@ Baz
 
 assert-status-code -1
 
+SET FOO
+set-default {Bar} = Baz
+
 assert-empty BAZ
 assert-empty
 

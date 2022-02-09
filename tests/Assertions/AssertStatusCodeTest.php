@@ -37,6 +37,7 @@ class AssertStatusCodeTest extends TestCase
         $result = $assert->test($pageResult);
 
         self::assertSame($location, $assert->getLocation());
+        self::assertSame(200, $assert->getStatusCode());
         self::assertSame($expectedSuccess, $result->isSuccess());
         self::assertSame($expectedError, $result->getError());
     }

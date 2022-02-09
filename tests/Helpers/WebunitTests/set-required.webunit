@@ -1,0 +1,5 @@
+set                BaseUrl = https://{{ DOMAIN }}/
+
+get                {{ BaseUrl }}
+assert-equals      {{ EXPECTED_CONTENT }}
+assert-empty!

@@ -15,7 +15,9 @@ use DataTypes\System\FilePath;
 use DataTypes\System\FilePathInterface;
 use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
+use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
+use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
 
 /**
@@ -79,14 +81,12 @@ class ConsoleApplication
      *
      * @since 1.0.0
      *
-     * @param int                 $argc       The command line argument count.
-     * @param string[]            $argv       The command line arguments.
-     * @param HttpClientInterface $httpClient The HTTP client.
+     * @param string[]            $commandLineParameters The command line parameters.
+     * @param HttpClientInterface $httpClient            The HTTP client.
      */
-    public function __construct(int $argc, array $argv, HttpClientInterface $httpClient)
+    public function __construct(array $commandLineParameters, HttpClientInterface $httpClient)
     {
-        $this->argc = $argc;
-        $this->argv = $argv;
+        $this->commandLineParameters = $commandLineParameters;
         $this->httpClient = $httpClient;
     }
 
@@ -101,19 +101,21 @@ class ConsoleApplication
     {
         echo 'Webunit v' . self::WEBUNIT_VERSION . PHP_EOL;
 
-        if ($this->argc !== 2) {
-            self::fail('Usage: webunit testfile');
+        $parseContext = new ParseContext();
+        if (!$this->parseCommandLineParameters($this->commandLineParameters, $parseContext, $testfilePath, $error)) {
+            self::fail($error);
+            echo 'Usage: webunit [options] testfile' . PHP_EOL;
 
             return self::RESULT_PARAMETER_ERROR;
         }
 
-        $content = $this->tryReadContent($filePath);
+        $content = $this->tryReadContent($testfilePath);
         if ($content === null) {
             return self::RESULT_READ_TEST_FILE_ERROR;
         }
 
         $parser = new Parser();
-        $parseResult = $parser->parse($filePath, $content);
+        $parseResult = $parser->parse($testfilePath, $content, $parseContext);
         if (!$parseResult->isSuccess()) {
             foreach ($parseResult->getParseErrors() as $parseError) {
                 echo $parseError . PHP_EOL;
@@ -142,24 +144,139 @@ class ConsoleApplication
     }
 
     /**
-     * Try to read content from the specified command line argument.
+     * Parses the command line parameters given to the console application.
      *
-     * @param FilePathInterface|null $filePath The file path or undefined if failed.
+     * @param string[]               $parameters   The command line parameters.
+     * @param ParseContextInterface  $parseContext The parse context.
+     * @param FilePathInterface|null $testfilePath The parsed path to the webunit testfile or null if parsing failed.
+     * @param string|null            $error        The error if parsing failed.
+     *
+     * @return bool True if parsing was successful, false otherwise.
+     */
+    private function parseCommandLineParameters(array $parameters, ParseContextInterface $parseContext, FilePathInterface &$testfilePath = null, string &$error = null): bool
+    {
+        array_shift($parameters);
+        $testfilePath = null;
+        $error = null;
+
+        foreach ($parameters as $parameter) {
+            $parameter = trim($parameter);
+
+            if (substr($parameter, 0, 2) === '--') {
+                $optionParts = explode('=', $parameter, 2);
+                $optionName = trim($optionParts[0]);
+                $optionValue = count($optionParts) > 1 ? trim($optionParts[1]) : null;
+
+                switch ($optionName) {
+                    case '--set':
+                        if ($optionValue === null) {
+                            $error = 'Missing value for option "' . $parameter . '".';
+
+                            return false;
+                        }
+
+                        if (!$this->parseSetCommandLineParameter($optionValue, $parseContext, $error)) {
+                            $error = 'Invalid value for option "' . $parameter . '": ' . $error;
+
+                            return false;
+                        }
+                        break;
+
+                    default:
+                        $error = 'Invalid option "' . $parameter . '".';
+
+                        return false;
+                }
+
+                continue;
+            }
+
+            if (!$this->parseTestfilePathCommandLineParameter($parameter, $testfilePath, $error)) {
+                return false;
+            }
+        }
+
+        if ($testfilePath === null) {
+            $error = 'Missing testfile parameter.';
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Parses the --set command line parameter value.
+     *
+     * @param string                $value        The --set command line parameter value.
+     * @param ParseContextInterface $parseContext The parse context.
+     */
+    private function parseSetCommandLineParameter(string $value, ParseContextInterface $parseContext, ?string &$error): bool
+    {
+        $variableParts = explode('=', $value, 2);
+
+        $variableName = trim($variableParts[0]);
+        if ($variableName === '') {
+            $error = 'Missing variable name.';
+
+            return false;
+        }
+
+        if (!Parser::isValidVariableName($variableName)) {
+            $error = 'Invalid variable name "' . $variableName . '".';
+
+            return false;
+        }
+
+        $variableValue = count($variableParts) > 1 ? trim($variableParts[1]) : null;
+        if ($variableValue === null) {
+            $error = 'Missing variable value.';
+
+            return false;
+        }
+
+        $parseContext->setVariable($variableName, $variableValue);
+
+        return true;
+    }
+
+    /**
+     * Parses the testfile command line parameter.
+     *
+     * @param string                 $value        The parameter value.
+     * @param FilePathInterface|null $testfilePath The parsed path to the webunit testfile if parsing was successful.
+     * @param string|null            $error        The error if parsing failed.
+     *
+     * @return bool True if parsing was successful, false otherwise.
+     */
+    private function parseTestfilePathCommandLineParameter(string $value, ?FilePathInterface &$testfilePath, ?string &$error): bool
+    {
+        if ($testfilePath !== null) {
+            $error = 'Extra testfile parameter "' . $value . '".';
+
+            return false;
+        }
+
+        try {
+            $testfilePath = FilePath::parse($value);
+        } catch (FilePathInvalidArgumentException $exception) {
+            $error = 'Invalid path to testfile "' . $value . '": ' . $exception->getMessage();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Try to read content from the specified file path.
+     *
+     * @param FilePathInterface $filePath The file path.
      *
      * @return array|null The content or null if failed.
      */
-    private function tryReadContent(?FilePathInterface &$filePath = null): ?array
+    private function tryReadContent(FilePathInterface $filePath): ?array
     {
-        $filePath = null;
-
-        try {
-            $filePath = FilePath::parse($this->argv[1]);
-        } catch (FilePathInvalidArgumentException $exception) {
-            self::fail('Invalid file path "' . $this->argv[1] . '": ' . $exception->getMessage());
-
-            return null;
-        }
-
         /** @noinspection PhpUsageOfSilenceOperatorInspection */
         $content = @file($filePath->__toString());
         if ($content === false) {
@@ -228,17 +345,12 @@ class ConsoleApplication
     }
 
     /**
-     * @var int My command line argument count.
+     * @var string[] The command line parameters.
      */
-    private $argc;
+    private $commandLineParameters;
 
     /**
-     * @var string[] My command line arguments.
-     */
-    private $argv;
-
-    /**
-     * @var HttpClientInterface My HTTP client.
+     * @var HttpClientInterface The HTTP client.
      */
     private $httpClient;
 }

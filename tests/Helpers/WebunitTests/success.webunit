@@ -1,16 +1,20 @@
-get                https://example.com/
+set                BaseUrl = https://example.com/
+
+get                {{ BaseUrl }}
 assert-equals      Hello World!
 assert-empty!
 
-get                https://example.com/foo
+get                {{ BaseUrl }}foo
 assert-contains    Foo
 assert-contains!^  Bar
 assert-equals^~    .*foo.*
 assert-header      x-foo: X-Bar
 
-get                https://example.com/empty
+set-default        EmptyPath = empty
+
+get                {{ BaseUrl }}{{ EmptyPath}}
 assert-empty
 
-get                https://example.com/not-found
+get                {{ BaseUrl }}not-found
 assert-status-code 404
 assert-equals      Page not found.

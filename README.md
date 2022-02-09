@@ -75,6 +75,62 @@ assert-contains~       [Ee]xample
 assert-contains!^      foobar
 ```
 
+The test file can set variables to be reused for the tests.
+
+Variables are evaluated at parse-time in a manner similar to the preprocessor directives in languages like C and C#.
+
+```
+# Set the variable "Url" to the value "https://example.com".
+set                    Url = https://example.com/
+
+# get https://example.com/
+get                    {{ Url }}
+
+# get https://example.com/another-page
+get                    {{ Url }}another-page
+```
+
+It is also possible to set variables from the command line:
+
+```
+$ webunit --set=Url=https://example.com/ testfile
+```
+
+```
+# get https://example.com/
+get                    {{ Url }}
+```
+
+A default value can be used to set the variable if not already set.
+
+Example 1:
+
+```
+$ webunit testfile
+```
+
+```
+# "Url" is not set. Set the value to "https://example.com/".
+set-default            Url = https://example.com/
+
+# get https://example.com/
+get                    {{ Url }}
+```
+
+Example 2:
+
+```
+$ webunit --set=Url=https://example.org/ testfile
+```
+
+```
+# "Url" is already set to "https://example.org/". Do not change it.
+set-default            Url = https://example.com/
+
+# get https://https://example.org/
+get                    {{ Url }}
+```
+
 ## Commands
 
 ### get _url_
