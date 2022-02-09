@@ -1,4 +1,5 @@
 ## Unreleased
+- Add variables functionality.
 
 ## [1.2.0] - 2022-01-14
 - Changed required PHP version to >= 7.3.
