@@ -1,4 +1,4 @@
-## Unreleased
+## [1.3.0] - 2022-02-10
 - Added variables functionality.
 - Console application now exits with the correct exit code.
 - Added line breaks every 70 characters in console applications progress bar.
@@ -13,5 +13,6 @@
 ## 1.0.0 - 2019-04-03
 - First stable revision.
 
+[1.3.0]: https://github.com/themichaelhall/webunit/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/themichaelhall/webunit/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/themichaelhall/webunit/compare/v1.0.0...v1.1.0
