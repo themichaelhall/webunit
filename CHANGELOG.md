@@ -1,3 +1,5 @@
+## Unreleased
+
 ## [1.3.0] - 2022-02-10
 - Added variables functionality.
 - Console application now exits with the correct exit code.
