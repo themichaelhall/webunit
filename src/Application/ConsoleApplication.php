@@ -133,9 +133,18 @@ class ConsoleApplication
             return self::RESULT_NO_TESTS_FOUND;
         }
 
-        $testResults = $testSuite->run($this->httpClient, function (AssertResultInterface $assertResult) {
+        $currentProgressBarLength = 0;
+        $showProgressBarFunction = function (AssertResultInterface $assertResult) use (&$currentProgressBarLength): void {
+            if ($currentProgressBarLength === self::PROGRESS_BAR_MAX_LENGTH_PER_LINE) {
+                echo PHP_EOL;
+                $currentProgressBarLength = 0;
+            }
+
             echo $assertResult->isSuccess() ? '.' : "\033[41m\033[1;37mF\033[0m";
-        });
+            $currentProgressBarLength++;
+        };
+
+        $testResults = $testSuite->run($this->httpClient, $showProgressBarFunction);
         echo PHP_EOL;
 
         $this->printReport($testResults);
@@ -353,4 +362,9 @@ class ConsoleApplication
      * @var HttpClientInterface The HTTP client.
      */
     private $httpClient;
+
+    /**
+     * @var int The maximum length in characters per line of the "progress bar".
+     */
+    private const PROGRESS_BAR_MAX_LENGTH_PER_LINE = 70;
 }

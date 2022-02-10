@@ -233,6 +233,30 @@ class ConsoleApplicationTest extends TestCase
     }
 
     /**
+     * Test running application with a large test suite.
+     */
+    public function testLargeTestSuite()
+    {
+        $testfilePath = FilePath::parse(__DIR__ . '/../Helpers/WebunitTests/many-tests.webunit');
+
+        $consoleApplication = new ConsoleApplication(['webunit', $testfilePath->__toString()], $this->httpClient);
+
+        ob_start();
+        $result = $consoleApplication->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        self::assertSame(0, $result);
+        self::assertSame(
+            'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
+            '......................................................................' . PHP_EOL .
+            '..........' . PHP_EOL .
+            "\033[42m\033[30m80 tests completed successfully.\033[0m" . PHP_EOL,
+            $output
+        );
+    }
+
+    /**
      * Set up.
      */
     public function setUp(): void
