@@ -1,6 +1,7 @@
 ## Unreleased
 - Added variables functionality.
-- Webunit console application now exits with the correct exit code.
+- Console application now exits with the correct exit code.
+- Added line breaks every 70 characters in console applications progress bar.
 
 ## [1.2.0] - 2022-01-14
 - Changed required PHP version to >= 7.3.
