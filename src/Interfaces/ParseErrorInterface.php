@@ -10,12 +10,14 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
+use Stringable;
+
 /**
  * Interface for ParseError class.
  *
  * @since 1.0.0
  */
-interface ParseErrorInterface
+interface ParseErrorInterface extends Stringable
 {
     /**
      * Returns the location.
@@ -34,13 +36,4 @@ interface ParseErrorInterface
      * @return string The error.
      */
     public function getError(): string;
-
-    /**
-     * Returns the error as a string.
-     *
-     * @since 1.0.0
-     *
-     * @return string The error as a string.
-     */
-    public function __toString(): string;
 }

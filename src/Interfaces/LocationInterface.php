@@ -10,19 +10,13 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
+use Stringable;
+
 /**
  * Interface for a location.
  *
  * @since 1.0.0
  */
-interface LocationInterface
+interface LocationInterface extends Stringable
 {
-    /**
-     * Returns the location as a string.
-     *
-     * @since 1.0.0
-     *
-     * @return string
-     */
-    public function __toString(): string;
 }

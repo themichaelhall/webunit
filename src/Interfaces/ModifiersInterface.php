@@ -10,12 +10,14 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
+use Stringable;
+
 /**
  * Interface for modifiers.
  *
  * @since 1.0.0
  */
-interface ModifiersInterface
+interface ModifiersInterface extends Stringable
 {
     /**
      * No modifiers.
@@ -113,13 +115,4 @@ interface ModifiersInterface
      * @return int The value.
      */
     public function getValue(): int;
-
-    /**
-     * Returns the modifiers description as a string.
-     *
-     * @since 1.0.0
-     *
-     * @return string The modifiers description as a string.
-     */
-    public function __toString(): string;
 }
