@@ -16,8 +16,8 @@
   "require": {
     "php": ">=8.0",
     "ext-mbstring": "*",
-    "michaelhall/http-client": "^1.0",
-    "datatypes/datatypes": "^2.4"
+    "michaelhall/http-client": "^2.0",
+    "datatypes/datatypes": "^3.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0"
