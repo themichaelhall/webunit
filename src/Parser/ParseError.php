@@ -71,12 +71,12 @@ class ParseError implements ParseErrorInterface
     }
 
     /**
-     * @var LocationInterface My location.
+     * @var LocationInterface The location.
      */
-    private $location;
+    private LocationInterface $location;
 
     /**
-     * @var string My error.
+     * @var string The error.
      */
-    private $error;
+    private string $error;
 }

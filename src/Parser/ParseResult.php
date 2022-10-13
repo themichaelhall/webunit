@@ -73,17 +73,17 @@ class ParseResult implements ParseResultInterface
     }
 
     /**
-     * @var TestSuiteInterface My test suite.
+     * @var TestSuiteInterface The test suite.
      */
-    private $testSuite;
+    private TestSuiteInterface $testSuite;
 
     /**
-     * @var ParseErrorInterface[] My parse errors.
+     * @var ParseErrorInterface[] The parse errors.
      */
-    private $parseErrors;
+    private array $parseErrors;
 
     /**
      * @var bool True if parsing was successful, false otherwise.
      */
-    private $isSuccess;
+    private bool $isSuccess;
 }

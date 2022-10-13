@@ -175,12 +175,12 @@ class AssertHeader extends AbstractAssert
     }
 
     /**
-     * @var string My header name.
+     * @var string The header name.
      */
-    private $headerName;
+    private string $headerName;
 
     /**
-     * @var string|null My header value.
+     * @var string|null The header value.
      */
-    private $headerValue;
+    private ?string $headerValue;
 }

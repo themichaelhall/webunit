@@ -232,12 +232,12 @@ abstract class AbstractAssert implements AssertInterface
     }
 
     /**
-     * @var ModifiersInterface My modifiers.
+     * @var ModifiersInterface The modifiers.
      */
-    private $modifiers;
+    private ModifiersInterface $modifiers;
 
     /**
-     * @var LocationInterface My location.
+     * @var LocationInterface The location.
      */
-    private $location;
+    private LocationInterface $location;
 }

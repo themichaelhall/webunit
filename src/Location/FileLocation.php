@@ -47,12 +47,12 @@ class FileLocation implements LocationInterface
     }
 
     /**
-     * @var FilePathInterface My file.
+     * @var FilePathInterface The file.
      */
-    private $file;
+    private FilePathInterface $file;
 
     /**
-     * @var int My line.
+     * @var int The line.
      */
-    private $line;
+    private int $line;
 }

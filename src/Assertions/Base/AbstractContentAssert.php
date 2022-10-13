@@ -59,7 +59,7 @@ abstract class AbstractContentAssert extends AbstractAssert
     }
 
     /**
-     * @var string My content.
+     * @var string The content.
      */
-    private $content;
+    private string $content;
 }

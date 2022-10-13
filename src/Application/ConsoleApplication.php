@@ -356,12 +356,12 @@ class ConsoleApplication
     /**
      * @var string[] The command line parameters.
      */
-    private $commandLineParameters;
+    private array $commandLineParameters;
 
     /**
      * @var HttpClientInterface The HTTP client.
      */
-    private $httpClient;
+    private HttpClientInterface $httpClient;
 
     /**
      * @var int The maximum length in characters per line of the "progress bar".

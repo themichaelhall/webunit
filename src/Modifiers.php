@@ -148,7 +148,7 @@ class Modifiers implements ModifiersInterface
     }
 
     /**
-     * @var int My value.
+     * @var int The value.
      */
-    private $value;
+    private int $value;
 }

@@ -77,7 +77,7 @@ class TestSuite implements TestSuiteInterface
     }
 
     /**
-     * @var TestCaseInterface[] My test cases.
+     * @var TestCaseInterface[] The test cases.
      */
-    private $testCases;
+    private array $testCases;
 }

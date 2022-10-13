@@ -130,12 +130,12 @@ class TestCase implements TestCaseInterface
     }
 
     /**
-     * @var UrlInterface My url.
+     * @var UrlInterface The url.
      */
-    private $url;
+    private UrlInterface $url;
 
     /**
-     * @var AssertInterface[] My asserts.
+     * @var AssertInterface[] The asserts.
      */
-    private $asserts;
+    private array $asserts;
 }

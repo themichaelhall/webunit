@@ -73,17 +73,17 @@ class TestCaseResult implements TestCaseResultInterface
     }
 
     /**
-     * @var TestCaseInterface My test case.
+     * @var TestCaseInterface The test case.
      */
-    private $testCase;
+    private TestCaseInterface $testCase;
 
     /**
      * @var bool True if test is successful, false otherwise.
      */
-    private $isSuccess;
+    private bool $isSuccess;
 
     /**
-     * @var AssertResultInterface|null My failed assert result or null if no assert failed.
+     * @var AssertResultInterface|null The failed assert result or null if no assert failed.
      */
-    private $failedAssertResult;
+    private ?AssertResultInterface $failedAssertResult;
 }

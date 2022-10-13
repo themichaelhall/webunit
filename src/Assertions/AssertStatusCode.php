@@ -97,7 +97,7 @@ class AssertStatusCode extends AbstractAssert
     }
 
     /**
-     * @var int My status code.
+     * @var int The status code.
      */
-    private $statusCode;
+    private int $statusCode;
 }

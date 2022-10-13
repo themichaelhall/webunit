@@ -119,32 +119,32 @@ class TestSuiteResult implements TestSuiteResultInterface
     }
 
     /**
-     * @var TestSuiteInterface My test suite.
+     * @var TestSuiteInterface The test suite.
      */
-    private $testSuite;
+    private TestSuiteInterface $testSuite;
 
     /**
-     * @var TestCaseResultInterface[] My test case results.
+     * @var TestCaseResultInterface[] The test case results.
      */
-    private $testCaseResults;
+    private array $testCaseResults;
 
     /**
-     * @var TestCaseResultInterface[] My failed test case results.
+     * @var TestCaseResultInterface[] The failed test case results.
      */
-    private $failedTestCaseResults;
+    private array $failedTestCaseResults;
 
     /**
      * @var bool True if tests are successful, false otherwise.
      */
-    private $isSuccess;
+    private bool $isSuccess;
 
     /**
      * @var int The count of failed tests.
      */
-    private $failedTestsCount;
+    private int $failedTestsCount;
 
     /**
      * @var int The count of successful tests.
      */
-    private $successfulTestsCount;
+    private int $successfulTestsCount;
 }

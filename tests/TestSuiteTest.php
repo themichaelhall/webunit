@@ -225,7 +225,7 @@ class TestSuiteTest extends TestCase
     }
 
     /**
-     * @var HttpClientInterface My HTTP client.
+     * @var HttpClientInterface The HTTP client.
      */
-    private $httpClient;
+    private HttpClientInterface $httpClient;
 }

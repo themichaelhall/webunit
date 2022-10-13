@@ -75,15 +75,15 @@ class AssertResult implements AssertResultInterface
     /**
      * @var bool True if test is successful, false otherwise.
      */
-    private $isSuccess;
+    private bool $isSuccess;
 
     /**
      * @var string Error or empty string if no error.
      */
-    private $error;
+    private string $error;
 
     /**
-     * @var AssertInterface My assert.
+     * @var AssertInterface The assert.
      */
-    private $assert;
+    private AssertInterface $assert;
 }

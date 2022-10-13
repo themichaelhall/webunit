@@ -47,7 +47,7 @@ class NotAllowedModifierException extends LogicException
     }
 
     /**
-     * @var ModifiersInterface My modifiers.
+     * @var ModifiersInterface The modifiers.
      */
-    private $modifiers;
+    private ModifiersInterface $modifiers;
 }

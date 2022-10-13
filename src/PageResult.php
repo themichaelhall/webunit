@@ -72,17 +72,17 @@ class PageResult implements PageResultInterface
     }
 
     /**
-     * @var int My status code.
+     * @var int The status code.
      */
-    private $statusCode;
+    private int $statusCode;
 
     /**
-     * @var string[] My headers.
+     * @var string[] The headers.
      */
-    private $headers;
+    private array $headers;
 
     /**
-     * @var string My content.
+     * @var string The content.
      */
-    private $content;
+    private string $content;
 }
