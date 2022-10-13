@@ -319,8 +319,8 @@ class Parser
         $argumentResult = self::checkAssertArgument($argument, $argumentType, $argumentValue);
         if ($argumentResult !== self::ARGUMENT_OK) {
             $parseErrors[] = match ($argumentResult) {
-                self::ARGUMENT_ERROR_EXTRA_ARGUMENT => new ParseError($location, 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".'),
-                self::ARGUMENT_ERROR_MISSING_ARGUMENT => new ParseError($location, 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".'),
+                self::ARGUMENT_ERROR_EXTRA_ARGUMENT        => new ParseError($location, 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".'),
+                self::ARGUMENT_ERROR_MISSING_ARGUMENT      => new ParseError($location, 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".'),
                 self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE => new ParseError($location, 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".'),
             };
 
