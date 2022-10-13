@@ -296,7 +296,7 @@ class Parser
      * @param LocationInterface    $location    The location.
      * @param string               $command     The command.
      * @param string|null          $argument    The argument or null if no argument.
-     * @param array                $parseErrors The parse errors.
+     * @param ParseError[]         $parseErrors The parse errors.
      * @param AssertInterface|null $assert      The parses assert or null if parsing failed.
      *
      * @return bool True if this was an assert, false otherwise.
@@ -318,17 +318,11 @@ class Parser
 
         $argumentResult = self::checkAssertArgument($argument, $argumentType, $argumentValue);
         if ($argumentResult !== self::ARGUMENT_OK) {
-            switch ($argumentResult) {
-                case self::ARGUMENT_ERROR_EXTRA_ARGUMENT:
-                    $parseErrors[] = new ParseError($location, 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".');
-                    break;
-                case self::ARGUMENT_ERROR_MISSING_ARGUMENT:
-                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".');
-                    break;
-                case self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE:
-                    $parseErrors[] = new ParseError($location, 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".');
-                    break;
-            }
+            $parseErrors[] = match ($argumentResult) {
+                self::ARGUMENT_ERROR_EXTRA_ARGUMENT => new ParseError($location, 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".'),
+                self::ARGUMENT_ERROR_MISSING_ARGUMENT => new ParseError($location, 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".'),
+                self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE => new ParseError($location, 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".'),
+            };
 
             return true;
         }
@@ -364,13 +358,13 @@ class Parser
     /**
      * Checks an assert argument.
      *
-     * @param null|string $argument      The argument as a string.
-     * @param null|string $argumentType  The argument type or null if no argument.
-     * @param null|mixed  $argumentValue The actual argument to use.
+     * @param null|string     $argument      The argument as a string.
+     * @param null|string     $argumentType  The argument type or null if no argument.
+     * @param string|int|null $argumentValue The actual argument to use.
      *
      * @return int The ARGUMENT_* result.
      */
-    private static function checkAssertArgument(?string $argument, ?string $argumentType, &$argumentValue = null): int
+    private static function checkAssertArgument(?string $argument, ?string $argumentType, string|int|null &$argumentValue = null): int
     {
         $argumentValue = $argument;
 
@@ -423,7 +417,7 @@ class Parser
      * @param LocationInterface       $location        The location.
      * @param string                  $assertString    The assert command string.
      * @param string                  $modifiersString The modifiers string to parse.
-     * @param array                   $parseErrors     The parse errors.
+     * @param ParseError[]            $parseErrors     The parse errors.
      * @param ModifiersInterface|null $modifiers       The modifiers or null if parsing failed.
      */
     private static function tryParseModifiers(LocationInterface $location, string $assertString, string $modifiersString, array &$parseErrors, ?ModifiersInterface &$modifiers): void

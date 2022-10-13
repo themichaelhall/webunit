@@ -217,21 +217,11 @@ class TestSuiteTest extends TestCase
     /**
      * Set up.
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->httpClient = new HttpClient(new TestRequestHandler());
-    }
-
-    /**
-     * Tear down.
-     */
-    public function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->httpClient = null;
     }
 
     /**

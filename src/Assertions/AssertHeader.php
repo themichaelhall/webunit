@@ -162,7 +162,7 @@ class AssertHeader extends AbstractAssert
      *
      * @param string $header The header to split.
      *
-     * @return array The result, containing either [name, null] or [name, value].
+     * @return array{string, string|null} The result, containing either [name, null] or [name, value].
      */
     private static function splitHeader(string $header): array
     {

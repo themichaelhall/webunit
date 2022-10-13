@@ -74,7 +74,7 @@ interface ModifiersInterface extends Stringable
      *
      * @since 1.0.0
      *
-     * @param ModifiersInterface The other modifiers.
+     * @param ModifiersInterface $modifiers The other modifiers.
      *
      * @return bool True if this equals other modifiers, false otherwise.
      */

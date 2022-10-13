@@ -171,7 +171,7 @@ class ConsoleApplication
         foreach ($parameters as $parameter) {
             $parameter = trim($parameter);
 
-            if (substr($parameter, 0, 2) === '--') {
+            if (str_starts_with($parameter, '--')) {
                 $optionParts = explode('=', $parameter, 2);
                 $optionName = trim($optionParts[0]);
                 $optionValue = count($optionParts) > 1 ? trim($optionParts[1]) : null;
@@ -282,7 +282,7 @@ class ConsoleApplication
      *
      * @param FilePathInterface $filePath The file path.
      *
-     * @return array|null The content or null if failed.
+     * @return string[]|null The content or null if failed.
      */
     private function tryReadContent(FilePathInterface $filePath): ?array
     {

@@ -71,7 +71,7 @@ class ParseContext implements ParseContextInterface
     }
 
     /**
-     * @var array
+     * @var array<string, string>
      */
     private $variables;
 }

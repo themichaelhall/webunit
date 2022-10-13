@@ -146,7 +146,7 @@ abstract class AbstractAssert implements AssertInterface
 
         return $this->getModifiers()->isCaseInsensitive() ?
             mb_stristr($value, $expected) !== false :
-            strpos($value, $expected) !== false;
+            str_contains($value, $expected);
     }
 
     /**
