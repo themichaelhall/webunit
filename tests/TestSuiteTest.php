@@ -15,6 +15,7 @@ use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
@@ -43,8 +44,8 @@ class TestSuiteTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase1 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
-        $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase1 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+        $testCase2 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
 
         $testSuite = new TestSuite();
         $testSuite->addTestCase($testCase1);
@@ -75,13 +76,13 @@ class TestSuiteTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase1 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase1 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $testCase1->addAssert(new AssertEquals($location, 'This is Foo page.', new Modifiers()));
         $testCase1->addAssert(new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT)));
         $testCase1->addAssert(new AssertEmpty($location, new Modifiers(ModifiersInterface::NOT)));
         $testCase1->addAssert(new AssertHeader($location, 'x-f[o]+:X-BAR', new Modifiers(ModifiersInterface::REGEXP | ModifiersInterface::CASE_INSENSITIVE)));
 
-        $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/bar'));
+        $testCase2 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/bar'));
         $testCase2->addAssert(new AssertContains($location, 'Foo', new Modifiers(ModifiersInterface::NOT)));
         $testCase2->addAssert(new AssertContains($location, 'bar', new Modifiers(ModifiersInterface::CASE_INSENSITIVE)));
         $testCase2->addAssert(new AssertEmpty($location, new Modifiers(ModifiersInterface::NOT)));
@@ -111,16 +112,16 @@ class TestSuiteTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase1 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase1 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $testCase1->addAssert(new AssertContains($location, 'Foo', new Modifiers(ModifiersInterface::NOT)));
         $testCase1->addAssert(new AssertContains($location, 'Bar', new Modifiers()));
 
-        $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/bar'));
+        $testCase2 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/bar'));
         $testCase2->addAssert(new AssertContains($location, 'Foo', new Modifiers()));
         $testCase2->addAssert(new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT)));
         $testCase2->addAssert(new AssertEmpty($location, new Modifiers()));
 
-        $testCase3 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/baz'));
+        $testCase3 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/baz'));
         $testCase3->addAssert(new AssertContains($location, 'Baz', new Modifiers()));
 
         $testSuite = new TestSuite();
@@ -164,11 +165,11 @@ class TestSuiteTest extends TestCase
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
         $assert1 = new AssertContains($location, 'Foo', new Modifiers(ModifiersInterface::NOT));
-        $testCase1 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase1 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $testCase1->addAssert($assert1);
 
         $assert2 = new AssertEmpty($location, new Modifiers(ModifiersInterface::NOT));
-        $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/bar'));
+        $testCase2 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/bar'));
         $testCase2->addAssert($assert2);
 
         $testSuite = new TestSuite();

@@ -271,6 +271,8 @@ class Parser
             return false;
         }
 
+        $method = TestCaseInterface::METHOD_GET;
+
         if ($argument === null) {
             $parseErrors[] = new ParseError($location, 'Missing argument: Missing Url argument for "' . $command . '".');
 
@@ -285,7 +287,7 @@ class Parser
             return true;
         }
 
-        $testCase = new TestCase($location, $url);
+        $testCase = new TestCase($location, $method, $url);
 
         return true;
     }

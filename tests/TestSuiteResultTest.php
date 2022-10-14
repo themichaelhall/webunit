@@ -8,6 +8,7 @@ use DataTypes\Net\Url;
 use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestCaseResult;
@@ -45,8 +46,8 @@ class TestSuiteResultTest extends TestCase
 
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase1 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/'));
-        $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase1 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/'));
+        $testCase2 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $testCaseResult1 = new TestCaseResult($testCase1);
         $testCaseResult2 = new TestCaseResult($testCase2);
 
@@ -69,8 +70,8 @@ class TestSuiteResultTest extends TestCase
 
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase1 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/'));
-        $testCase2 = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase1 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/'));
+        $testCase2 = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $assert1 = new AssertContains($location, 'Foo', new Modifiers());
         $assertResult1 = new AssertResult($assert1, false, 'Fail');
         $testCaseResult1 = new TestCaseResult($testCase1, $assertResult1);

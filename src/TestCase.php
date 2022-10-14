@@ -33,11 +33,13 @@ class TestCase implements TestCaseInterface
      * @since 1.0.0
      *
      * @param LocationInterface $location The location.
+     * @param string            $method   The method.
      * @param UrlInterface      $url      The url.
      */
-    public function __construct(LocationInterface $location, UrlInterface $url)
+    public function __construct(LocationInterface $location, string $method, UrlInterface $url)
     {
         $this->url = $url;
+        $this->method = $method;
         $this->asserts = [new DefaultAssert($location)];
     }
 
@@ -70,6 +72,18 @@ class TestCase implements TestCaseInterface
     }
 
     /**
+     * Returns the method.
+     *
+     * @since 2.1.0
+     *
+     * @return string The method.
+     */
+    public function getMethod(): string
+    {
+        return $this->method;
+    }
+
+    /**
      * Returns the url.
      *
      * @since 1.0.0
@@ -93,7 +107,7 @@ class TestCase implements TestCaseInterface
      */
     public function run(HttpClientInterface $httpClient, ?callable $callback = null): TestCaseResultInterface
     {
-        $httpClientRequest = new HttpClientRequest($this->url);
+        $httpClientRequest = new HttpClientRequest($this->url, $this->method);
         $httpClientResponse = $httpClient->send($httpClientRequest);
 
         $pageResult = new PageResult(
@@ -133,6 +147,11 @@ class TestCase implements TestCaseInterface
      * @var UrlInterface The url.
      */
     private UrlInterface $url;
+
+    /**
+     * @var string The method.
+     */
+    private string $method;
 
     /**
      * @var AssertInterface[] The asserts.

@@ -15,6 +15,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
@@ -32,7 +33,7 @@ class TestCaseTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
 
         self::assertSame(1, count($testCase->getAsserts()));
         self::assertSame(DefaultAssert::class, get_class($testCase->getAsserts()[0]));
@@ -50,7 +51,7 @@ class TestCaseTest extends TestCase
         $assert3 = new AssertEmpty($location, new Modifiers());
         $assert4 = new AssertHeader($location, 'Location', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -75,7 +76,7 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertStatusCode($location, 404, new Modifiers());
         $assert3 = new AssertEmpty($location, new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -94,9 +95,22 @@ class TestCaseTest extends TestCase
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
         $url = Url::parse('http://localhost/foo/bar');
-        $testCase = new \MichaelHall\Webunit\TestCase($location, $url);
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, $url);
 
         self::assertSame($url, $testCase->getUrl());
+    }
+
+    /**
+     * Test getMethod method.
+     */
+    public function testGetMethod()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $method = TestCaseInterface::METHOD_GET;
+        $testCase = new \MichaelHall\Webunit\TestCase($location, $method, Url::parse('http://localhost/foo/bar'));
+
+        self::assertSame($method, $testCase->getMethod());
     }
 
     /**
@@ -113,7 +127,7 @@ class TestCaseTest extends TestCase
         $assert5 = new AssertStatusCode($location, 200, new Modifiers());
         $assert6 = new AssertHeader($location, 'X-Foo', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -143,7 +157,7 @@ class TestCaseTest extends TestCase
         $assert5 = new AssertStatusCode($location, 200, new Modifiers());
         $assert6 = new AssertHeader($location, 'X-Foo', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/not-found'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/not-found'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
@@ -172,7 +186,7 @@ class TestCaseTest extends TestCase
         $assert2 = new AssertContains($location, 'Bar', new Modifiers(ModifiersInterface::NOT));
         $assert3 = new AssertContains($location, 'Baz', new Modifiers());
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost/foo'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/foo'));
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);

@@ -21,6 +21,13 @@ use MichaelHall\HttpClient\HttpClientInterface;
 interface TestCaseInterface
 {
     /**
+     * GET method.
+     *
+     * @since 2.1.0
+     */
+    public const METHOD_GET = 'GET';
+
+    /**
      * Adds an assert.
      *
      * @since 1.0.0
@@ -37,6 +44,15 @@ interface TestCaseInterface
      * @return AssertInterface[] The asserts.
      */
     public function getAsserts(): array;
+
+    /**
+     * Returns the method.
+     *
+     * @since 2.1.0
+     *
+     * @return string The method.
+     */
+    public function getMethod(): string;
 
     /**
      * Returns the url.

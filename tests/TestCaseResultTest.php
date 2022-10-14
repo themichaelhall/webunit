@@ -8,6 +8,7 @@ use DataTypes\Net\Url;
 use DataTypes\System\FilePath;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\AssertResult;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\TestCaseResult;
@@ -25,7 +26,7 @@ class TestCaseResultTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
         $testCaseResult = new TestCaseResult($testCase);
 
         self::assertSame($testCase, $testCaseResult->getTestCase());
@@ -40,7 +41,7 @@ class TestCaseResultTest extends TestCase
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
         $assert = new AssertContains($location, 'Foo', new Modifiers());
         $assertResult = new AssertResult($assert, false, 'Fail');
         $testCaseResult = new TestCaseResult($testCase, $assertResult);
