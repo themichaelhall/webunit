@@ -18,3 +18,7 @@ assert-empty
 get                {{ BaseUrl }}not-found
 assert-status-code 404
 assert-equals      Page not found.
+
+put                {{ BaseUrl }}method
+assert-contains^   put
+assert-contains!^  get

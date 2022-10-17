@@ -48,6 +48,10 @@ class TestRequestHandler implements RequestHandlerInterface
             case '/empty':
                 break;
 
+            case '/method':
+                $responseText = 'Method is ' . $request->getMethod();
+                break;
+
             default:
                 $responseCode = 404;
                 $responseText = 'Page not found.';

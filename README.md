@@ -34,6 +34,15 @@ get https://example.org/
 
 This test will be successful if the Url ```https://example.org/``` is functional and does not return an error or redirect status code. Otherwise, the test will fail.
 
+The Url can also be fetched with one of the other supported HTTP methods:
+
+```
+delete https://example.org/
+patch https://example.org/
+post https://example.org/
+put https://example.org/
+```
+
 A test case can also contain specific assertions:
 
 ```
@@ -133,12 +142,44 @@ get                    {{ Url }}
 
 ## Commands
 
+### delete _url_
+
+Fetches a Url via a ```DELETE``` request.
+
+```
+delete https://example.org/
+```
+
 ### get _url_
 
 Fetches a Url via a ```GET``` request.
 
 ```
 get https://example.org/
+```
+
+### patch _url_
+
+Fetches a Url via a ```PATCH``` request.
+
+```
+patch https://example.org/
+```
+
+### post _url_
+
+Fetches a Url via a ```POST``` request.
+
+```
+post https://example.org/
+```
+
+### put _url_
+
+Fetches a Url via a ```PUT``` request.
+
+```
+put https://example.org/
 ```
 
 ## Assertions

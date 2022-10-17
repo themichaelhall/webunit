@@ -216,4 +216,45 @@ class TestCaseTest extends TestCase
         self::assertSame('Content "This is Foo page." does not contain "Baz"', $callbackResult[3]->getError());
         self::assertSame($assert3, $callbackResult[3]->getAssert());
     }
+
+    /**
+     * Test run with other HTTP methods.
+     *
+     * @param string $method          The method to use.
+     * @param string $expectedContent The expected content of the result.
+     *
+     * @dataProvider runWithOtherMethodsDataProvider
+     */
+    public function testRunWithOtherMethods(string $method, string $expectedContent)
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $assert1 = new AssertEquals($location, $expectedContent, new Modifiers());
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, $method, Url::parse('http://localhost/method'));
+        $testCase->addAssert($assert1);
+
+        $httpClient = new HttpClient(new TestRequestHandler());
+        $result = $testCase->run($httpClient);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertTrue($result->isSuccess());
+        self::assertNull($result->getFailedAssertResult());
+    }
+
+    /**
+     * Data provider for test run with other HTTP methods.
+     *
+     * @return array<array{string, string}>
+     */
+    public function runWithOtherMethodsDataProvider(): array
+    {
+        return [
+            [TestCaseInterface::METHOD_DELETE, 'Method is DELETE'],
+            [TestCaseInterface::METHOD_GET, 'Method is GET'],
+            [TestCaseInterface::METHOD_PATCH, 'Method is PATCH'],
+            [TestCaseInterface::METHOD_POST, 'Method is POST'],
+            [TestCaseInterface::METHOD_PUT, 'Method is PUT'],
+        ];
+    }
 }

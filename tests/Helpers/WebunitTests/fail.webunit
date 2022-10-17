@@ -5,3 +5,6 @@ assert-contains!^  foo
 
 GET                https://example.com/foobar
 assert-header      Location: https://example.com/baz
+
+POST               https://example.com/method
+assert-equals!     Method is POST

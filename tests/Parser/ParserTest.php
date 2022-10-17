@@ -12,6 +12,7 @@ use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
@@ -514,5 +515,55 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:12: Invalid variable: Invalid variable name "F#o" for "set-default" in "F#o = B*r".', $parseErrors[11]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
+    }
+
+    /**
+     * Test parse with other methods test.
+     */
+    public function testParseWithOtherMethodsTest()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'get https://example.com/',
+                'post https://example.com/foo',
+                '',
+                '  PATCH   http://example.com/bar',
+                'assert-contains Bar',
+                'Put https://example.com/',
+                ' delete https://example.com/',
+            ],
+            $parseContext,
+        );
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+
+        self::assertCount(5, $testCases);
+        self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_GET, $testCases[0]->getMethod());
+        self::assertCount(1, $testCases[0]->getAsserts());
+        self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame('https://example.com/foo', $testCases[1]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_POST, $testCases[1]->getMethod());
+        self::assertCount(1, $testCases[1]->getAsserts());
+        self::assertInstanceOf(DefaultAssert::class, $testCases[1]->getAsserts()[0]);
+        self::assertSame('http://example.com/bar', $testCases[2]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_PATCH, $testCases[2]->getMethod());
+        self::assertCount(2, $testCases[2]->getAsserts());
+        self::assertInstanceOf(DefaultAssert::class, $testCases[2]->getAsserts()[0]);
+        self::assertInstanceOf(AssertContains::class, $testCases[2]->getAsserts()[1]);
+        self::assertSame('https://example.com/', $testCases[3]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_PUT, $testCases[3]->getMethod());
+        self::assertCount(1, $testCases[3]->getAsserts());
+        self::assertInstanceOf(DefaultAssert::class, $testCases[3]->getAsserts()[0]);
+        self::assertSame('https://example.com/', $testCases[4]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_DELETE, $testCases[4]->getMethod());
+        self::assertCount(1, $testCases[4]->getAsserts());
+        self::assertInstanceOf(DefaultAssert::class, $testCases[4]->getAsserts()[0]);
+
+        self::assertSame([], $parseResult->getParseErrors());
+        self::assertTrue($parseResult->isSuccess());
     }
 }

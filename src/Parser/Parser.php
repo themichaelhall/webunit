@@ -267,11 +267,18 @@ class Parser
     {
         $testCase = null;
 
-        if ($command !== 'get') {
+        $method = match ($command) {
+            'delete' => TestCaseInterface::METHOD_DELETE,
+            'get'    => TestCaseInterface::METHOD_GET,
+            'patch'  => TestCaseInterface::METHOD_PATCH,
+            'post'   => TestCaseInterface::METHOD_POST,
+            'put'    => TestCaseInterface::METHOD_PUT,
+            default  => null,
+        };
+
+        if ($method === null) {
             return false;
         }
-
-        $method = TestCaseInterface::METHOD_GET;
 
         if ($argument === null) {
             $parseErrors[] = new ParseError($location, 'Missing argument: Missing Url argument for "' . $command . '".');

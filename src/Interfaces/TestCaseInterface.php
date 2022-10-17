@@ -21,11 +21,39 @@ use MichaelHall\HttpClient\HttpClientInterface;
 interface TestCaseInterface
 {
     /**
+     * DELETE method.
+     *
+     * @since 2.1.0
+     */
+    public const METHOD_DELETE = 'DELETE';
+
+    /**
      * GET method.
      *
      * @since 2.1.0
      */
     public const METHOD_GET = 'GET';
+
+    /**
+     * PATCH method.
+     *
+     * @since 2.1.0
+     */
+    public const METHOD_PATCH = 'PATCH';
+
+    /**
+     * POST method.
+     *
+     * @since 2.1.0
+     */
+    public const METHOD_POST = 'POST';
+
+    /**
+     * PUT method.
+     *
+     * @since 2.1.0
+     */
+    public const METHOD_PUT = 'PUT';
 
     /**
      * Adds an assert.

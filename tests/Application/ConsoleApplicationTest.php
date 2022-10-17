@@ -154,8 +154,8 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(0, $result);
         self::assertSame(
             'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
-            '............' . PHP_EOL .
-            "\033[42m\033[30m4 tests completed successfully.\033[0m" . PHP_EOL,
+            '...............' . PHP_EOL .
+            "\033[42m\033[30m5 tests completed successfully.\033[0m" . PHP_EOL,
             $output
         );
     }
@@ -177,10 +177,11 @@ class ConsoleApplicationTest extends TestCase
         self::assertSame(5, $result);
         self::assertSame(
             'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
-            "..\033[41m\033[1;37mF\033[0m\e[41m\e[1;37mF\e[0m" . PHP_EOL .
+            "..\033[41m\033[1;37mF\033[0m\e[41m\e[1;37mF\e[0m.\033[41m\033[1;37mF\033[0m" . PHP_EOL .
             "$testfilePath:4: Test failed: https://example.com/foo: Content \"This is Foo page.\" contains \"foo\" (case insensitive)." . PHP_EOL .
             "$testfilePath:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
-            "\033[41m\033[1;37m2 tests failed.\033[0m" . PHP_EOL,
+            "$testfilePath:10: Test failed: https://example.com/method: Content \"Method is POST\" equals \"Method is POST\"." . PHP_EOL .
+            "\033[41m\033[1;37m3 tests failed.\033[0m" . PHP_EOL,
             $output
         );
     }
