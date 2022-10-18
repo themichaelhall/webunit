@@ -18,6 +18,7 @@ use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -256,5 +257,21 @@ class TestCaseTest extends TestCase
             [TestCaseInterface::METHOD_POST, 'Method is POST'],
             [TestCaseInterface::METHOD_PUT, 'Method is PUT'],
         ];
+    }
+
+    /**
+     * Test case with request modifiers.
+     */
+    public function testWithRequestModifiers()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+        $testCase->addRequestModifier($requestModifier1);
+
+        self::assertCount(1, $testCase->getRequestModifiers());
+        self::assertSame($requestModifier1, $testCase->getRequestModifiers()[0]);
     }
 }

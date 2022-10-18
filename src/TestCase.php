@@ -17,6 +17,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
+use MichaelHall\Webunit\Interfaces\RequestModifierInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseResultInterface;
 
@@ -41,6 +42,7 @@ class TestCase implements TestCaseInterface
         $this->url = $url;
         $this->method = $method;
         $this->asserts = [new DefaultAssert($location)];
+        $this->requestModifiers = [];
     }
 
     /**
@@ -57,6 +59,18 @@ class TestCase implements TestCaseInterface
         if ($assert instanceof AssertStatusCode) {
             $this->removeDefaultAssert();
         }
+    }
+
+    /**
+     * Adds a request modifier.
+     *
+     * @since 2.1.0
+     *
+     * @param RequestModifierInterface $requestModifier The request modifier.
+     */
+    public function addRequestModifier(RequestModifierInterface $requestModifier): void
+    {
+        $this->requestModifiers[] = $requestModifier;
     }
 
     /**
@@ -81,6 +95,18 @@ class TestCase implements TestCaseInterface
     public function getMethod(): string
     {
         return $this->method;
+    }
+
+    /**
+     * Returns the request modifiers.
+     *
+     * @since 2.1.0
+     *
+     * @return RequestModifierInterface[] The request modifiers.
+     */
+    public function getRequestModifiers(): array
+    {
+        return $this->requestModifiers;
     }
 
     /**
@@ -157,4 +183,9 @@ class TestCase implements TestCaseInterface
      * @var AssertInterface[] The asserts.
      */
     private array $asserts;
+
+    /**
+     * @var RequestModifierInterface[] The request modifiers.
+     */
+    private array $requestModifiers;
 }
