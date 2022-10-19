@@ -52,6 +52,13 @@ class TestRequestHandler implements RequestHandlerInterface
                 $responseText = 'Method is ' . $request->getMethod();
                 break;
 
+            case '/request':
+                foreach ($request->getPostFields() as $postFieldName => $postFieldValue) {
+                    $responseText .= 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"' . PHP_EOL;
+                }
+
+                break;
+
             default:
                 $responseCode = 404;
                 $responseText = 'Page not found.';

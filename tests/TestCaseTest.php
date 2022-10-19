@@ -274,4 +274,29 @@ class TestCaseTest extends TestCase
         self::assertCount(1, $testCase->getRequestModifiers());
         self::assertSame($requestModifier1, $testCase->getRequestModifiers()[0]);
     }
+
+    /**
+     * Test run with request modifiers.
+     */
+    public function testRunWithRequestModifiers()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+
+        $assert1 = new AssertContains($location, 'Post Field "Foo" = "Bar"', new Modifiers());
+        $assert2 = new AssertContains($location, 'Post Field "Foo" = "Baz"', new Modifiers(ModifiersInterface::NOT));
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/request'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
+
+        $httpClient = new HttpClient(new TestRequestHandler());
+        $result = $testCase->run($httpClient);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertTrue($result->isSuccess());
+        self::assertNull($result->getFailedAssertResult());
+    }
 }

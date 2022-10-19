@@ -134,6 +134,10 @@ class TestCase implements TestCaseInterface
     public function run(HttpClientInterface $httpClient, ?callable $callback = null): TestCaseResultInterface
     {
         $httpClientRequest = new HttpClientRequest($this->url, $this->method);
+        foreach ($this->requestModifiers as $requestModifier) {
+            $requestModifier->modifyRequest($httpClientRequest);
+        }
+
         $httpClientResponse = $httpClient->send($httpClientRequest);
 
         $pageResult = new PageResult(
