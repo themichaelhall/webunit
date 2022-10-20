@@ -26,10 +26,12 @@ use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
+use MichaelHall\Webunit\Interfaces\RequestModifierInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\TestCase;
 use MichaelHall\Webunit\TestSuite;
 
@@ -131,6 +133,12 @@ class Parser
                     $parseErrors[] = new ParseError($location, 'Undefined test case: Test case is not defined for assert "' . $command . '".');
                 }
             }
+
+            return;
+        }
+
+        if (self::tryParseRequestModifier($command, $argument, $requestModifier)) {
+            $currentTestCase->addRequestModifier($requestModifier);
 
             return;
         }
@@ -362,6 +370,31 @@ class Parser
         }
 
         return true;
+    }
+
+    /**
+     * Try parse a request modifier.
+     *
+     * @param string                        $command         The command.
+     * @param string|null                   $argument        The argument or null if no argument.
+     * @param RequestModifierInterface|null $requestModifier The parsed request modifier or null if parsing failed.
+     *
+     * @return bool True if this was a request modifier, false otherwise.
+     */
+    private static function tryParseRequestModifier(string $command, ?string $argument, ?RequestModifierInterface &$requestModifier): bool
+    {
+        $requestModifier = null;
+
+        if ($command === 'with-post-parameter') {
+            // todo: Error handling.
+            $argumentParts = explode('=', $argument, 2);
+            $parameterName = trim($argumentParts[0]);
+            $parameterValue = trim($argumentParts[1]);
+
+            $requestModifier = new WithPostParameter($parameterName, $parameterValue);
+        }
+
+        return $requestModifier !== null;
     }
 
     /**

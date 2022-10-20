@@ -53,10 +53,12 @@ class TestRequestHandler implements RequestHandlerInterface
                 break;
 
             case '/request':
+                $responseLines = [];
                 foreach ($request->getPostFields() as $postFieldName => $postFieldValue) {
-                    $responseText .= 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"' . PHP_EOL;
+                    $responseLines[] = 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"';
                 }
 
+                $responseText = implode(PHP_EOL, $responseLines);
                 break;
 
             default:

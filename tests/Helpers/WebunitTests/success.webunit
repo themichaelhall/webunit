@@ -1,24 +1,28 @@
-set                BaseUrl = https://example.com/
+set                     BaseUrl = https://example.com/
 
-get                {{ BaseUrl }}
-assert-equals      Hello World!
+get                     {{ BaseUrl }}
+assert-equals           Hello World!
 assert-empty!
 
-get                {{ BaseUrl }}foo
-assert-contains    Foo
-assert-contains!^  Bar
-assert-equals^~    .*foo.*
-assert-header      x-foo: X-Bar
+get                     {{ BaseUrl }}foo
+assert-contains         Foo
+assert-contains!^       Bar
+assert-equals^~         .*foo.*
+assert-header           x-foo: X-Bar
 
-set-default        EmptyPath = empty
+set-default             EmptyPath = empty
 
-get                {{ BaseUrl }}{{ EmptyPath}}
+get                     {{ BaseUrl }}{{ EmptyPath}}
 assert-empty
 
-get                {{ BaseUrl }}not-found
-assert-status-code 404
-assert-equals      Page not found.
+get                     {{ BaseUrl }}not-found
+assert-status-code      404
+assert-equals           Page not found.
 
-put                {{ BaseUrl }}method
-assert-contains^   put
-assert-contains!^  get
+put                     {{ BaseUrl }}method
+assert-contains^        put
+assert-contains!^       get
+
+POST                    {{ BaseUrl }}request
+WITH-POST-PARAMETER     Foo = Bar
+ASSERT-CONTAINS         Post Field "Foo" = "Bar"

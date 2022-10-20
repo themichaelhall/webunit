@@ -1,10 +1,14 @@
-GET                https://example.com/
+GET                     https://example.com/
 
-GET                https://example.com/foo
-assert-contains!^  foo
+GET                     https://example.com/foo
+assert-contains!^       foo
 
-GET                https://example.com/foobar
-assert-header      Location: https://example.com/baz
+GET                     https://example.com/foobar
+assert-header           Location: https://example.com/baz
 
-POST               https://example.com/method
-assert-equals!     Method is POST
+POST                    https://example.com/method
+assert-equals!          Method is POST
+
+POST                    https://example.com/request
+with-post-parameter     Foo = Bar
+assert-contains         Post Field "Foo" = "Baz"

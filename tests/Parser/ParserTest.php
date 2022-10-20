@@ -16,6 +16,7 @@ use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
+use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -562,6 +563,44 @@ class ParserTest extends TestCase
         self::assertSame(TestCaseInterface::METHOD_DELETE, $testCases[4]->getMethod());
         self::assertCount(1, $testCases[4]->getAsserts());
         self::assertInstanceOf(DefaultAssert::class, $testCases[4]->getAsserts()[0]);
+
+        self::assertSame([], $parseResult->getParseErrors());
+        self::assertTrue($parseResult->isSuccess());
+    }
+
+    /**
+     * Test parse with request modifiers.
+     */
+    public function testParseWithRequestModifiers()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'POST https://example.com/',
+                'with-post-parameter Foo=Bar',
+                " \tWITH-post-parameter  Name\t_1 =\tValue=1  \t",
+                'with-post-parameter Empty=',
+            ],
+            $parseContext,
+        );
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+
+        self::assertCount(1, $testCases);
+        self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_POST, $testCases[0]->getMethod());
+        self::assertCount(3, $testCases[0]->getRequestModifiers());
+        self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[0]);
+        self::assertSame('Foo', $testCases[0]->getRequestModifiers()[0]->getParameterName());
+        self::assertSame('Bar', $testCases[0]->getRequestModifiers()[0]->getParameterValue());
+        self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[1]);
+        self::assertSame("Name\t_1", $testCases[0]->getRequestModifiers()[1]->getParameterName());
+        self::assertSame('Value=1', $testCases[0]->getRequestModifiers()[1]->getParameterValue());
+        self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[2]);
+        self::assertSame('Empty', $testCases[0]->getRequestModifiers()[2]->getParameterName());
+        self::assertSame('', $testCases[0]->getRequestModifiers()[2]->getParameterValue());
 
         self::assertSame([], $parseResult->getParseErrors());
         self::assertTrue($parseResult->isSuccess());
