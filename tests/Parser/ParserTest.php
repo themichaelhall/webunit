@@ -605,4 +605,50 @@ class ParserTest extends TestCase
         self::assertSame([], $parseResult->getParseErrors());
         self::assertTrue($parseResult->isSuccess());
     }
+
+    /**
+     * Test parse failure with request modifiers.
+     */
+    public function testParseFailureWithRequestModifiers()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'with-post-parameter Foo=Bar',
+                '',
+                'put https://example.com/',
+                'with-post-parameter',
+                ' with-post-parameter Foo ',
+                'With-post-parameter =',
+                ' with-post-parameter = Bar ',
+                '',
+                'GET https://example.com/',
+                'with-post-parameter Foo=Bar',
+            ],
+            $parseContext,
+        );
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(2, count($testCases));
+        self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(1, count($testCases[0]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
+        self::assertSame('https://example.com/', $testCases[1]->getUrl()->__toString());
+        self::assertSame(1, count($testCases[1]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[1]->getAsserts()[0]);
+
+        self::assertSame(6, count($parseErrors));
+        self::assertSame('foo.webunit:1: Undefined test case: Test case is not defined for request-modifier "with-post-parameter".', $parseErrors[0]->__toString());
+        self::assertSame('foo.webunit:4: Missing argument: Missing parameter name and value for request modifier "with-post-parameter".', $parseErrors[1]->__toString());
+        self::assertSame('foo.webunit:5: Missing argument: Missing parameter value for request modifier "with-post-parameter".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:6: Missing argument: Missing parameter name for request modifier "with-post-parameter".', $parseErrors[3]->__toString());
+        self::assertSame('foo.webunit:7: Missing argument: Missing parameter name for request modifier "with-post-parameter".', $parseErrors[4]->__toString());
+        self::assertSame('foo.webunit:10: Invalid request modifier: Request modifier "with-post-parameter" is not allowed for request method "GET".', $parseErrors[5]->__toString());
+
+        self::assertFalse($parseResult->isSuccess());
+    }
 }

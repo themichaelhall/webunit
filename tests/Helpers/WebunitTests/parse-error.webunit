@@ -13,3 +13,5 @@ assert-empty BAZ
 assert-empty
 
 assert-empty!!
+
+with-post-parameter Foo=

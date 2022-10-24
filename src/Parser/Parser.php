@@ -137,8 +137,14 @@ class Parser
             return;
         }
 
-        if (self::tryParseRequestModifier($command, $argument, $requestModifier)) {
-            $currentTestCase->addRequestModifier($requestModifier);
+        if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument, $parseErrors, $requestModifier)) {
+            if ($requestModifier !== null) {
+                if ($currentTestCase !== null) {
+                    $currentTestCase->addRequestModifier($requestModifier);
+                } else {
+                    $parseErrors[] = new ParseError($location, 'Undefined test case: Test case is not defined for request-modifier "' . $command . '".');
+                }
+            }
 
             return;
         }
@@ -375,20 +381,46 @@ class Parser
     /**
      * Try parse a request modifier.
      *
+     * @param LocationInterface             $location        The location.
+     * @param TestCaseInterface|null        $testCase        The test case.
      * @param string                        $command         The command.
      * @param string|null                   $argument        The argument or null if no argument.
+     * @param ParseError[]                  $parseErrors     The parse errors.
      * @param RequestModifierInterface|null $requestModifier The parsed request modifier or null if parsing failed.
      *
      * @return bool True if this was a request modifier, false otherwise.
      */
-    private static function tryParseRequestModifier(string $command, ?string $argument, ?RequestModifierInterface &$requestModifier): bool
+    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, array &$parseErrors, ?RequestModifierInterface &$requestModifier): bool
     {
         $requestModifier = null;
 
         if ($command === 'with-post-parameter') {
-            // todo: Error handling.
+            if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
+                $parseErrors[] = new ParseError($location, 'Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
+
+                return true;
+            }
+
+            if ($argument === null) {
+                $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name and value for request modifier "' . $command . '".');
+
+                return true;
+            }
+
             $argumentParts = explode('=', $argument, 2);
             $parameterName = trim($argumentParts[0]);
+            if ($parameterName === '') {
+                $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name for request modifier "' . $command . '".');
+
+                return true;
+            }
+
+            if (count($argumentParts) < 2) {
+                $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter value for request modifier "' . $command . '".');
+
+                return true;
+            }
+
             $parameterValue = trim($argumentParts[1]);
 
             $requestModifier = new WithPostParameter($parameterName, $parameterValue);
