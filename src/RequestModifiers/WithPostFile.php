@@ -33,8 +33,8 @@ class WithPostFile implements RequestModifierInterface
      * @param FilePathInterface $filePath      The absolute path to the POST file.
      *
      * @throws EmptyParameterNameException If the name of the POST parameter is an empty string.
-     * @throws InvalidFilePathException If the file path is not an absolute path to a file.
-     * @throws FileNotFoundException If the file could not be found.
+     * @throws InvalidFilePathException    If the file path is not an absolute path to a file.
+     * @throws FileNotFoundException       If the file could not be found.
      */
     public function __construct(string $parameterName, FilePathInterface $filePath)
     {
