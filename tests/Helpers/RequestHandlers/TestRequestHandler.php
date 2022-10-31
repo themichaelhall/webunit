@@ -57,6 +57,9 @@ class TestRequestHandler implements RequestHandlerInterface
                 foreach ($request->getPostFields() as $postFieldName => $postFieldValue) {
                     $responseLines[] = 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"';
                 }
+                foreach ($request->getFiles() as $postFileName => $postFileValue) {
+                    $responseLines[] = 'Post File "' . $postFileName . '" = "' . $postFileValue . '"';
+                }
 
                 $responseText = implode(PHP_EOL, $responseLines);
                 break;

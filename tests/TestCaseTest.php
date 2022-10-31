@@ -18,6 +18,7 @@ use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use PHPUnit\Framework\TestCase;
@@ -265,14 +266,18 @@ class TestCaseTest extends TestCase
     public function testWithRequestModifiers()
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+        $postFilePath = FilePath::parse(__DIR__ . '/Helpers/TestFiles/helloworld.txt');
 
         $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+        $requestModifier2 = new WithPostFile('File', $postFilePath);
 
         $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
         $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
 
-        self::assertCount(1, $testCase->getRequestModifiers());
+        self::assertCount(2, $testCase->getRequestModifiers());
         self::assertSame($requestModifier1, $testCase->getRequestModifiers()[0]);
+        self::assertSame($requestModifier2, $testCase->getRequestModifiers()[1]);
     }
 
     /**
@@ -281,16 +286,23 @@ class TestCaseTest extends TestCase
     public function testRunWithRequestModifiers()
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+        $postFilePath = FilePath::parse(__DIR__ . '/Helpers/TestFiles/helloworld.txt');
 
         $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+        $requestModifier2 = new WithPostFile('File', $postFilePath);
 
         $assert1 = new AssertContains($location, 'Post Field "Foo" = "Bar"', new Modifiers());
         $assert2 = new AssertContains($location, 'Post Field "Foo" = "Baz"', new Modifiers(ModifiersInterface::NOT));
+        $assert3 = new AssertContains($location, 'Post File "File" = "' . $postFilePath . '"', new Modifiers());
+        $assert4 = new AssertContains($location, 'Post File "File" = "/non-existing-file.txt"', new Modifiers(ModifiersInterface::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/request'));
         $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+        $testCase->addAssert($assert4);
 
         $httpClient = new HttpClient(new TestRequestHandler());
         $result = $testCase->run($httpClient);
