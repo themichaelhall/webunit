@@ -22,4 +22,15 @@ class FileLocationTest extends TestCase
 
         self::assertSame(DIRECTORY_SEPARATOR . 'foo' . DIRECTORY_SEPARATOR . 'bar:123', $fileLocation->__toString());
     }
+
+    /**
+     * Test getFilePath method.
+     */
+    public function testGetFilePath()
+    {
+        $filePath = FilePath::parse('/foo/bar');
+        $fileLocation = new FileLocation($filePath, 123);
+
+        self::assertSame($filePath, $fileLocation->getFilePath());
+    }
 }
