@@ -267,7 +267,7 @@ class ConsoleApplication
         }
 
         try {
-            $testfilePath = FilePath::parse($value);
+            $testfilePath = FilePath::parseAsDirectory(getcwd())->withFilePath(FilePath::parse($value));
         } catch (FilePathInvalidArgumentException $exception) {
             $error = 'Invalid path to testfile "' . $value . '": ' . $exception->getMessage();
 
