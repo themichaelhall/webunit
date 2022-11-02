@@ -25,13 +25,25 @@ class FileLocation implements LocationInterface
      *
      * @since 1.0.0
      *
-     * @param FilePathInterface $file The file.
-     * @param int               $line The line.
+     * @param FilePathInterface $filePath The file path.
+     * @param int               $line     The line.
      */
-    public function __construct(FilePathInterface $file, int $line)
+    public function __construct(FilePathInterface $filePath, int $line)
     {
-        $this->file = $file;
+        $this->filePath = $filePath;
         $this->line = $line;
+    }
+
+    /**
+     * Returns the file path.
+     *
+     * @since 2.1.0
+     *
+     * @return FilePathInterface The file path.
+     */
+    public function getFilePath(): FilePathInterface
+    {
+        return $this->filePath;
     }
 
     /**
@@ -43,13 +55,13 @@ class FileLocation implements LocationInterface
      */
     public function __toString(): string
     {
-        return $this->file . ':' . $this->line;
+        return $this->filePath . ':' . $this->line;
     }
 
     /**
      * @var FilePathInterface The file.
      */
-    private FilePathInterface $file;
+    private FilePathInterface $filePath;
 
     /**
      * @var int The line.

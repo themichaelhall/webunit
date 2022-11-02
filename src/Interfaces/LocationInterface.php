@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Interfaces;
 
+use DataTypes\System\FilePathInterface;
 use Stringable;
 
 /**
@@ -19,4 +20,12 @@ use Stringable;
  */
 interface LocationInterface extends Stringable
 {
+    /**
+     * Returns the file path.
+     *
+     * @since 2.1.0
+     *
+     * @return FilePathInterface The file path.
+     */
+    public function getFilePath(): FilePathInterface;
 }
