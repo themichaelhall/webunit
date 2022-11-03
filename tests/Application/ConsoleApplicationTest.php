@@ -183,7 +183,7 @@ class ConsoleApplicationTest extends TestCase
             "$testfilePath:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
             "$testfilePath:10: Test failed: https://example.com/method: Content \"Method is POST\" equals \"Method is POST\"." . PHP_EOL .
             "$testfilePath:14: Test failed: https://example.com/request: Content \"Post Field \"Foo\" = \"Bar\"\" does not contain \"Post Field \"Foo\" = \"Baz\"\"." . PHP_EOL .
-            "$testfilePath:18: Test failed: https://example.com/request: Content \"Post File \"File\" = \"" . FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt') . "\"\" contains \"Post File \"File\" = \".*helloworld.txt\"\" (regexp)." . PHP_EOL .
+            "$testfilePath:18: Test failed: https://example.com/request: Content \"Post File \"File\" = \"" . FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt') . '"" contains "Post File "File" = ".*helloworld.txt"" (regexp).' . PHP_EOL .
             "\033[41m\033[1;37m5 tests failed.\033[0m" . PHP_EOL,
             $output
         );
