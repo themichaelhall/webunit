@@ -25,4 +25,6 @@ assert-contains!^       get
 
 POST                    {{ BaseUrl }}request
 WITH-POST-PARAMETER     Foo = Bar
+WITH-POST-FILE          File = ../TestFiles/helloworld.txt
 ASSERT-CONTAINS         Post Field "Foo" = "Bar"
+ASSERT-CONTAINS~        Post File "File" = ".*helloworld.txt"

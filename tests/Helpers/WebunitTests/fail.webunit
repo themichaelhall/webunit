@@ -12,3 +12,7 @@ assert-equals!          Method is POST
 POST                    https://example.com/request
 with-post-parameter     Foo = Bar
 assert-contains         Post Field "Foo" = "Baz"
+
+post                    https://example.com/request
+with-post-file          File = ../TestFiles/helloworld.txt
+assert-contains!~       Post File "File" = ".*helloworld.txt"

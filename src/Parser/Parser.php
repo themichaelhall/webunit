@@ -12,6 +12,7 @@ namespace MichaelHall\Webunit\Parser;
 
 use DataTypes\Net\Exceptions\UrlInvalidArgumentException;
 use DataTypes\Net\Url;
+use DataTypes\System\FilePath;
 use DataTypes\System\FilePathInterface;
 use MichaelHall\Webunit\Assertions\AssertContains;
 use MichaelHall\Webunit\Assertions\AssertEmpty;
@@ -31,6 +32,7 @@ use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\TestCase;
 use MichaelHall\Webunit\TestSuite;
@@ -394,36 +396,46 @@ class Parser
     {
         $requestModifier = null;
 
-        if ($command === 'with-post-parameter') {
-            if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
-                $parseErrors[] = new ParseError($location, 'Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
+        switch ($command) {
+            case 'with-post-parameter':
+                if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
+                    $parseErrors[] = new ParseError($location, 'Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
 
-                return true;
-            }
+                    return true;
+                }
 
-            if ($argument === null) {
-                $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name and value for request modifier "' . $command . '".');
+                if ($argument === null) {
+                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name and value for request modifier "' . $command . '".');
 
-                return true;
-            }
+                    return true;
+                }
 
-            $argumentParts = explode('=', $argument, 2);
-            $parameterName = trim($argumentParts[0]);
-            if ($parameterName === '') {
-                $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name for request modifier "' . $command . '".');
+                self::tryParsePostRequestModifierParameter($argument, $parameterName, $parameterValue);
 
-                return true;
-            }
+                if ($parameterName === '') {
+                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name for request modifier "' . $command . '".');
 
-            if (count($argumentParts) < 2) {
-                $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter value for request modifier "' . $command . '".');
+                    return true;
+                }
 
-                return true;
-            }
+                if ($parameterValue === null) {
+                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter value for request modifier "' . $command . '".');
 
-            $parameterValue = trim($argumentParts[1]);
+                    return true;
+                }
 
-            $requestModifier = new WithPostParameter($parameterName, $parameterValue);
+                $requestModifier = new WithPostParameter($parameterName, $parameterValue);
+
+                break;
+
+            case 'with-post-file':
+                self::tryParsePostRequestModifierParameter($argument, $parameterName, $parameterValue);
+
+                $filePath = $location->getFilePath()->withFilePath(FilePath::parse($parameterValue));
+
+                $requestModifier = new WithPostFile($parameterName, $filePath);
+
+                break;
         }
 
         return $requestModifier !== null;
@@ -514,6 +526,21 @@ class Parser
         if ($hasErrors) {
             $modifiers = null;
         }
+    }
+
+    /**
+     * Try parse request modifier parameter for a POST request.
+     *
+     * @param string|null $argument       The argument or null if no argument.
+     * @param string|null $parameterName  The parsed parameter name.
+     * @param string|null $parameterValue The parsed parameter value.
+     */
+    private static function tryParsePostRequestModifierParameter(?string $argument, ?string &$parameterName = null, ?string &$parameterValue = null): void
+    {
+        $argumentParts = explode('=', $argument, 2);
+
+        $parameterName = trim($argumentParts[0]);
+        $parameterValue = count($argumentParts) > 1 ? trim($argumentParts[1]) : null;
     }
 
     /**

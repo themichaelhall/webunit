@@ -16,6 +16,7 @@ use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
+use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use PHPUnit\Framework\TestCase;
 
@@ -576,12 +577,14 @@ class ParserTest extends TestCase
         $parser = new Parser();
         $parseContext = new ParseContext();
         $parseResult = $parser->parse(
-            FilePath::parse('foo.webunit'),
+            FilePath::parse(__DIR__ . '/foo.webunit'),
             [
                 'POST https://example.com/',
                 'with-post-parameter Foo=Bar',
                 " \tWITH-post-parameter  Name\t_1 =\tValue=1  \t",
                 'with-post-parameter Empty=',
+                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
+                " WITH-post-file File-2 \t=  \t../Helpers/TestFiles/helloworld.txt ",
             ],
             $parseContext,
         );
@@ -591,7 +594,7 @@ class ParserTest extends TestCase
         self::assertCount(1, $testCases);
         self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(TestCaseInterface::METHOD_POST, $testCases[0]->getMethod());
-        self::assertCount(3, $testCases[0]->getRequestModifiers());
+        self::assertCount(5, $testCases[0]->getRequestModifiers());
         self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[0]);
         self::assertSame('Foo', $testCases[0]->getRequestModifiers()[0]->getParameterName());
         self::assertSame('Bar', $testCases[0]->getRequestModifiers()[0]->getParameterValue());
@@ -601,6 +604,12 @@ class ParserTest extends TestCase
         self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[2]);
         self::assertSame('Empty', $testCases[0]->getRequestModifiers()[2]->getParameterName());
         self::assertSame('', $testCases[0]->getRequestModifiers()[2]->getParameterValue());
+        self::assertInstanceOf(WithPostFile::class, $testCases[0]->getRequestModifiers()[3]);
+        self::assertSame('File1', $testCases[0]->getRequestModifiers()[3]->getParameterName());
+        self::assertTrue(FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt')->equals($testCases[0]->getRequestModifiers()[3]->getFilePath()));
+        self::assertInstanceOf(WithPostFile::class, $testCases[0]->getRequestModifiers()[4]);
+        self::assertSame('File-2', $testCases[0]->getRequestModifiers()[4]->getParameterName());
+        self::assertTrue(FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt')->equals($testCases[0]->getRequestModifiers()[4]->getFilePath()));
 
         self::assertSame([], $parseResult->getParseErrors());
         self::assertTrue($parseResult->isSuccess());
