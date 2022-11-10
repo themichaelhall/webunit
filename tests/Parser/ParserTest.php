@@ -632,9 +632,16 @@ class ParserTest extends TestCase
                 ' with-post-parameter Foo ',
                 'With-post-parameter =',
                 ' with-post-parameter = Bar ',
+                'with-post-file',
+                ' With-Post-File Foo',
+                ' With-Post-File =',
+                'with-post-file = Bar',
+                "with-post-file File = F\0oo",
+                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/not-found.txt',
                 '',
                 'GET https://example.com/',
                 'with-post-parameter Foo=Bar',
+                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
             ],
             $parseContext,
         );
@@ -650,13 +657,20 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases[1]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[1]->getAsserts()[0]);
 
-        self::assertSame(6, count($parseErrors));
+        self::assertSame(13, count($parseErrors));
         self::assertSame('foo.webunit:1: Undefined test case: Test case is not defined for request-modifier "with-post-parameter".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:4: Missing argument: Missing parameter name and value for request modifier "with-post-parameter".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:5: Missing argument: Missing parameter value for request modifier "with-post-parameter".', $parseErrors[2]->__toString());
         self::assertSame('foo.webunit:6: Missing argument: Missing parameter name for request modifier "with-post-parameter".', $parseErrors[3]->__toString());
         self::assertSame('foo.webunit:7: Missing argument: Missing parameter name for request modifier "with-post-parameter".', $parseErrors[4]->__toString());
-        self::assertSame('foo.webunit:10: Invalid request modifier: Request modifier "with-post-parameter" is not allowed for request method "GET".', $parseErrors[5]->__toString());
+        self::assertSame('foo.webunit:8: Missing argument: Missing parameter name and value for request modifier "with-post-file".', $parseErrors[5]->__toString());
+        self::assertSame('foo.webunit:9: Missing argument: Missing parameter value for request modifier "with-post-file".', $parseErrors[6]->__toString());
+        self::assertSame('foo.webunit:10: Missing argument: Missing parameter name for request modifier "with-post-file".', $parseErrors[7]->__toString());
+        self::assertSame('foo.webunit:11: Missing argument: Missing parameter name for request modifier "with-post-file".', $parseErrors[8]->__toString());
+        self::assertSame("foo.webunit:12: Invalid argument: File path \"F\0oo\" is not valid for request modifier \"with-post-file\".", $parseErrors[9]->__toString());
+        self::assertSame('foo.webunit:13: Invalid argument: File "' . __DIR__ . '/../Helpers/TestFiles/not-found.txt" was not found for request modifier "with-post-file".', $parseErrors[10]->__toString());
+        self::assertSame('foo.webunit:16: Invalid request modifier: Request modifier "with-post-parameter" is not allowed for request method "GET".', $parseErrors[11]->__toString());
+        self::assertSame('foo.webunit:17: Invalid request modifier: Request modifier "with-post-file" is not allowed for request method "GET".', $parseErrors[12]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }

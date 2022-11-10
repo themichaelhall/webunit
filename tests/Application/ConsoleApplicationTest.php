@@ -111,6 +111,7 @@ class ConsoleApplicationTest extends TestCase
             "$testfilePath:12: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
             "$testfilePath:15: Duplicate modifier: Modifier \"!\" is duplicated for assert \"assert-empty\"." . PHP_EOL .
             "$testfilePath:17: Invalid request modifier: Request modifier \"with-post-parameter\" is not allowed for request method \"GET\"." . PHP_EOL .
+            "$testfilePath:20: Invalid argument: File \"../TestFiles/not-found.txt\" was not found for request modifier \"with-post-file\"." . PHP_EOL .
             "\033[41m\033[1;37mParsing failed.\033[0m" . PHP_EOL,
             $output
         );

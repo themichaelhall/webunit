@@ -15,3 +15,6 @@ assert-empty
 assert-empty!!
 
 with-post-parameter Foo=
+
+POST https://example.com/
+with-post-file File=../TestFiles/not-found.txt
