@@ -20,6 +20,7 @@ use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
+use MichaelHall\Webunit\RequestModifiers\WithRawContent;
 use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -281,9 +282,9 @@ class TestCaseTest extends TestCase
     }
 
     /**
-     * Test run with request modifiers.
+     * Test run with request modifiers #1.
      */
-    public function testRunWithRequestModifiers()
+    public function testRunWithRequestModifiers1()
     {
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
         $postFilePath = FilePath::parse(__DIR__ . '/Helpers/TestFiles/helloworld.txt');
@@ -303,6 +304,31 @@ class TestCaseTest extends TestCase
         $testCase->addAssert($assert2);
         $testCase->addAssert($assert3);
         $testCase->addAssert($assert4);
+
+        $httpClient = new HttpClient(new TestRequestHandler());
+        $result = $testCase->run($httpClient);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertTrue($result->isSuccess());
+        self::assertNull($result->getFailedAssertResult());
+    }
+
+    /**
+     * Test run with request modifiers #2.
+     */
+    public function testRunWithRequestModifiers2()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier1 = new WithRawContent('FooBar');
+
+        $assert1 = new AssertContains($location, 'Raw Content = "FooBar"', new Modifiers());
+        $assert2 = new AssertContains($location, 'Raw Content = "Baz"', new Modifiers(ModifiersInterface::NOT));
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/request'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
 
         $httpClient = new HttpClient(new TestRequestHandler());
         $result = $testCase->run($httpClient);

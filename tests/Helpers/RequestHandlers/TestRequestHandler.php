@@ -54,11 +54,17 @@ class TestRequestHandler implements RequestHandlerInterface
 
             case '/request':
                 $responseLines = [];
+
                 foreach ($request->getPostFields() as $postFieldName => $postFieldValue) {
                     $responseLines[] = 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"';
                 }
+
                 foreach ($request->getFiles() as $postFileName => $postFileValue) {
                     $responseLines[] = 'Post File "' . $postFileName . '" = "' . $postFileValue . '"';
+                }
+
+                if ($request->getRawContent() !== '') {
+                    $responseLines[] = 'Raw Content = "' . $request->getRawContent() . '"';
                 }
 
                 $responseText = implode(PHP_EOL, $responseLines);
