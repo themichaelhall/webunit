@@ -18,6 +18,7 @@ use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
+use MichaelHall\Webunit\RequestModifiers\WithRawContent;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -585,13 +586,17 @@ class ParserTest extends TestCase
                 'with-post-parameter Empty=',
                 'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
                 " WITH-post-file File-2 \t=  \t../Helpers/TestFiles/helloworld.txt ",
+                '',
+                'PUT https://example.com/',
+                ' With-Raw-Content {"Foo": "Bar"}',
             ],
             $parseContext,
         );
         $testSuite = $parseResult->getTestSuite();
         $testCases = $testSuite->getTestCases();
 
-        self::assertCount(1, $testCases);
+        self::assertCount(2, $testCases);
+
         self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(TestCaseInterface::METHOD_POST, $testCases[0]->getMethod());
         self::assertCount(5, $testCases[0]->getRequestModifiers());
@@ -610,6 +615,11 @@ class ParserTest extends TestCase
         self::assertInstanceOf(WithPostFile::class, $testCases[0]->getRequestModifiers()[4]);
         self::assertSame('File-2', $testCases[0]->getRequestModifiers()[4]->getParameterName());
         self::assertTrue(FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt')->equals($testCases[0]->getRequestModifiers()[4]->getFilePath()));
+        self::assertSame('https://example.com/', $testCases[1]->getUrl()->__toString());
+        self::assertSame(TestCaseInterface::METHOD_PUT, $testCases[1]->getMethod());
+        self::assertCount(1, $testCases[1]->getRequestModifiers());
+        self::assertInstanceOf(WithRawContent::class, $testCases[1]->getRequestModifiers()[0]);
+        self::assertSame('{"Foo": "Bar"}', $testCases[1]->getRequestModifiers()[0]->getContent());
 
         self::assertSame([], $parseResult->getParseErrors());
         self::assertTrue($parseResult->isSuccess());
@@ -642,6 +652,12 @@ class ParserTest extends TestCase
                 'GET https://example.com/',
                 'with-post-parameter Foo=Bar',
                 'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
+                '',
+                'POST https://example.com/',
+                ' With-raw-content ',
+                '',
+                'get https://example.com/',
+                'with-raw-content <Foo>Bar</Foo>',
             ],
             $parseContext,
         );
@@ -649,15 +665,21 @@ class ParserTest extends TestCase
         $testCases = $testSuite->getTestCases();
         $parseErrors = $parseResult->getParseErrors();
 
-        self::assertSame(2, count($testCases));
+        self::assertSame(4, count($testCases));
         self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
         self::assertSame('https://example.com/', $testCases[1]->getUrl()->__toString());
         self::assertSame(1, count($testCases[1]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[1]->getAsserts()[0]);
+        self::assertSame('https://example.com/', $testCases[2]->getUrl()->__toString());
+        self::assertSame(1, count($testCases[2]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[2]->getAsserts()[0]);
+        self::assertSame('https://example.com/', $testCases[3]->getUrl()->__toString());
+        self::assertSame(1, count($testCases[3]->getAsserts()));
+        self::assertInstanceOf(DefaultAssert::class, $testCases[3]->getAsserts()[0]);
 
-        self::assertSame(13, count($parseErrors));
+        self::assertSame(15, count($parseErrors));
         self::assertSame('foo.webunit:1: Undefined test case: Test case is not defined for request-modifier "with-post-parameter".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:4: Missing argument: Missing parameter name and value for request modifier "with-post-parameter".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:5: Missing argument: Missing parameter value for request modifier "with-post-parameter".', $parseErrors[2]->__toString());
@@ -671,6 +693,8 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:13: Invalid argument: File "' . __DIR__ . '/../Helpers/TestFiles/not-found.txt" was not found for request modifier "with-post-file".', $parseErrors[10]->__toString());
         self::assertSame('foo.webunit:16: Invalid request modifier: Request modifier "with-post-parameter" is not allowed for request method "GET".', $parseErrors[11]->__toString());
         self::assertSame('foo.webunit:17: Invalid request modifier: Request modifier "with-post-file" is not allowed for request method "GET".', $parseErrors[12]->__toString());
+        self::assertSame('foo.webunit:20: Missing argument: Missing content for request modifier "with-raw-content".', $parseErrors[13]->__toString());
+        self::assertSame('foo.webunit:23: Invalid request modifier: Request modifier "with-raw-content" is not allowed for request method "GET".', $parseErrors[14]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }

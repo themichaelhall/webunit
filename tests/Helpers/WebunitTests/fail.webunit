@@ -16,3 +16,7 @@ assert-contains         Post Field "Foo" = "Baz"
 post                    https://example.com/request
 with-post-file          File = ../TestFiles/helloworld.txt
 assert-contains!~       Post File "File" = ".*helloworld.txt"
+
+PATCH                   https://example.com/request
+WITH-RAW-CONTENT        Foo-Bar
+ASSERT-CONTAINS!        Foo-Bar

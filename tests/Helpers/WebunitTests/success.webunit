@@ -28,3 +28,9 @@ WITH-POST-PARAMETER     Foo = Bar
 WITH-POST-FILE          File = ../TestFiles/helloworld.txt
 ASSERT-CONTAINS         Post Field "Foo" = "Bar"
 ASSERT-CONTAINS~        Post File "File" = ".*helloworld.txt"
+
+set                     RawContent = {"Foo": "Bar"}
+put                     {{ BaseUrl }}request
+with-raw-content        {{ RawContent }}
+assert-contains         Raw Content = "{"Foo": "Bar"}"
+assert-contains!        Raw Content = "{"Foo": "Baz"}"

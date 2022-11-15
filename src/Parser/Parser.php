@@ -36,6 +36,7 @@ use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
+use MichaelHall\Webunit\RequestModifiers\WithRawContent;
 use MichaelHall\Webunit\TestCase;
 use MichaelHall\Webunit\TestSuite;
 
@@ -425,6 +426,23 @@ class Parser
 
                     return true;
                 }
+
+                break;
+
+            case 'with-raw-content':
+                if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
+                    $parseErrors[] = new ParseError($location, 'Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
+
+                    return true;
+                }
+
+                if ($argument === null) {
+                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing content for request modifier "' . $command . '".');
+
+                    return true;
+                }
+
+                $requestModifier = new WithRawContent($argument);
 
                 break;
         }
