@@ -23,6 +23,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
+use MichaelHall\Webunit\Exceptions\ParseException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
@@ -142,19 +143,15 @@ class Parser
             return;
         }
 
-        if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument, $parseErrors, $requestModifier)) {
-            if ($requestModifier !== null) {
-                if ($currentTestCase !== null) {
-                    $currentTestCase->addRequestModifier($requestModifier);
-                } else {
-                    $parseErrors[] = new ParseError($location, 'Undefined test case: Test case is not defined for request-modifier "' . $command . '".');
-                }
+        try {
+            if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument, $requestModifier)) {
+                return;
             }
 
-            return;
+            throw new ParseException('Syntax error: Invalid command "' . $command . '".');
+        } catch (ParseException $exception) {
+            $parseErrors[] = new ParseError($location, $exception->getMessage());
         }
-
-        $parseErrors[] = new ParseError($location, 'Syntax error: Invalid command "' . $command . '".');
     }
 
     /**
@@ -390,64 +387,58 @@ class Parser
      * @param TestCaseInterface|null        $testCase        The test case.
      * @param string                        $command         The command.
      * @param string|null                   $argument        The argument or null if no argument.
-     * @param ParseError[]                  $parseErrors     The parse errors.
      * @param RequestModifierInterface|null $requestModifier The parsed request modifier or null if parsing failed.
      *
      * @return bool True if this was a request modifier, false otherwise.
      */
-    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, array &$parseErrors, ?RequestModifierInterface &$requestModifier): bool
+    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, ?RequestModifierInterface &$requestModifier): bool
     {
-        $requestModifier = null;
-
         switch ($command) {
             case 'with-post-parameter':
-                if (!self::tryParsePostRequestModifierParameter($location, $testCase, $command, $argument, $parseErrors, $parameterName, $parameterValue)) {
-                    return true;
-                }
+                self::checkMethodIsNotGetForRequestModifier($testCase, $command);
+                self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
                 $requestModifier = new WithPostParameter($parameterName, $parameterValue);
 
                 break;
 
             case 'with-post-file':
-                if (!self::tryParsePostRequestModifierParameter($location, $testCase, $command, $argument, $parseErrors, $parameterName, $parameterValue)) {
-                    return true;
-                }
+                self::checkMethodIsNotGetForRequestModifier($testCase, $command);
+                self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
                 try {
                     $filePath = $location->getFilePath()->withFilePath(FilePath::parse($parameterValue));
                     $requestModifier = new WithPostFile($parameterName, $filePath);
                 } catch (FilePathInvalidArgumentException) {
-                    $parseErrors[] = new ParseError($location, 'Invalid argument: File path "' . $parameterValue . '" is not valid for request modifier "' . $command . '".');
-
-                    return true;
+                    throw new ParseException('Invalid argument: File path "' . $parameterValue . '" is not valid for request modifier "' . $command . '".');
                 } catch (FileNotFoundException) {
-                    $parseErrors[] = new ParseError($location, 'Invalid argument: File "' . $parameterValue . '" was not found for request modifier "' . $command . '".');
-
-                    return true;
+                    throw new ParseException('Invalid argument: File "' . $parameterValue . '" was not found for request modifier "' . $command . '".');
                 }
 
                 break;
 
             case 'with-raw-content':
-                if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
-                    $parseErrors[] = new ParseError($location, 'Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
-
-                    return true;
-                }
+                self::checkMethodIsNotGetForRequestModifier($testCase, $command);
 
                 if ($argument === null) {
-                    $parseErrors[] = new ParseError($location, 'Missing argument: Missing content for request modifier "' . $command . '".');
-
-                    return true;
+                    throw new ParseException('Missing argument: Missing content for request modifier "' . $command . '".');
                 }
 
                 $requestModifier = new WithRawContent($argument);
 
                 break;
+
+            default:
+                return false;
         }
 
-        return $requestModifier !== null;
+        if ($testCase === null) {
+            throw new ParseException('Undefined test case: Test case is not defined for request-modifier "' . $command . '".');
+        }
+
+        $testCase->addRequestModifier($requestModifier);
+
+        return true;
     }
 
     /**
@@ -538,50 +529,46 @@ class Parser
     }
 
     /**
-     * Try parse request modifier parameter for a POST request.
+     * Checks if the method is not GET for a request modifier.
      *
-     * @param LocationInterface      $location       The location.
-     * @param TestCaseInterface|null $testCase       The test case.
-     * @param string                 $command        The command.
-     * @param string|null            $argument       The argument or null if no argument.
-     * @param ParseError[]           $parseErrors    The parse errors.
-     * @param string|null            $parameterName  The parsed parameter name.
-     * @param string|null            $parameterValue The parsed parameter value.
-     *
-     * @return bool True if parsing was successful, false otherwise.
+     * @param TestCaseInterface|null $testCase
+     * @param string                 $command
      */
-    private static function tryParsePostRequestModifierParameter(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, array &$parseErrors, ?string &$parameterName = null, ?string &$parameterValue = null): bool
+    private static function checkMethodIsNotGetForRequestModifier(?TestCaseInterface $testCase, string $command): void
     {
         if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
-            $parseErrors[] = new ParseError($location, 'Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
-
-            return false;
+            throw new ParseException('Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
         }
+    }
 
+    /**
+     * Try parse request modifier parameter for a POST request.
+     *
+     * @param string      $command        The command.
+     * @param string|null $argument       The argument or null if no argument.
+     * @param string|null $parameterName  The parsed parameter name.
+     * @param string|null $parameterValue The parsed parameter value.
+     *
+     * @throws ParseException If parsing failed.
+     */
+    private static function tryParsePostRequestModifierParameter(string $command, ?string $argument, ?string &$parameterName = null, ?string &$parameterValue = null): void
+    {
         if ($argument === null) {
-            $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name and value for request modifier "' . $command . '".');
-
-            return false;
+            throw new ParseException('Missing argument: Missing parameter name and value for request modifier "' . $command . '".');
         }
 
         $argumentParts = explode('=', $argument, 2);
 
         $parameterName = trim($argumentParts[0]);
         if ($parameterName === '') {
-            $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter name for request modifier "' . $command . '".');
-
-            return false;
+            throw new ParseException('Missing argument: Missing parameter name for request modifier "' . $command . '".');
         }
 
         if (count($argumentParts) < 2) {
-            $parseErrors[] = new ParseError($location, 'Missing argument: Missing parameter value for request modifier "' . $command . '".');
-
-            return false;
+            throw new ParseException('Missing argument: Missing parameter value for request modifier "' . $command . '".');
         }
 
         $parameterValue = trim($argumentParts[1]);
-
-        return true;
     }
 
     /**
