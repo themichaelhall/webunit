@@ -32,6 +32,8 @@ class AssertStatusCode extends AbstractAssert
      * @param LocationInterface  $location   The location.
      * @param int                $statusCode The status code.
      * @param ModifiersInterface $modifiers  The modifiers.
+     *
+     * @throws InvalidParameterException If the status code is not in valid range.
      */
     public function __construct(LocationInterface $location, int $statusCode, ModifiersInterface $modifiers)
     {

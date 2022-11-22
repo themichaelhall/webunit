@@ -288,12 +288,11 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
 
-        self::assertSame(5, count($parseErrors));
+        self::assertSame(4, count($parseErrors));
         self::assertSame('foo.webunit:2: Duplicate modifier: Modifier "~" is duplicated for assert "assert-contains".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:3: Duplicate modifier: Modifier "!" is duplicated for assert "assert-contains".', $parseErrors[1]->__toString());
-        self::assertSame('foo.webunit:3: Duplicate modifier: Modifier "^" is duplicated for assert "assert-contains".', $parseErrors[2]->__toString());
-        self::assertSame('foo.webunit:4: Invalid modifier: Modifier "~" is not allowed for assert "assert-empty".', $parseErrors[3]->__toString());
-        self::assertSame('foo.webunit:5: Invalid modifiers: Modifiers "^", "~" are not allowed for assert "assert-empty".', $parseErrors[4]->__toString());
+        self::assertSame('foo.webunit:4: Invalid modifier: Modifier "~" is not allowed for assert "assert-empty".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:5: Invalid modifiers: Modifiers "^", "~" are not allowed for assert "assert-empty".', $parseErrors[3]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }

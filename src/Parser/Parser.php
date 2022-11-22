@@ -24,13 +24,11 @@ use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Exceptions\ParseException;
-use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
-use MichaelHall\Webunit\Interfaces\RequestModifierInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
 use MichaelHall\Webunit\Location\FileLocation;
@@ -131,20 +129,12 @@ class Parser
             return;
         }
 
-        if (self::tryParseAssert($location, $command, $argument, $parseErrors, $assert)) {
-            if ($assert !== null) {
-                if ($currentTestCase !== null) {
-                    $currentTestCase->addAssert($assert);
-                } else {
-                    $parseErrors[] = new ParseError($location, 'Undefined test case: Test case is not defined for assert "' . $command . '".');
-                }
+        try {
+            if (self::tryParseAssert($location, $currentTestCase, $command, $argument)) {
+                return;
             }
 
-            return;
-        }
-
-        try {
-            if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument, $requestModifier)) {
+            if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument)) {
                 return;
             }
 
@@ -318,51 +308,66 @@ class Parser
     /**
      * Try parse an assert.
      *
-     * @param LocationInterface    $location    The location.
-     * @param string               $command     The command.
-     * @param string|null          $argument    The argument or null if no argument.
-     * @param ParseError[]         $parseErrors The parse errors.
-     * @param AssertInterface|null $assert      The parses assert or null if parsing failed.
+     * @param LocationInterface      $location The location.
+     * @param TestCaseInterface|null $testCase The test case.
+     * @param string                 $command  The command.
+     * @param string|null            $argument The argument or null if no argument.
      *
      * @return bool True if this was an assert, false otherwise.
+     *
+     * @throws ParseException If parsing failed.
      */
-    private static function tryParseAssert(LocationInterface $location, string $command, ?string $argument, array &$parseErrors, ?AssertInterface &$assert): bool
+    private static function tryParseAssert(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
     {
-        $assert = null;
-
         self::extractModifiers($command, $assertString, $modifiersString);
 
-        if (!isset(self::ASSERTS_INFO[$assertString])) {
-            return false;
-        }
-
-        $assertInfo = self::ASSERTS_INFO[$assertString];
-        $className = $assertInfo[0];
-        $argumentType = $assertInfo[1];
-        $argumentName = $assertInfo[2];
-
-        $argumentResult = self::checkAssertArgument($argument, $argumentType, $argumentValue);
-        if ($argumentResult !== self::ARGUMENT_OK) {
-            $parseErrors[] = match ($argumentResult) {
-                self::ARGUMENT_ERROR_EXTRA_ARGUMENT        => new ParseError($location, 'Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".'),
-                self::ARGUMENT_ERROR_MISSING_ARGUMENT      => new ParseError($location, 'Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".'),
-                self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE => new ParseError($location, 'Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type ' . $argumentType . ' for assert "' . $command . '".'),
-            };
-
-            return true;
-        }
-
-        self::tryParseModifiers($location, $assertString, $modifiersString, $parseErrors, $modifiers);
-        if ($modifiers === null) {
-            return true;
-        }
-
         try {
-            $assert = $argumentValue === null ?
-                new $className($location, $modifiers) :
-                new $className($location, $argumentValue, $modifiers);
+            switch ($assertString) {
+                case 'assert-contains':
+                    self::tryParseModifiers($assertString, $modifiersString, $modifiers);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'content', $argumentValue);
+
+                    $assert = new AssertContains($location, $argumentValue, $modifiers);
+
+                    break;
+
+                case 'assert-empty':
+                    self::tryParseModifiers($assertString, $modifiersString, $modifiers);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_NONE);
+
+                    $assert = new AssertEmpty($location, $modifiers);
+
+                    break;
+
+                case 'assert-equals':
+                    self::tryParseModifiers($assertString, $modifiersString, $modifiers);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'content', $argumentValue);
+
+                    $assert = new AssertEquals($location, $argumentValue, $modifiers);
+
+                    break;
+
+                case 'assert-header':
+                    self::tryParseModifiers($assertString, $modifiersString, $modifiers);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'header', $argumentValue);
+
+                    $assert = new AssertHeader($location, $argumentValue, $modifiers);
+
+                    break;
+
+                case 'assert-status-code':
+                    self::tryParseModifiers($assertString, $modifiersString, $modifiers);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_INTEGER, 'status code', $argumentValue);
+
+                    $assert = new AssertStatusCode($location, $argumentValue, $modifiers);
+
+                    break;
+
+                default:
+                    return false;
+            }
         } catch (InvalidParameterException $e) {
-            $parseErrors[] = new ParseError($location, 'Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".');
+            throw new ParseException('Invalid argument: ' . $e->getMessage() . ' for assert "' . $command . '".');
         } catch (NotAllowedModifierException $e) {
             $invalidModifiers = [];
 
@@ -374,8 +379,14 @@ class Parser
 
             $isMultiple = count($invalidModifiers) > 1;
 
-            $parseErrors[] = new ParseError($location, 'Invalid modifier' . ($isMultiple ? 's' : '') . ': Modifier' . ($isMultiple ? 's' : '') . ' ' . implode(', ', $invalidModifiers) . ' ' . ($isMultiple ? 'are' : 'is') . ' not allowed for assert "' . $assertString . '".');
+            throw new ParseException('Invalid modifier' . ($isMultiple ? 's' : '') . ': Modifier' . ($isMultiple ? 's' : '') . ' ' . implode(', ', $invalidModifiers) . ' ' . ($isMultiple ? 'are' : 'is') . ' not allowed for assert "' . $assertString . '".');
         }
+
+        if ($testCase === null) {
+            throw new ParseException('Undefined test case: Test case is not defined for assert "' . $command . '".');
+        }
+
+        $testCase->addAssert($assert);
 
         return true;
     }
@@ -383,15 +394,16 @@ class Parser
     /**
      * Try parse a request modifier.
      *
-     * @param LocationInterface             $location        The location.
-     * @param TestCaseInterface|null        $testCase        The test case.
-     * @param string                        $command         The command.
-     * @param string|null                   $argument        The argument or null if no argument.
-     * @param RequestModifierInterface|null $requestModifier The parsed request modifier or null if parsing failed.
+     * @param LocationInterface      $location The location.
+     * @param TestCaseInterface|null $testCase The test case.
+     * @param string                 $command  The command.
+     * @param string|null            $argument The argument or null if no argument.
      *
      * @return bool True if this was a request modifier, false otherwise.
+     *
+     * @throws ParseException If parsing failed.
      */
-    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, ?RequestModifierInterface &$requestModifier): bool
+    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
     {
         switch ($command) {
             case 'with-post-parameter':
@@ -444,33 +456,37 @@ class Parser
     /**
      * Checks an assert argument.
      *
+     * @param string          $command       The command.
      * @param null|string     $argument      The argument as a string.
-     * @param null|string     $argumentType  The argument type or null if no argument.
+     * @param int             $argumentType  The argument type as one of the ARGUMENT_TYPE_* constants.
+     * @param null|string     $argumentName  The argument name or null if no argument.
      * @param string|int|null $argumentValue The actual argument to use.
      *
-     * @return int The ARGUMENT_* result.
+     * @throws ParseException If check failed.
      */
-    private static function checkAssertArgument(?string $argument, ?string $argumentType, string|int|null &$argumentValue = null): int
+    private static function checkAssertArgument(string $command, ?string $argument, int $argumentType, ?string $argumentName = null, string|int|null &$argumentValue = null): void
     {
         $argumentValue = $argument;
 
-        if ($argumentType === null) {
-            return $argument === null ? self::ARGUMENT_OK : self::ARGUMENT_ERROR_EXTRA_ARGUMENT;
+        if ($argumentType === self::ARGUMENT_TYPE_NONE) {
+            if ($argument !== null) {
+                throw new ParseException('Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".');
+            }
+
+            return;
         }
 
         if ($argument === null) {
-            return self::ARGUMENT_ERROR_MISSING_ARGUMENT;
+            throw new ParseException('Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".');
         }
 
-        if ($argumentType === 'integer') {
+        if ($argumentType === self::ARGUMENT_TYPE_INTEGER) {
             $argumentValue = intval($argument);
 
             if (strval($argumentValue) !== $argument) {
-                return self::ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE;
+                throw new ParseException('Invalid argument: ' . ucfirst($argumentName) . ' "' . $argument . '" must be of type integer for assert "' . $command . '".');
             }
         }
-
-        return self::ARGUMENT_OK;
     }
 
     /**
@@ -500,31 +516,25 @@ class Parser
     /**
      * Try parse modifiers.
      *
-     * @param LocationInterface       $location        The location.
      * @param string                  $assertString    The assert command string.
      * @param string                  $modifiersString The modifiers string to parse.
-     * @param ParseError[]            $parseErrors     The parse errors.
-     * @param ModifiersInterface|null $modifiers       The modifiers or null if parsing failed.
+     * @param ModifiersInterface|null $modifiers       The modifiers.
+     *
+     * @throws ParseException If parsing failed.
      */
-    private static function tryParseModifiers(LocationInterface $location, string $assertString, string $modifiersString, array &$parseErrors, ?ModifiersInterface &$modifiers): void
+    private static function tryParseModifiers(string $assertString, string $modifiersString, ?ModifiersInterface &$modifiers): void
     {
         $modifiers = new Modifiers();
-        $hasErrors = false;
 
         for ($i = 0; $i < strlen($modifiersString); $i++) {
             $ch = $modifiersString[$i];
             $newModifier = new Modifiers(self::MODIFIERS_INFO[$ch]);
 
             if ($modifiers->contains($newModifier)) {
-                $parseErrors[] = new ParseError($location, 'Duplicate modifier: Modifier "' . $ch . '" is duplicated for assert "' . $assertString . '".');
-                $hasErrors = true;
-            } else {
-                $modifiers = $modifiers->combinedWith($newModifier);
+                throw new ParseException('Duplicate modifier: Modifier "' . $ch . '" is duplicated for assert "' . $assertString . '".');
             }
-        }
 
-        if ($hasErrors) {
-            $modifiers = null;
+            $modifiers = $modifiers->combinedWith($newModifier);
         }
     }
 
@@ -533,6 +543,8 @@ class Parser
      *
      * @param TestCaseInterface|null $testCase
      * @param string                 $command
+     *
+     * @throws ParseException If parsing failed.
      */
     private static function checkMethodIsNotGetForRequestModifier(?TestCaseInterface $testCase, string $command): void
     {
@@ -572,19 +584,19 @@ class Parser
     }
 
     /**
-     * Info about the asserts.
-     *
-     * The format is as follows:
-     *
-     * name => [0 => className, 1 => argumentType|null, 2 => argumentName|null]
+     * @var int No argument type.
      */
-    private const ASSERTS_INFO = [
-        'assert-contains'    => [AssertContains::class, 'string', 'content'],
-        'assert-empty'       => [AssertEmpty::class, null, null],
-        'assert-equals'      => [AssertEquals::class, 'string', 'content'],
-        'assert-header'      => [AssertHeader::class, 'string', 'header'],
-        'assert-status-code' => [AssertStatusCode::class, 'integer', 'status code'],
-    ];
+    private const ARGUMENT_TYPE_NONE = 0;
+
+    /**
+     * @var int String argument type.
+     */
+    private const ARGUMENT_TYPE_STRING = 1;
+
+    /**
+     * @var int Integer argument type.
+     */
+    private const ARGUMENT_TYPE_INTEGER = 2;
 
     /**
      * Info about the modifiers.
@@ -598,24 +610,4 @@ class Parser
         '^' => ModifiersInterface::CASE_INSENSITIVE,
         '~' => ModifiersInterface::REGEXP,
     ];
-
-    /**
-     * Argument is ok.
-     */
-    private const ARGUMENT_OK = 0;
-
-    /**
-     * Extra argument error.
-     */
-    private const ARGUMENT_ERROR_EXTRA_ARGUMENT = 1;
-
-    /**
-     * Missing argument error.
-     */
-    private const ARGUMENT_ERROR_MISSING_ARGUMENT = 2;
-
-    /**
-     * Invalid argument type error.
-     */
-    private const ARGUMENT_ERROR_INVALID_ARGUMENT_TYPE = 3;
 }
