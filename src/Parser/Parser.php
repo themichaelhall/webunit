@@ -313,9 +313,9 @@ class Parser
      * @param string                 $command  The command.
      * @param string|null            $argument The argument or null if no argument.
      *
-     * @return bool True if this was an assert, false otherwise.
-     *
      * @throws ParseException If parsing failed.
+     *
+     * @return bool True if this was an assert, false otherwise.
      */
     private static function tryParseAssert(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
     {
@@ -399,9 +399,9 @@ class Parser
      * @param string                 $command  The command.
      * @param string|null            $argument The argument or null if no argument.
      *
-     * @return bool True if this was a request modifier, false otherwise.
-     *
      * @throws ParseException If parsing failed.
+     *
+     * @return bool True if this was a request modifier, false otherwise.
      */
     private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
     {
