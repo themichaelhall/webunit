@@ -120,16 +120,13 @@ class Parser
             return;
         }
 
-        if (self::tryParseTestCase($location, $command, $argument, $parseErrors, $testCase)) {
-            if ($testCase !== null) {
-                $testSuite->addTestCase($testCase);
+        try {
+            if (self::tryParseTestCase($location, $testSuite, $command, $argument, $testCase)) {
                 $currentTestCase = $testCase;
+
+                return;
             }
 
-            return;
-        }
-
-        try {
             if (self::tryParseAssert($location, $currentTestCase, $command, $argument)) {
                 return;
             }
@@ -261,15 +258,15 @@ class Parser
     /**
      * Try parse a test case.
      *
-     * @param LocationInterface      $location    The location.
-     * @param string                 $command     The command.
-     * @param null|string            $argument    The argument or null if no argument.
-     * @param ParseErrorInterface[]  $parseErrors The parse errors.
-     * @param TestCaseInterface|null $testCase    The parsed test case or null if parsing failed.
+     * @param LocationInterface      $location  The location.
+     * @param TestSuiteInterface     $testSuite The test suite.
+     * @param string                 $command   The command.
+     * @param null|string            $argument  The argument or null if no argument.
+     * @param TestCaseInterface|null $testCase  The parsed test case or null if parsing failed.
      *
      * @return bool True if this was a test case, false otherwise.
      */
-    private static function tryParseTestCase(LocationInterface $location, string $command, ?string $argument, array &$parseErrors, ?TestCaseInterface &$testCase): bool
+    private static function tryParseTestCase(LocationInterface $location, TestSuiteInterface $testSuite, string $command, ?string $argument, ?TestCaseInterface &$testCase): bool
     {
         $testCase = null;
 
@@ -287,20 +284,17 @@ class Parser
         }
 
         if ($argument === null) {
-            $parseErrors[] = new ParseError($location, 'Missing argument: Missing Url argument for "' . $command . '".');
-
-            return true;
+            throw new ParseException('Missing argument: Missing Url argument for "' . $command . '".');
         }
 
         try {
             $url = Url::parse($argument);
         } catch (UrlInvalidArgumentException $exception) {
-            $parseErrors[] = new ParseError($location, 'Invalid argument: Invalid Url argument "' . $argument . '" for "' . $command . '": ' . $exception->getMessage());
-
-            return true;
+            throw new ParseException('Invalid argument: Invalid Url argument "' . $argument . '" for "' . $command . '": ' . $exception->getMessage());
         }
 
         $testCase = new TestCase($location, $method, $url);
+        $testSuite->addTestCase($testCase);
 
         return true;
     }
