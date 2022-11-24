@@ -393,13 +393,11 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
 
-        self::assertSame(6, count($parseErrors));
+        self::assertSame(4, count($parseErrors));
         self::assertSame('foo.webunit:2: Missing variable: Missing variable name in "{{  }}".', $parseErrors[0]->__toString());
-        self::assertSame('foo.webunit:2: Missing variable: Missing variable name in "{{}}".', $parseErrors[1]->__toString());
-        self::assertSame('foo.webunit:3: Invalid variable: No variable with name "Foo" is set in "{{ Foo }}".', $parseErrors[2]->__toString());
-        self::assertSame('foo.webunit:4: Invalid variable: Invalid variable name "F*o" in "{{F*o}}".', $parseErrors[3]->__toString());
-        self::assertSame('foo.webunit:5: Invalid variable: Invalid variable name "F o" in "{{F o}}".', $parseErrors[4]->__toString());
-        self::assertSame('foo.webunit:5: Invalid variable: Invalid variable name "1abc" in "{{ 1abc }}".', $parseErrors[5]->__toString());
+        self::assertSame('foo.webunit:3: Invalid variable: No variable with name "Foo" is set in "{{ Foo }}".', $parseErrors[1]->__toString());
+        self::assertSame('foo.webunit:4: Invalid variable: Invalid variable name "F*o" in "{{F*o}}".', $parseErrors[2]->__toString());
+        self::assertSame('foo.webunit:5: Invalid variable: Invalid variable name "F o" in "{{F o}}".', $parseErrors[3]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }

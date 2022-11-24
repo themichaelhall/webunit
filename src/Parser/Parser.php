@@ -27,7 +27,6 @@ use MichaelHall\Webunit\Exceptions\ParseException;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\ParseContextInterface;
-use MichaelHall\Webunit\Interfaces\ParseErrorInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
@@ -69,7 +68,11 @@ class Parser
             $lineNumber++;
             $location = new FileLocation($filePath, $lineNumber);
 
-            self::parseLine($location, $line, $parseContext, $testSuite, $currentTestCase, $parseErrors);
+            try {
+                self::tryParseLine($location, $line, $parseContext, $testSuite, $currentTestCase);
+            } catch (ParseException $exception) {
+                $parseErrors[] = new ParseError($location, $exception->getMessage());
+            }
         }
 
         return new ParseResult($testSuite, $parseErrors);
@@ -97,9 +100,10 @@ class Parser
      * @param ParseContextInterface  $parseContext    The parse context.
      * @param TestSuiteInterface     $testSuite       The test suite.
      * @param TestCaseInterface|null $currentTestCase The current test case that is parsing or null if no test case is parsing.
-     * @param ParseErrorInterface[]  $parseErrors     The current parse errors.
+     *
+     * @throws ParseException If parsing failed.
      */
-    private static function parseLine(LocationInterface $location, string $line, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase, array &$parseErrors): void
+    private static function tryParseLine(LocationInterface $location, string $line, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase): void
     {
         if (self::isEmptyOrComment($line)) {
             return;
@@ -110,35 +114,28 @@ class Parser
         $argument = count($lineParts) > 1 ? trim($lineParts[1]) : null;
 
         if ($argument !== null) {
-            $argument = self::replaceVariables($location, $argument, $parseContext, $parseErrors);
-            if ($argument === null) {
-                return;
-            }
+            self::replaceVariables($argument, $parseContext);
         }
 
-        if (self::tryParseSet($location, $command, $argument, $parseContext, $parseErrors)) {
+        if (self::tryParseSet($command, $argument, $parseContext)) {
             return;
         }
 
-        try {
-            if (self::tryParseTestCase($location, $testSuite, $command, $argument, $testCase)) {
-                $currentTestCase = $testCase;
+        if (self::tryParseTestCase($location, $testSuite, $command, $argument, $testCase)) {
+            $currentTestCase = $testCase;
 
-                return;
-            }
-
-            if (self::tryParseAssert($location, $currentTestCase, $command, $argument)) {
-                return;
-            }
-
-            if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument)) {
-                return;
-            }
-
-            throw new ParseException('Syntax error: Invalid command "' . $command . '".');
-        } catch (ParseException $exception) {
-            $parseErrors[] = new ParseError($location, $exception->getMessage());
+            return;
         }
+
+        if (self::tryParseAssert($location, $currentTestCase, $command, $argument)) {
+            return;
+        }
+
+        if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument)) {
+            return;
+        }
+
+        throw new ParseException('Syntax error: Invalid command "' . $command . '".');
     }
 
     /**
@@ -156,57 +153,44 @@ class Parser
     /**
      * Replaces variables like {{ Foo }} in a text with the actual variable content.
      *
-     * @param LocationInterface     $location     The location.
      * @param string                $content      The text content.
      * @param ParseContextInterface $parseContext The parse context.
-     * @param ParseErrorInterface[] $parseErrors  The parse errors.
      *
-     * @return string|null The text content with variables replaces with the actual variable content or null if replace failed.
+     * @throws ParseException If parsing failed.
      */
-    private static function replaceVariables(LocationInterface $location, string $content, ParseContextInterface $parseContext, array &$parseErrors): ?string
+    private static function replaceVariables(string &$content, ParseContextInterface $parseContext): void
     {
-        $hasErrors = false;
-        $result = preg_replace_callback(
+        $content = preg_replace_callback(
             '/{{(.*?)}}/',
-            function (array $matches) use ($location, $parseContext, &$parseErrors, &$hasErrors): string {
+            function (array $matches) use ($parseContext): string {
                 $variableName = trim($matches[1]);
-                $error = null;
 
                 if ($variableName === '') {
-                    $error = 'Missing variable: Missing variable name in "' . $matches[0] . '".';
+                    throw new ParseException('Missing variable: Missing variable name in "' . $matches[0] . '".');
                 } elseif (!self::isValidVariableName($variableName)) {
-                    $error = 'Invalid variable: Invalid variable name "' . $variableName . '" in "' . $matches[0] . '".';
+                    throw new ParseException('Invalid variable: Invalid variable name "' . $variableName . '" in "' . $matches[0] . '".');
                 } elseif (!$parseContext->hasVariable($variableName)) {
-                    $error = 'Invalid variable: No variable with name "' . $variableName . '" is set in "' . $matches[0] . '".';
-                }
-
-                if ($error !== null) {
-                    $hasErrors = true;
-                    $parseErrors[] = new ParseError($location, $error);
-
-                    return '';
+                    throw new ParseException('Invalid variable: No variable with name "' . $variableName . '" is set in "' . $matches[0] . '".');
                 }
 
                 return $parseContext->getVariable($variableName);
             },
             $content,
         );
-
-        return !$hasErrors ? $result : null;
     }
 
     /**
      * Try parse a set command.
      *
-     * @param LocationInterface     $location     The location.
      * @param string                $command      The command.
      * @param string|null           $argument     The argument or null if no argument.
      * @param ParseContextInterface $parseContext The parse context.
-     * @param ParseErrorInterface[] $parseErrors  The parse errors.
+     *
+     * @throws ParseException If parsing failed.
      *
      * @return bool
      */
-    private static function tryParseSet(LocationInterface $location, string $command, ?string $argument, ParseContextInterface $parseContext, array &$parseErrors): bool
+    private static function tryParseSet(string $command, ?string $argument, ParseContextInterface $parseContext): bool
     {
         switch ($command) {
             case 'set':
@@ -220,30 +204,22 @@ class Parser
         }
 
         if ($argument === null) {
-            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable name and value for "' . $command . '".');
-
-            return true;
+            throw new ParseException('Missing variable: Missing variable name and value for "' . $command . '".');
         }
 
         $argumentParts = explode('=', $argument, 2);
         $variableName = trim($argumentParts[0]);
         if ($variableName === '') {
-            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable name for "' . $command . '" in "' . $argument . '".');
-
-            return true;
+            throw new ParseException('Missing variable: Missing variable name for "' . $command . '" in "' . $argument . '".');
         }
 
         if (!self::isValidVariableName($variableName)) {
-            $parseErrors[] = new ParseError($location, 'Invalid variable: Invalid variable name "' . $variableName . '" for "' . $command . '" in "' . $argument . '".');
-
-            return true;
+            throw new ParseException('Invalid variable: Invalid variable name "' . $variableName . '" for "' . $command . '" in "' . $argument . '".');
         }
 
         $variableValue = count($argumentParts) > 1 ? trim($argumentParts[1]) : null;
         if ($variableValue === null) {
-            $parseErrors[] = new ParseError($location, 'Missing variable: Missing variable value for "' . $command . '" in "' . $argument . '".');
-
-            return true;
+            throw new ParseException('Missing variable: Missing variable value for "' . $command . '" in "' . $argument . '".');
         }
 
         if ($isDefaultSet && $parseContext->hasVariable($variableName)) {
@@ -263,6 +239,8 @@ class Parser
      * @param string                 $command   The command.
      * @param null|string            $argument  The argument or null if no argument.
      * @param TestCaseInterface|null $testCase  The parsed test case or null if parsing failed.
+     *
+     * @throws ParseException If parsing failed.
      *
      * @return bool True if this was a test case, false otherwise.
      */
