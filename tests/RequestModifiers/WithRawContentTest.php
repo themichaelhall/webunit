@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MichaelHall\Webunit\Tests\RequestModifiers;
 
 use DataTypes\Net\Url;
+use DataTypes\System\FilePath;
 use MichaelHall\HttpClient\HttpClientRequest;
+use MichaelHall\Webunit\RequestModifiers\WithPostFile;
+use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\RequestModifiers\WithRawContent;
 use PHPUnit\Framework\TestCase;
 
@@ -35,5 +38,17 @@ class WithRawContentTest extends TestCase
         $withRawContent->modifyRequest($request);
 
         self::assertSame('Foo', $request->getRawContent());
+    }
+
+    /**
+     * Test isCompatibleWith method.
+     */
+    public function testIsCompatibleWith()
+    {
+        $withRawContent = new WithRawContent('Foo');
+
+        self::assertFalse($withRawContent->isCompatibleWith(new WithPostFile('Bar', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt'))));
+        self::assertFalse($withRawContent->isCompatibleWith(new WithPostParameter('Bar', 'Baz')));
+        self::assertTrue($withRawContent->isCompatibleWith(new WithRawContent('{"Baz": true}')));
     }
 }

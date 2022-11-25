@@ -11,6 +11,8 @@ use MichaelHall\Webunit\Exceptions\EmptyParameterNameException;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\InvalidFilePathException;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
+use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
+use MichaelHall\Webunit\RequestModifiers\WithRawContent;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -94,5 +96,17 @@ class WithPostFileTest extends TestCase
         self::expectExceptionMessage('File "' . FilePath::parse(__DIR__ . '/../Helpers/TestFiles/notfound.txt') . '" was not found');
 
         new WithPostFile('Foo', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/notfound.txt'));
+    }
+
+    /**
+     * Test isCompatibleWith method.
+     */
+    public function testIsCompatibleWith()
+    {
+        $withPostFile = new WithPostFile('Foo', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt'));
+
+        self::assertTrue($withPostFile->isCompatibleWith(new WithPostFile('Bar', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt'))));
+        self::assertTrue($withPostFile->isCompatibleWith(new WithPostParameter('Bar', 'Baz')));
+        self::assertFalse($withPostFile->isCompatibleWith(new WithRawContent('{"Baz": true}')));
     }
 }

@@ -20,6 +20,17 @@ use MichaelHall\HttpClient\HttpClientRequestInterface;
 interface RequestModifierInterface
 {
     /**
+     * Checks if this request modifier is compatible with (i.e. can exist on the same test case) as another request modifier.
+     *
+     * @since 2.1.0
+     *
+     * @param RequestModifierInterface $requestModifier The other request modifier.
+     *
+     * @return bool True if request modifiers are compatible, false otherwise.
+     */
+    public function isCompatibleWith(RequestModifierInterface $requestModifier): bool;
+
+    /**
      * Modifies a request.
      *
      * @since 2.1.0
