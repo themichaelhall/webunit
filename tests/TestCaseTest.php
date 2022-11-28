@@ -13,6 +13,7 @@ use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
@@ -336,5 +337,31 @@ class TestCaseTest extends TestCase
         self::assertSame($testCase, $result->getTestCase());
         self::assertTrue($result->isSuccess());
         self::assertNull($result->getFailedAssertResult());
+    }
+
+    /**
+     * Test case with incompatible modifiers.
+     */
+    public function testWithIncompatibleRequestModifiers()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+        $requestModifier2 = new WithPostParameter('1', '2');
+        $requestModifier3 = new WithRawContent('FooBar');
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
+
+        $exception = null;
+        try {
+            $testCase->addRequestModifier($requestModifier3);
+        } catch (IncompatibleRequestModifierException $exception) {
+        }
+
+        self::assertInstanceOf(IncompatibleRequestModifierException::class, $exception);
+        self::assertSame($requestModifier1, $exception->getCurrentRequestModifier());
+        self::assertSame($requestModifier3, $exception->getNewRequestModifier());
     }
 }

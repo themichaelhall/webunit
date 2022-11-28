@@ -15,6 +15,7 @@ use MichaelHall\HttpClient\HttpClientInterface;
 use MichaelHall\HttpClient\HttpClientRequest;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
 use MichaelHall\Webunit\Interfaces\AssertInterface;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
 use MichaelHall\Webunit\Interfaces\RequestModifierInterface;
@@ -70,6 +71,12 @@ class TestCase implements TestCaseInterface
      */
     public function addRequestModifier(RequestModifierInterface $requestModifier): void
     {
+        foreach ($this->requestModifiers as $currentRequestModifier) {
+            if (!$currentRequestModifier->isCompatibleWith($requestModifier)) {
+                throw new IncompatibleRequestModifierException($currentRequestModifier, $requestModifier);
+            }
+        }
+
         $this->requestModifiers[] = $requestModifier;
     }
 
