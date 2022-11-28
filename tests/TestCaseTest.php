@@ -355,6 +355,7 @@ class TestCaseTest extends TestCase
         $testCase->addRequestModifier($requestModifier2);
 
         $exception = null;
+
         try {
             $testCase->addRequestModifier($requestModifier3);
         } catch (IncompatibleRequestModifierException $exception) {
