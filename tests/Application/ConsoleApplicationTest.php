@@ -113,6 +113,7 @@ class ConsoleApplicationTest extends TestCase
             "$testfilePath:17: Invalid request modifier: Request modifier \"with-post-parameter\" is not allowed for request method \"GET\"." . PHP_EOL .
             "$testfilePath:20: Invalid argument: File \"../TestFiles/not-found.txt\" was not found for request modifier \"with-post-file\"." . PHP_EOL .
             "$testfilePath:23: Missing argument: Missing content for request modifier \"with-raw-content\"." . PHP_EOL .
+            "$testfilePath:27: Incompatible request modifier: Request modifier \"with-raw-content\" can not be combined with request modifier \"with-post-parameter\"." . PHP_EOL .
             "\033[41m\033[1;37mParsing failed.\033[0m" . PHP_EOL,
             $output
         );

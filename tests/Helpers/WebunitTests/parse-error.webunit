@@ -21,3 +21,7 @@ with-post-file File=../TestFiles/not-found.txt
 
 PUT https://example.com/
 with-raw-content
+
+PUT https://example.com/
+with-post-parameter Foo=Bar
+with-raw-content Foo=Bar

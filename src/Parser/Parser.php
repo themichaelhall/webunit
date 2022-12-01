@@ -21,6 +21,7 @@ use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
+use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Exceptions\ParseException;
@@ -417,10 +418,21 @@ class Parser
         }
 
         if ($testCase === null) {
-            throw new ParseException('Undefined test case: Test case is not defined for request-modifier "' . $command . '".');
+            throw new ParseException('Undefined test case: Test case is not defined for request modifier "' . $command . '".');
         }
 
-        $testCase->addRequestModifier($requestModifier);
+        try {
+            $testCase->addRequestModifier($requestModifier);
+        } catch (IncompatibleRequestModifierException $exception) {
+            $currentRequestModifierClass = $exception->getCurrentRequestModifier()::class;
+            $currentRequestModifierCommand = match ($currentRequestModifierClass) {
+                WithPostParameter::class => 'with-post-parameter',
+                WithPostFile::class      => 'with-post-file',
+                WithRawContent::class    => 'with-raw-content',
+            };
+
+            throw new ParseException('Incompatible request modifier: Request modifier "' . $command . '" can not be combined with request modifier "' . $currentRequestModifierCommand . '".');
+        }
 
         return true;
     }
