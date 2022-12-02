@@ -16,6 +16,7 @@ use MichaelHall\Webunit\Exceptions\EmptyParameterNameException;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\InvalidFilePathException;
 use MichaelHall\Webunit\Interfaces\RequestModifierInterface;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 
 /**
  * Class representing a request modifier for attaching a POST file.
@@ -76,6 +77,20 @@ class WithPostFile implements RequestModifierInterface
     public function getFilePath(): FilePathInterface
     {
         return $this->filePath;
+    }
+
+    /**
+     * Checks if this request modifier is allowed to use for the specified request method.
+     *
+     * @since 2.1.0
+     *
+     * @param string $method The request method.
+     *
+     * @return bool True if request modifier is allowed, false otherwise.
+     */
+    public function isAllowedForMethod(string $method): bool
+    {
+        return $method !== TestCaseInterface::METHOD_GET;
     }
 
     /**

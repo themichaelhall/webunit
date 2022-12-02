@@ -20,6 +20,17 @@ use MichaelHall\HttpClient\HttpClientRequestInterface;
 interface RequestModifierInterface
 {
     /**
+     * Checks if this request modifier is allowed to use for the specified request method.
+     *
+     * @since 2.1.0
+     *
+     * @param string $method The request method.
+     *
+     * @return bool True if request modifier is allowed, false otherwise.
+     */
+    public function isAllowedForMethod(string $method): bool;
+
+    /**
      * Checks if this request modifier is compatible with (i.e. can exist on the same test case) as another request modifier.
      *
      * @since 2.1.0

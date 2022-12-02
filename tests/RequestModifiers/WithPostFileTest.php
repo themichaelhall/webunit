@@ -10,6 +10,7 @@ use MichaelHall\HttpClient\HttpClientRequest;
 use MichaelHall\Webunit\Exceptions\EmptyParameterNameException;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\InvalidFilePathException;
+use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\RequestModifiers\WithRawContent;
@@ -108,5 +109,19 @@ class WithPostFileTest extends TestCase
         self::assertTrue($withPostFile->isCompatibleWith(new WithPostFile('Bar', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt'))));
         self::assertTrue($withPostFile->isCompatibleWith(new WithPostParameter('Bar', 'Baz')));
         self::assertFalse($withPostFile->isCompatibleWith(new WithRawContent('{"Baz": true}')));
+    }
+
+    /**
+     * TestIsAllowedForMethod method.
+     */
+    public function testIsAllowedForMethod()
+    {
+        $withPostFile = new WithPostFile('Foo', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt'));
+
+        self::assertFalse($withPostFile->isAllowedForMethod(TestCaseInterface::METHOD_GET));
+        self::assertTrue($withPostFile->isAllowedForMethod(TestCaseInterface::METHOD_POST));
+        self::assertTrue($withPostFile->isAllowedForMethod(TestCaseInterface::METHOD_PUT));
+        self::assertTrue($withPostFile->isAllowedForMethod(TestCaseInterface::METHOD_PATCH));
+        self::assertTrue($withPostFile->isAllowedForMethod(TestCaseInterface::METHOD_DELETE));
     }
 }
