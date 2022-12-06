@@ -14,6 +14,7 @@ use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
 use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
+use MichaelHall\Webunit\Exceptions\MethodNotAllowedForRequestModifierException;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
@@ -273,7 +274,7 @@ class TestCaseTest extends TestCase
         $requestModifier1 = new WithPostParameter('Foo', 'Bar');
         $requestModifier2 = new WithPostFile('File', $postFilePath);
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_POST, Url::parse('http://localhost'));
         $testCase->addRequestModifier($requestModifier1);
         $testCase->addRequestModifier($requestModifier2);
 
@@ -298,7 +299,7 @@ class TestCaseTest extends TestCase
         $assert3 = new AssertContains($location, 'Post File "File" = "' . $postFilePath . '"', new Modifiers());
         $assert4 = new AssertContains($location, 'Post File "File" = "/non-existing-file.txt"', new Modifiers(ModifiersInterface::NOT));
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/request'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_POST, Url::parse('http://localhost/request'));
         $testCase->addRequestModifier($requestModifier1);
         $testCase->addRequestModifier($requestModifier2);
         $testCase->addAssert($assert1);
@@ -326,7 +327,7 @@ class TestCaseTest extends TestCase
         $assert1 = new AssertContains($location, 'Raw Content = "FooBar"', new Modifiers());
         $assert2 = new AssertContains($location, 'Raw Content = "Baz"', new Modifiers(ModifiersInterface::NOT));
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost/request'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_PUT, Url::parse('http://localhost/request'));
         $testCase->addRequestModifier($requestModifier1);
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
@@ -350,7 +351,7 @@ class TestCaseTest extends TestCase
         $requestModifier2 = new WithPostParameter('1', '2');
         $requestModifier3 = new WithRawContent('FooBar');
 
-        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_POST, Url::parse('http://localhost'));
         $testCase->addRequestModifier($requestModifier1);
         $testCase->addRequestModifier($requestModifier2);
 
@@ -364,5 +365,27 @@ class TestCaseTest extends TestCase
         self::assertInstanceOf(IncompatibleRequestModifierException::class, $exception);
         self::assertSame($requestModifier1, $exception->getCurrentRequestModifier());
         self::assertSame($requestModifier3, $exception->getNewRequestModifier());
+    }
+
+    /**
+     * Test case with a request modifier with a not allowed method.
+     */
+    public function testWithRequestModifierWithNotAllowedMethod()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier = new WithPostParameter('Foo', 'Bar');
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+
+        $exception = null;
+
+        try {
+            $testCase->addRequestModifier($requestModifier);
+        } catch (MethodNotAllowedForRequestModifierException $exception) {
+        }
+
+        self::assertInstanceOf(MethodNotAllowedForRequestModifierException::class, $exception);
+        self::assertSame(TestCaseInterface::METHOD_GET, $exception->getMethod());
+        self::assertSame($requestModifier, $exception->getRequestModifier());
     }
 }
