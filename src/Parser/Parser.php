@@ -23,6 +23,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
+use MichaelHall\Webunit\Exceptions\MethodNotAllowedForRequestModifierException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Exceptions\ParseException;
 use MichaelHall\Webunit\Interfaces\LocationInterface;
@@ -380,7 +381,6 @@ class Parser
     {
         switch ($command) {
             case 'with-post-parameter':
-                self::checkMethodIsNotGetForRequestModifier($testCase, $command);
                 self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
                 $requestModifier = new WithPostParameter($parameterName, $parameterValue);
@@ -388,7 +388,6 @@ class Parser
                 break;
 
             case 'with-post-file':
-                self::checkMethodIsNotGetForRequestModifier($testCase, $command);
                 self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
                 try {
@@ -403,8 +402,6 @@ class Parser
                 break;
 
             case 'with-raw-content':
-                self::checkMethodIsNotGetForRequestModifier($testCase, $command);
-
                 if ($argument === null) {
                     throw new ParseException('Missing argument: Missing content for request modifier "' . $command . '".');
                 }
@@ -423,6 +420,8 @@ class Parser
 
         try {
             $testCase->addRequestModifier($requestModifier);
+        } catch (MethodNotAllowedForRequestModifierException $exception) {
+            throw new ParseException('Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $exception->getMethod() . '".');
         } catch (IncompatibleRequestModifierException $exception) {
             $currentRequestModifierClass = $exception->getCurrentRequestModifier()::class;
             $currentRequestModifierCommand = match ($currentRequestModifierClass) {
@@ -519,21 +518,6 @@ class Parser
             }
 
             $modifiers = $modifiers->combinedWith($newModifier);
-        }
-    }
-
-    /**
-     * Checks if the method is not GET for a request modifier.
-     *
-     * @param TestCaseInterface|null $testCase
-     * @param string                 $command
-     *
-     * @throws ParseException If parsing failed.
-     */
-    private static function checkMethodIsNotGetForRequestModifier(?TestCaseInterface $testCase, string $command): void
-    {
-        if ($testCase !== null && $testCase->getMethod() === TestCaseInterface::METHOD_GET) {
-            throw new ParseException('Invalid request modifier: Request modifier "' . $command . '" is not allowed for request method "' . $testCase->getMethod() . '".');
         }
     }
 
