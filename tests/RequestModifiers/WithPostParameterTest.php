@@ -9,6 +9,7 @@ use DataTypes\System\FilePath;
 use MichaelHall\HttpClient\HttpClientRequest;
 use MichaelHall\Webunit\Exceptions\EmptyParameterNameException;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
+use MichaelHall\Webunit\RequestModifiers\WithHeader;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\RequestModifiers\WithRawContent;
@@ -73,6 +74,7 @@ class WithPostParameterTest extends TestCase
         self::assertTrue($withPostParameter->isCompatibleWith(new WithPostFile('Bar', FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt'))));
         self::assertTrue($withPostParameter->isCompatibleWith(new WithPostParameter('Bar', 'Baz')));
         self::assertFalse($withPostParameter->isCompatibleWith(new WithRawContent('{"Baz": true}')));
+        self::assertTrue($withPostParameter->isCompatibleWith(new WithHeader('Foo', 'Bar')));
     }
 
     /**
