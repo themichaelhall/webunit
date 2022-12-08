@@ -55,6 +55,10 @@ class TestRequestHandler implements RequestHandlerInterface
             case '/request':
                 $responseLines = [];
 
+                foreach ($request->getHeaders() as $header) {
+                    $responseLines[] = 'Header "' . $header . '"';
+                }
+
                 foreach ($request->getPostFields() as $postFieldName => $postFieldValue) {
                     $responseLines[] = 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"';
                 }

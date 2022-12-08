@@ -20,6 +20,7 @@ use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithHeader;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\RequestModifiers\WithRawContent;
@@ -323,14 +324,20 @@ class TestCaseTest extends TestCase
         $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
 
         $requestModifier1 = new WithRawContent('FooBar');
+        $requestModifier2 = new WithHeader('Header', 'Baz');
 
         $assert1 = new AssertContains($location, 'Raw Content = "FooBar"', new Modifiers());
         $assert2 = new AssertContains($location, 'Raw Content = "Baz"', new Modifiers(ModifiersInterface::NOT));
+        $assert3 = new AssertContains($location, 'Header "Header: Baz"', new Modifiers());
+        $assert4 = new AssertContains($location, 'Header "Header: Bar"', new Modifiers(ModifiersInterface::NOT));
 
         $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_PUT, Url::parse('http://localhost/request'));
         $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
         $testCase->addAssert($assert1);
         $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+        $testCase->addAssert($assert4);
 
         $httpClient = new HttpClient(new TestRequestHandler());
         $result = $testCase->run($httpClient);
