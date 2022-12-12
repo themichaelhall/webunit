@@ -84,6 +84,14 @@ assert-contains~       [Ee]xample
 assert-contains!^      foobar
 ```
 
+The request can be modified with request modifiers:
+
+```
+put                    https://example.org/
+with-header            Content-Type: application/json
+with-raw-content       {"Foo": "Bar"}
+```
+
 The test file can set variables to be reused for the tests.
 
 Variables are evaluated at parse-time in a manner similar to the preprocessor directives in languages like C and C#.
@@ -227,6 +235,40 @@ Note: This assert must be present for a test to pass if the result has a status 
 
 ```
 assert-status-code 301
+```
+
+## Request modifiers
+
+### with-header _header-name: header-value_
+
+Sets a HTTP-header with the specified name to the specified value.
+
+```
+with-header Accept-Language: en
+```
+
+### with-post-file _parameter-name = file-path_
+
+Sets a POST-parameter with the specified name to a file to be uploaded. The file path can be either absolute or relative to the webunit test script. This request modifier can not be used for GET requests and can not be combined with the _with-raw-content_ request modifier. 
+
+```
+with-post-file File = ../../files/foo.txt
+```
+
+### with-post-parameter _parameter-name = parameter-value_
+
+Sets a POST-parameter with the specified name to the specified value. This request modifier can not be used for GET requests and can not be combined with the _with-raw-content_ request modifier.
+
+```
+with-post-parameter Text = Foo
+```
+
+### with-raw-content _content_
+
+Sets the request body content to the specified content. This request modifier can not be used for GET requests and can not be combined with the _with-post-file_ and _with-post-parameter_ request modifiers.
+
+```
+with-raw-content {"Foo": "Bar"}
 ```
 
 ## License

@@ -1,24 +1,38 @@
-set                BaseUrl = https://example.com/
+set                     BaseUrl = https://example.com/
 
-get                {{ BaseUrl }}
-assert-equals      Hello World!
+get                     {{ BaseUrl }}
+assert-equals           Hello World!
 assert-empty!
 
-get                {{ BaseUrl }}foo
-assert-contains    Foo
-assert-contains!^  Bar
-assert-equals^~    .*foo.*
-assert-header      x-foo: X-Bar
+get                     {{ BaseUrl }}foo
+assert-contains         Foo
+assert-contains!^       Bar
+assert-equals^~         .*foo.*
+assert-header           x-foo: X-Bar
 
-set-default        EmptyPath = empty
+set-default             EmptyPath = empty
 
-get                {{ BaseUrl }}{{ EmptyPath}}
+get                     {{ BaseUrl }}{{ EmptyPath}}
 assert-empty
 
-get                {{ BaseUrl }}not-found
-assert-status-code 404
-assert-equals      Page not found.
+get                     {{ BaseUrl }}not-found
+assert-status-code      404
+assert-equals           Page not found.
 
-put                {{ BaseUrl }}method
-assert-contains^   put
-assert-contains!^  get
+put                     {{ BaseUrl }}method
+assert-contains^        put
+assert-contains!^       get
+
+POST                    {{ BaseUrl }}request
+WITH-POST-PARAMETER     Foo = Bar
+WITH-POST-FILE          File = ../TestFiles/helloworld.txt
+ASSERT-CONTAINS         Post Field "Foo" = "Bar"
+ASSERT-CONTAINS~        Post File "File" = ".*helloworld.txt"
+
+set                     RawContent = {"Foo": "Bar"}
+put                     {{ BaseUrl }}request
+with-header             Location: {{ BaseUrl }}bar
+with-raw-content        {{ RawContent }}
+assert-contains         Raw Content = "{"Foo": "Bar"}"
+assert-contains!        Raw Content = "{"Foo": "Baz"}"
+assert-contains         Header "Location: https://example.com/bar"

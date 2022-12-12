@@ -13,11 +13,17 @@ use MichaelHall\Webunit\Assertions\AssertEquals;
 use MichaelHall\Webunit\Assertions\AssertHeader;
 use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Assertions\DefaultAssert;
+use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
+use MichaelHall\Webunit\Exceptions\MethodNotAllowedForRequestModifierException;
 use MichaelHall\Webunit\Interfaces\AssertResultInterface;
 use MichaelHall\Webunit\Interfaces\ModifiersInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithHeader;
+use MichaelHall\Webunit\RequestModifiers\WithPostFile;
+use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
+use MichaelHall\Webunit\RequestModifiers\WithRawContent;
 use MichaelHall\Webunit\Tests\Helpers\RequestHandlers\TestRequestHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -256,5 +262,137 @@ class TestCaseTest extends TestCase
             [TestCaseInterface::METHOD_POST, 'Method is POST'],
             [TestCaseInterface::METHOD_PUT, 'Method is PUT'],
         ];
+    }
+
+    /**
+     * Test case with request modifiers.
+     */
+    public function testWithRequestModifiers()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+        $postFilePath = FilePath::parse(__DIR__ . '/Helpers/TestFiles/helloworld.txt');
+
+        $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+        $requestModifier2 = new WithPostFile('File', $postFilePath);
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_POST, Url::parse('http://localhost'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
+
+        self::assertCount(2, $testCase->getRequestModifiers());
+        self::assertSame($requestModifier1, $testCase->getRequestModifiers()[0]);
+        self::assertSame($requestModifier2, $testCase->getRequestModifiers()[1]);
+    }
+
+    /**
+     * Test run with request modifiers #1.
+     */
+    public function testRunWithRequestModifiers1()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+        $postFilePath = FilePath::parse(__DIR__ . '/Helpers/TestFiles/helloworld.txt');
+
+        $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+        $requestModifier2 = new WithPostFile('File', $postFilePath);
+
+        $assert1 = new AssertContains($location, 'Post Field "Foo" = "Bar"', new Modifiers());
+        $assert2 = new AssertContains($location, 'Post Field "Foo" = "Baz"', new Modifiers(ModifiersInterface::NOT));
+        $assert3 = new AssertContains($location, 'Post File "File" = "' . $postFilePath . '"', new Modifiers());
+        $assert4 = new AssertContains($location, 'Post File "File" = "/non-existing-file.txt"', new Modifiers(ModifiersInterface::NOT));
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_POST, Url::parse('http://localhost/request'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+        $testCase->addAssert($assert4);
+
+        $httpClient = new HttpClient(new TestRequestHandler());
+        $result = $testCase->run($httpClient);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertTrue($result->isSuccess());
+        self::assertNull($result->getFailedAssertResult());
+    }
+
+    /**
+     * Test run with request modifiers #2.
+     */
+    public function testRunWithRequestModifiers2()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier1 = new WithRawContent('FooBar');
+        $requestModifier2 = new WithHeader('Header', 'Baz');
+
+        $assert1 = new AssertContains($location, 'Raw Content = "FooBar"', new Modifiers());
+        $assert2 = new AssertContains($location, 'Raw Content = "Baz"', new Modifiers(ModifiersInterface::NOT));
+        $assert3 = new AssertContains($location, 'Header "Header: Baz"', new Modifiers());
+        $assert4 = new AssertContains($location, 'Header "Header: Bar"', new Modifiers(ModifiersInterface::NOT));
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_PUT, Url::parse('http://localhost/request'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
+        $testCase->addAssert($assert1);
+        $testCase->addAssert($assert2);
+        $testCase->addAssert($assert3);
+        $testCase->addAssert($assert4);
+
+        $httpClient = new HttpClient(new TestRequestHandler());
+        $result = $testCase->run($httpClient);
+
+        self::assertSame($testCase, $result->getTestCase());
+        self::assertTrue($result->isSuccess());
+        self::assertNull($result->getFailedAssertResult());
+    }
+
+    /**
+     * Test case with incompatible modifiers.
+     */
+    public function testWithIncompatibleRequestModifiers()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier1 = new WithPostParameter('Foo', 'Bar');
+        $requestModifier2 = new WithPostParameter('1', '2');
+        $requestModifier3 = new WithRawContent('FooBar');
+
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_POST, Url::parse('http://localhost'));
+        $testCase->addRequestModifier($requestModifier1);
+        $testCase->addRequestModifier($requestModifier2);
+
+        $exception = null;
+
+        try {
+            $testCase->addRequestModifier($requestModifier3);
+        } catch (IncompatibleRequestModifierException $exception) {
+        }
+
+        self::assertInstanceOf(IncompatibleRequestModifierException::class, $exception);
+        self::assertSame($requestModifier1, $exception->getCurrentRequestModifier());
+        self::assertSame($requestModifier3, $exception->getNewRequestModifier());
+    }
+
+    /**
+     * Test case with a request modifier with a not allowed method.
+     */
+    public function testWithRequestModifierWithNotAllowedMethod()
+    {
+        $location = new FileLocation(FilePath::parse('./foo.webunit'), 1);
+
+        $requestModifier = new WithPostParameter('Foo', 'Bar');
+        $testCase = new \MichaelHall\Webunit\TestCase($location, TestCaseInterface::METHOD_GET, Url::parse('http://localhost'));
+
+        $exception = null;
+
+        try {
+            $testCase->addRequestModifier($requestModifier);
+        } catch (MethodNotAllowedForRequestModifierException $exception) {
+        }
+
+        self::assertInstanceOf(MethodNotAllowedForRequestModifierException::class, $exception);
+        self::assertSame(TestCaseInterface::METHOD_GET, $exception->getMethod());
+        self::assertSame($requestModifier, $exception->getRequestModifier());
     }
 }

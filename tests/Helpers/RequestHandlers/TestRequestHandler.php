@@ -52,6 +52,28 @@ class TestRequestHandler implements RequestHandlerInterface
                 $responseText = 'Method is ' . $request->getMethod();
                 break;
 
+            case '/request':
+                $responseLines = [];
+
+                foreach ($request->getHeaders() as $header) {
+                    $responseLines[] = 'Header "' . $header . '"';
+                }
+
+                foreach ($request->getPostFields() as $postFieldName => $postFieldValue) {
+                    $responseLines[] = 'Post Field "' . $postFieldName . '" = "' . $postFieldValue . '"';
+                }
+
+                foreach ($request->getFiles() as $postFileName => $postFileValue) {
+                    $responseLines[] = 'Post File "' . $postFileName . '" = "' . $postFileValue . '"';
+                }
+
+                if ($request->getRawContent() !== '') {
+                    $responseLines[] = 'Raw Content = "' . $request->getRawContent() . '"';
+                }
+
+                $responseText = implode(PHP_EOL, $responseLines);
+                break;
+
             default:
                 $responseCode = 404;
                 $responseText = 'Page not found.';

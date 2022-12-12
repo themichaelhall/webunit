@@ -1,10 +1,26 @@
-GET                https://example.com/
+GET                     https://example.com/
 
-GET                https://example.com/foo
-assert-contains!^  foo
+GET                     https://example.com/foo
+assert-contains!^       foo
 
-GET                https://example.com/foobar
-assert-header      Location: https://example.com/baz
+GET                     https://example.com/foobar
+assert-header           Location: https://example.com/baz
 
-POST               https://example.com/method
-assert-equals!     Method is POST
+POST                    https://example.com/method
+assert-equals!          Method is POST
+
+POST                    https://example.com/request
+with-post-parameter     Foo = Bar
+assert-contains         Post Field "Foo" = "Baz"
+
+post                    https://example.com/request
+with-post-file          File = ../TestFiles/helloworld.txt
+assert-contains!~       Post File "File" = ".*helloworld.txt"
+
+PATCH                   https://example.com/request
+WITH-RAW-CONTENT        Foo-Bar
+ASSERT-CONTAINS!        Foo-Bar
+
+GET                     https://example.com/request
+WITH-HEADER             Foo:Bar
+ASSERT-CONTAINS!^       HEADER "FOO: BAR"

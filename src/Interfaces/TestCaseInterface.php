@@ -65,6 +65,15 @@ interface TestCaseInterface
     public function addAssert(AssertInterface $assert): void;
 
     /**
+     * Adds a request modifier.
+     *
+     * @since 2.1.0
+     *
+     * @param RequestModifierInterface $requestModifier The request modifier.
+     */
+    public function addRequestModifier(RequestModifierInterface $requestModifier): void;
+
+    /**
      * Returns the asserts.
      *
      * @since 1.0.0
@@ -81,6 +90,15 @@ interface TestCaseInterface
      * @return string The method.
      */
     public function getMethod(): string;
+
+    /**
+     * Returns the request modifiers.
+     *
+     * @since 2.1.0
+     *
+     * @return RequestModifierInterface[] The request modifiers.
+     */
+    public function getRequestModifiers(): array;
 
     /**
      * Returns the url.

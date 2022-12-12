@@ -13,3 +13,16 @@ assert-empty BAZ
 assert-empty
 
 assert-empty!!
+
+with-post-parameter Foo=
+
+POST https://example.com/
+with-post-file File=../TestFiles/not-found.txt
+
+PUT https://example.com/
+with-header Foo
+with-raw-content
+
+PUT https://example.com/
+with-post-parameter Foo=Bar
+with-raw-content Foo=Bar
