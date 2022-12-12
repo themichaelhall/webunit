@@ -1,5 +1,6 @@
 ## Unreleased
 - Added delete, patch, post and put commands.
+- Added with-header, with-post-file, with-post-parameter and with-raw-content request modifiers.
 
 ## [2.0.0] - 2022-10-13
 - Changed required PHP version to >= 8.0.
