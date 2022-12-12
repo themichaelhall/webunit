@@ -20,6 +20,7 @@ POST https://example.com/
 with-post-file File=../TestFiles/not-found.txt
 
 PUT https://example.com/
+with-header Foo
 with-raw-content
 
 PUT https://example.com/

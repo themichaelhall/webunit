@@ -31,6 +31,8 @@ ASSERT-CONTAINS~        Post File "File" = ".*helloworld.txt"
 
 set                     RawContent = {"Foo": "Bar"}
 put                     {{ BaseUrl }}request
+with-header             Location: {{ BaseUrl }}bar
 with-raw-content        {{ RawContent }}
 assert-contains         Raw Content = "{"Foo": "Bar"}"
 assert-contains!        Raw Content = "{"Foo": "Baz"}"
+assert-contains         Header "Location: https://example.com/bar"

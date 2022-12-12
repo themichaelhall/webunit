@@ -34,6 +34,7 @@ use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
+use MichaelHall\Webunit\RequestModifiers\WithHeader;
 use MichaelHall\Webunit\RequestModifiers\WithPostFile;
 use MichaelHall\Webunit\RequestModifiers\WithPostParameter;
 use MichaelHall\Webunit\RequestModifiers\WithRawContent;
@@ -380,6 +381,13 @@ class Parser
     private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
     {
         switch ($command) {
+            case 'with-header':
+                self::tryParseHeaderRequestModifierParameter($command, $argument, $headerName, $headerValue);
+
+                $requestModifier = new WithHeader($headerName, $headerValue);
+
+                break;
+
             case 'with-post-parameter':
                 self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
@@ -519,6 +527,36 @@ class Parser
 
             $modifiers = $modifiers->combinedWith($newModifier);
         }
+    }
+
+    /**
+     * Try parse parameter for a header request modifier.
+     *
+     * @param string      $command     The command.
+     * @param string|null $argument    The argument or null if no argument.
+     * @param string|null $headerName  The parsed header name.
+     * @param string|null $headerValue The parsed header value.
+     *
+     * @throws ParseException If parsing failed.
+     */
+    private static function tryParseHeaderRequestModifierParameter(string $command, ?string $argument, ?string &$headerName = null, ?string &$headerValue = null): void
+    {
+        if ($argument === null) {
+            throw new ParseException('Missing argument: Missing header name and value for request modifier "' . $command . '".');
+        }
+
+        $argumentParts = explode(':', $argument, 2);
+
+        $headerName = trim($argumentParts[0]);
+        if ($headerName === '') {
+            throw new ParseException('Missing argument: Missing header name for request modifier "' . $command . '".');
+        }
+
+        if (count($argumentParts) < 2) {
+            throw new ParseException('Missing argument: Missing header value for request modifier "' . $command . '".');
+        }
+
+        $headerValue = trim($argumentParts[1]);
     }
 
     /**

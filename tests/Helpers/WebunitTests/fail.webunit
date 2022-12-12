@@ -20,3 +20,7 @@ assert-contains!~       Post File "File" = ".*helloworld.txt"
 PATCH                   https://example.com/request
 WITH-RAW-CONTENT        Foo-Bar
 ASSERT-CONTAINS!        Foo-Bar
+
+GET                     https://example.com/request
+WITH-HEADER             Foo:Bar
+ASSERT-CONTAINS!^       HEADER "FOO: BAR"
