@@ -1,3 +1,5 @@
+## Unreleased
+
 ## [2.1.0] - 2022-12-15
 - Added delete, patch, post and put commands.
 - Added with-header, with-post-file, with-post-parameter and with-raw-content request modifiers.
