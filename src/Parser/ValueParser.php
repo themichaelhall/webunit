@@ -30,6 +30,44 @@ class ValueParser implements ValueParserInterface
      */
     public function parseText(string $text): string
     {
-        return trim($text);
+        $text = trim($text);
+
+        if (!str_contains($text, self::ESCAPE_CHARACTER)) {
+            return $text;
+        }
+
+        $result = '';
+        $isAfterEscapeCharacter = false;
+        $textLength = strlen($text);
+        for ($i = 0; $i < $textLength; $i++) {
+            $currentCharacter = $text[$i];
+
+            if ($isAfterEscapeCharacter) {
+                $result .= match ($currentCharacter) {
+                    'n'                    => "\n",
+                    'r'                    => "\r",
+                    's'                    => ' ',
+                    't'                    => "\t",
+                    self::ESCAPE_CHARACTER => self::ESCAPE_CHARACTER,
+                };
+
+                $isAfterEscapeCharacter = false;
+                continue;
+            }
+
+            if ($currentCharacter === self::ESCAPE_CHARACTER) {
+                $isAfterEscapeCharacter = true;
+                continue;
+            }
+
+            $result .= $currentCharacter;
+        }
+
+        return $result;
     }
+
+    /**
+     * The escape character.
+     */
+    private const ESCAPE_CHARACTER = '\\';
 }

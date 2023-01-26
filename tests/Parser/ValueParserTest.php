@@ -39,6 +39,7 @@ class ValueParserTest extends TestCase
             [" \tFoo  \nBar  ", "Foo  \nBar"],
             ['Foo "Bar" ', 'Foo "Bar"'],
             [" Foo 'Bar\" Baz' \t", 'Foo \'Bar" Baz\''],
+            [' \\s \\r\\nFoo \\t\\sBar\\\\Baz \\t ', "  \r\nFoo \t Bar\\Baz \t"],
         ];
     }
 }
