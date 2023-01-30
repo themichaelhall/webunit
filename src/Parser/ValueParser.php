@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Parser;
 
+use MichaelHall\Webunit\Exceptions\ValueParserException;
 use MichaelHall\Webunit\Interfaces\ValueParserInterface;
 
 /**
@@ -25,6 +26,8 @@ class ValueParser implements ValueParserInterface
      * @since 2.2.0
      *
      * @param string $text The text.
+     *
+     * @throws ValueParserException On parse failure.
      *
      * @return string The value.
      */
@@ -49,6 +52,7 @@ class ValueParser implements ValueParserInterface
                     's'                    => ' ',
                     't'                    => "\t",
                     self::ESCAPE_CHARACTER => self::ESCAPE_CHARACTER,
+                    default                => throw new ValueParserException('Invalid escape sequence "' . self::ESCAPE_CHARACTER . $currentCharacter . '" in "' . $text . '".'),
                 };
 
                 $isAfterEscapeCharacter = false;
@@ -61,6 +65,10 @@ class ValueParser implements ValueParserInterface
             }
 
             $result .= $currentCharacter;
+        }
+
+        if ($isAfterEscapeCharacter) {
+            throw new ValueParserException('Unterminated escape sequence in "' . $text . '".');
         }
 
         return $result;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MichaelHall\Webunit\Tests\Parser;
 
+use MichaelHall\Webunit\Exceptions\ValueParserException;
 use MichaelHall\Webunit\Parser\ValueParser;
 use PHPUnit\Framework\TestCase;
 
@@ -13,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 class ValueParserTest extends TestCase
 {
     /**
-     * Test paring plain text into a value.
+     * Test parsing plain text into a value.
      *
      * @dataProvider parsePlainTextDataProvider
      */
@@ -40,6 +41,37 @@ class ValueParserTest extends TestCase
             ['Foo "Bar" ', 'Foo "Bar"'],
             [" Foo 'Bar\" Baz' \t", 'Foo \'Bar" Baz\''],
             [' \\s \\r\\nFoo \\t\\sBar\\\\Baz \\t ', "  \r\nFoo \t Bar\\Baz \t"],
+        ];
+    }
+
+    /**
+     * Test parsing text with escape character errors.
+     *
+     * @dataProvider parseTextWithEscapeCharacterErrorsDataProvider
+     */
+    public function testParseTextWithEscapeCharacterErrors(string $text, string $expectedExceptionMessage)
+    {
+        self::expectException(ValueParserException::class);
+        self::expectExceptionMessage($expectedExceptionMessage);
+
+        $valueParser = new ValueParser();
+        $valueParser->parseText($text);
+    }
+
+    /**
+     * Data provider for testParseTextWithEscapeCharacterErrors method.
+     *
+     * @return array
+     */
+    public function parseTextWithEscapeCharacterErrorsDataProvider(): array
+    {
+        return [
+            ['\\1', 'Invalid escape sequence "\\1" in "\\1".'],
+            ['\\', 'Unterminated escape sequence in "\".'],
+            [' \\1 ', 'Invalid escape sequence "\\1" in "\\1".'],
+            [' \\ ', 'Unterminated escape sequence in "\".'],
+            ['Foo \\Bar', 'Invalid escape sequence "\\B" in "Foo \\Bar".'],
+            ['Foo Bar\\', 'Unterminated escape sequence in "Foo Bar\\".'],
         ];
     }
 }
