@@ -19,6 +19,7 @@ use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteResultInterface;
 use MichaelHall\Webunit\Parser\ParseContext;
 use MichaelHall\Webunit\Parser\Parser;
+use MichaelHall\Webunit\Parser\ValueParser;
 
 /**
  * Console application class.
@@ -231,7 +232,7 @@ class ConsoleApplication
             return false;
         }
 
-        if (!Parser::isValidVariableName($variableName)) {
+        if (!ValueParser::isValidVariableName($variableName)) {
             $error = 'Invalid variable name "' . $variableName . '".';
 
             return false;

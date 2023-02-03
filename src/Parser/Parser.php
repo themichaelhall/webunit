@@ -82,20 +82,6 @@ class Parser
     }
 
     /**
-     * Checks if a variable name is valid.
-     *
-     * @since 1.3.0
-     *
-     * @param string $variableName The variable name.
-     *
-     * @return bool True if variable name is valid, false otherwise.
-     */
-    public static function isValidVariableName(string $variableName): bool
-    {
-        return preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $variableName) === 1;
-    }
-
-    /**
      * Parses a line.
      *
      * @param LocationInterface      $location        The location.
@@ -170,7 +156,7 @@ class Parser
 
                 if ($variableName === '') {
                     throw new ParseException('Missing variable: Missing variable name in "' . $matches[0] . '".');
-                } elseif (!self::isValidVariableName($variableName)) {
+                } elseif (!ValueParser::isValidVariableName($variableName)) {
                     throw new ParseException('Invalid variable: Invalid variable name "' . $variableName . '" in "' . $matches[0] . '".');
                 } elseif (!$parseContext->hasVariable($variableName)) {
                     throw new ParseException('Invalid variable: No variable with name "' . $variableName . '" is set in "' . $matches[0] . '".');
@@ -216,7 +202,7 @@ class Parser
             throw new ParseException('Missing variable: Missing variable name for "' . $command . '" in "' . $argument . '".');
         }
 
-        if (!self::isValidVariableName($variableName)) {
+        if (!ValueParser::isValidVariableName($variableName)) {
             throw new ParseException('Invalid variable: Invalid variable name "' . $variableName . '" for "' . $command . '" in "' . $argument . '".');
         }
 
