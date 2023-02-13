@@ -92,7 +92,6 @@ class Parser
      * @param ParseContextInterface  $parseContext    The parse context.
      * @param TestSuiteInterface     $testSuite       The test suite.
      * @param TestCaseInterface|null $currentTestCase The current test case that is parsing or null if no test case is parsing.
-     *
      */
     private static function tryParseLine(LocationInterface $location, string $line, ValueParserInterface $valueParser, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase): void
     {
