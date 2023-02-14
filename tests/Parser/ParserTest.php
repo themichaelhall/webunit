@@ -162,7 +162,7 @@ class ParserTest extends TestCase
                 '',
                 'get https://example.com/',
                 'assert-contains',
-                'assert-contains foo',
+                'assert-contains \\sfoo',
                 'assert-empty',
                 'assert-empty bar',
                 '',
@@ -188,7 +188,7 @@ class ParserTest extends TestCase
         self::assertSame(3, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
-        self::assertSame('foo', $testCases[0]->getAsserts()[1]->getContent());
+        self::assertSame(' foo', $testCases[0]->getAsserts()[1]->getContent());
         self::assertInstanceOf(AssertEmpty::class, $testCases[0]->getAsserts()[2]);
 
         self::assertSame('https://example.com/foo', $testCases[1]->getUrl()->__toString());
@@ -371,6 +371,7 @@ class ParserTest extends TestCase
         $parseContext = new ParseContext();
         $parseContext->setVariable('Url', 'https://example.com/foo/bar');
         $parseContext->setVariable('FOO', 'BAR');
+        $parseContext->setVariable('command', 'GET');
 
         $parseResult = $parser->parse(
             FilePath::parse('foo.webunit'),
@@ -380,6 +381,7 @@ class ParserTest extends TestCase
                 'assert-contains {{ Foo }}',
                 'assert-contains {{F*o}}',
                 'assert-contains {{F o}} {{ 1abc }}',
+                '{{command}} {{Url}}',
             ],
             $parseContext,
         );
@@ -394,11 +396,12 @@ class ParserTest extends TestCase
         self::assertSame(1, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(DefaultAssert::class, $testCases[0]->getAsserts()[0]);
 
-        self::assertSame(4, count($parseErrors));
+        self::assertSame(5, count($parseErrors));
         self::assertSame('foo.webunit:2: Missing variable: Missing variable name in "{{  }}".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:3: Invalid variable: No variable with name "Foo" is set in "{{ Foo }}".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:4: Invalid variable: Invalid variable name "F*o" in "{{F*o}}".', $parseErrors[2]->__toString());
         self::assertSame('foo.webunit:5: Invalid variable: Invalid variable name "F o" in "{{F o}}".', $parseErrors[3]->__toString());
+        self::assertSame('foo.webunit:6: Syntax error: Invalid command "{{command}}".', $parseErrors[4]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }
@@ -421,7 +424,7 @@ class ParserTest extends TestCase
             [
                 'set-default Host=example.org',
                 'set Url=https://{{ Host }}{{ Path }}',
-                "SET-DEFAULT Content_1 \t = \tFOO \t",
+                "SET-DEFAULT Content_1 \t = \tFOO\\s \t",
                 'set-default Content_1=Foo',
                 'set Content_3 = ',
                 'get {{ Url }}',
@@ -443,7 +446,7 @@ class ParserTest extends TestCase
         self::assertSame('https://example.com/foo/bar', $testCases[0]->getUrl()->__toString());
         self::assertSame(4, count($testCases[0]->getAsserts()));
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[0]);
-        self::assertSame('FOO', $testCases[0]->getAsserts()[0]->getContent());
+        self::assertSame('FOO ', $testCases[0]->getAsserts()[0]->getContent());
         self::assertTrue((new Modifiers())->equals($testCases[0]->getAsserts()[0]->getModifiers()));
         self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
         self::assertSame('{Content_1}}', $testCases[0]->getAsserts()[1]->getContent());
@@ -462,7 +465,7 @@ class ParserTest extends TestCase
         self::assertSame('example.com', $parseContext->getVariable('Host'));
         self::assertSame('/foo/bar', $parseContext->getVariable('Path'));
         self::assertSame('https://example.com/foo/bar', $parseContext->getVariable('Url'));
-        self::assertSame('FOO', $parseContext->getVariable('Content_1'));
+        self::assertSame('FOO ', $parseContext->getVariable('Content_1'));
         self::assertSame('BAR', $parseContext->getVariable('Content_2'));
         self::assertSame('', $parseContext->getVariable('Content_3'));
         self::assertSame('201', $parseContext->getVariable('STATUS_CODE'));
@@ -490,6 +493,8 @@ class ParserTest extends TestCase
                 'set-default Foo:Bar',
                 'set F*o = Bar',
                 'set-default F#o = B*r',
+                'set FOO=Foo',
+                'set {{ FOO }}=Bar',
             ],
             $parseContext,
         );
@@ -500,8 +505,7 @@ class ParserTest extends TestCase
 
         self::assertSame(0, count($testCases));
 
-        self::assertSame(12, count($parseErrors));
-
+        self::assertSame(13, count($parseErrors));
         self::assertSame('foo.webunit:1: Missing variable: Missing variable name and value for "set".', $parseErrors[0]->__toString());
         self::assertSame('foo.webunit:2: Missing variable: Missing variable name and value for "set-default".', $parseErrors[1]->__toString());
         self::assertSame('foo.webunit:3: Syntax error: Invalid command "set=bar".', $parseErrors[2]->__toString());
@@ -514,6 +518,7 @@ class ParserTest extends TestCase
         self::assertSame('foo.webunit:10: Invalid variable: Invalid variable name "Foo:Bar" for "set-default" in "Foo:Bar".', $parseErrors[9]->__toString());
         self::assertSame('foo.webunit:11: Invalid variable: Invalid variable name "F*o" for "set" in "F*o = Bar".', $parseErrors[10]->__toString());
         self::assertSame('foo.webunit:12: Invalid variable: Invalid variable name "F#o" for "set-default" in "F#o = B*r".', $parseErrors[11]->__toString());
+        self::assertSame('foo.webunit:14: Invalid variable: Invalid variable name "{{ FOO }}" for "set" in "{{ FOO }}=Bar".', $parseErrors[12]->__toString());
 
         self::assertFalse($parseResult->isSuccess());
     }
@@ -578,17 +583,25 @@ class ParserTest extends TestCase
         $parseResult = $parser->parse(
             FilePath::parse(__DIR__ . '/foo.webunit'),
             [
+                'set FOO = Foo',
+                'SET BAR = Bar',
+                'set BAZ = Baz',
+                'SET FILE = File',
+                'SET HELLO_WORLD_TXT = helloworld.txt',
                 'POST https://example.com/',
-                'with-post-parameter Foo=Bar',
-                " \tWITH-post-parameter  Name\t_1 =\tValue=1  \t",
+                'with-post-parameter {{ FOO }} = {{ BAR }}',
+                'with-post-parameter Foo2=Bar2',
+                " \tWITH-post-parameter  Name\t_2 =\tValue=2  \t",
                 'with-post-parameter Empty=',
-                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
+                'with-post-file {{ FILE }}=' . str_replace('\\', '\\\\', __DIR__) . '/../Helpers/TestFiles/{{HELLO_WORLD_TXT}}',
                 " WITH-post-file File-2 \t=  \t../Helpers/TestFiles/helloworld.txt ",
                 'with-header EmptyHeader:',
                 '',
                 'PUT https://example.com/',
-                ' With-Raw-Content {"Foo": "Bar"}',
-                "\tWITH-header   Bar-Header :\t  Baz ",
+                ' With-Raw-Content {"{{ FOO }}": "Bar"}',
+                ' With-Raw-Content {"Foo2": "Bar2"}',
+                "\tWITH-header   Bar-Header :\t{{ BAZ }}",
+                "\tWITH-header   {{ BAR }}-Header2 :\t{{ BAZ }}",
             ],
             $parseContext,
         );
@@ -599,33 +612,42 @@ class ParserTest extends TestCase
 
         self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
         self::assertSame(TestCaseInterface::METHOD_POST, $testCases[0]->getMethod());
-        self::assertCount(6, $testCases[0]->getRequestModifiers());
+        self::assertCount(7, $testCases[0]->getRequestModifiers());
         self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[0]);
         self::assertSame('Foo', $testCases[0]->getRequestModifiers()[0]->getParameterName());
         self::assertSame('Bar', $testCases[0]->getRequestModifiers()[0]->getParameterValue());
         self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[1]);
-        self::assertSame("Name\t_1", $testCases[0]->getRequestModifiers()[1]->getParameterName());
-        self::assertSame('Value=1', $testCases[0]->getRequestModifiers()[1]->getParameterValue());
+        self::assertSame('Foo2', $testCases[0]->getRequestModifiers()[1]->getParameterName());
+        self::assertSame('Bar2', $testCases[0]->getRequestModifiers()[1]->getParameterValue());
         self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[2]);
-        self::assertSame('Empty', $testCases[0]->getRequestModifiers()[2]->getParameterName());
-        self::assertSame('', $testCases[0]->getRequestModifiers()[2]->getParameterValue());
-        self::assertInstanceOf(WithPostFile::class, $testCases[0]->getRequestModifiers()[3]);
-        self::assertSame('File1', $testCases[0]->getRequestModifiers()[3]->getParameterName());
-        self::assertTrue(FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt')->equals($testCases[0]->getRequestModifiers()[3]->getFilePath()));
+        self::assertSame("Name\t_2", $testCases[0]->getRequestModifiers()[2]->getParameterName());
+        self::assertSame('Value=2', $testCases[0]->getRequestModifiers()[2]->getParameterValue());
+        self::assertInstanceOf(WithPostParameter::class, $testCases[0]->getRequestModifiers()[3]);
+        self::assertSame('Empty', $testCases[0]->getRequestModifiers()[3]->getParameterName());
+        self::assertSame('', $testCases[0]->getRequestModifiers()[3]->getParameterValue());
         self::assertInstanceOf(WithPostFile::class, $testCases[0]->getRequestModifiers()[4]);
-        self::assertSame('File-2', $testCases[0]->getRequestModifiers()[4]->getParameterName());
+        self::assertSame('File', $testCases[0]->getRequestModifiers()[4]->getParameterName());
         self::assertTrue(FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt')->equals($testCases[0]->getRequestModifiers()[4]->getFilePath()));
-        self::assertInstanceOf(WithHeader::class, $testCases[0]->getRequestModifiers()[5]);
-        self::assertSame('EmptyHeader', $testCases[0]->getRequestModifiers()[5]->getHeaderName());
-        self::assertSame('', $testCases[0]->getRequestModifiers()[5]->getHeaderValue());
+        self::assertInstanceOf(WithPostFile::class, $testCases[0]->getRequestModifiers()[5]);
+        self::assertSame('File-2', $testCases[0]->getRequestModifiers()[5]->getParameterName());
+        self::assertTrue(FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt')->equals($testCases[0]->getRequestModifiers()[5]->getFilePath()));
+        self::assertInstanceOf(WithHeader::class, $testCases[0]->getRequestModifiers()[6]);
+        self::assertSame('EmptyHeader', $testCases[0]->getRequestModifiers()[6]->getHeaderName());
+        self::assertSame('', $testCases[0]->getRequestModifiers()[6]->getHeaderValue());
+
         self::assertSame('https://example.com/', $testCases[1]->getUrl()->__toString());
         self::assertSame(TestCaseInterface::METHOD_PUT, $testCases[1]->getMethod());
-        self::assertCount(2, $testCases[1]->getRequestModifiers());
+        self::assertCount(4, $testCases[1]->getRequestModifiers());
         self::assertInstanceOf(WithRawContent::class, $testCases[1]->getRequestModifiers()[0]);
         self::assertSame('{"Foo": "Bar"}', $testCases[1]->getRequestModifiers()[0]->getContent());
-        self::assertInstanceOf(WithHeader::class, $testCases[1]->getRequestModifiers()[1]);
-        self::assertSame('Bar-Header', $testCases[1]->getRequestModifiers()[1]->getHeaderName());
-        self::assertSame('Baz', $testCases[1]->getRequestModifiers()[1]->getHeaderValue());
+        self::assertInstanceOf(WithRawContent::class, $testCases[1]->getRequestModifiers()[1]);
+        self::assertSame('{"Foo2": "Bar2"}', $testCases[1]->getRequestModifiers()[1]->getContent());
+        self::assertInstanceOf(WithHeader::class, $testCases[1]->getRequestModifiers()[2]);
+        self::assertSame('Bar-Header', $testCases[1]->getRequestModifiers()[2]->getHeaderName());
+        self::assertSame('Baz', $testCases[1]->getRequestModifiers()[2]->getHeaderValue());
+        self::assertInstanceOf(WithHeader::class, $testCases[1]->getRequestModifiers()[3]);
+        self::assertSame('Bar-Header2', $testCases[1]->getRequestModifiers()[3]->getHeaderName());
+        self::assertSame('Baz', $testCases[1]->getRequestModifiers()[3]->getHeaderValue());
 
         self::assertSame([], $parseResult->getParseErrors());
         self::assertTrue($parseResult->isSuccess());
@@ -653,11 +675,11 @@ class ParserTest extends TestCase
                 ' With-Post-File =',
                 'with-post-file = Bar',
                 "with-post-file File = F\0oo",
-                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/not-found.txt',
+                'with-post-file File1=' . str_replace('\\', '\\\\', __DIR__) . '/../Helpers/TestFiles/not-found.txt',
                 '',
                 'GET https://example.com/',
                 'with-post-parameter Foo=Bar',
-                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
+                'with-post-file File1=' . str_replace('\\', '\\\\', __DIR__) . '/../Helpers/TestFiles/helloworld.txt',
                 '',
                 'POST https://example.com/',
                 ' With-raw-content ',
@@ -724,7 +746,7 @@ class ParserTest extends TestCase
                 'POST https://example.com/',
                 'with-raw-content {"Foo": "Bar"}',
                 'with-post-parameter Foo=Bar',
-                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
+                'with-post-file File1=' . str_replace('\\', '\\\\', __DIR__) . '/../Helpers/TestFiles/helloworld.txt',
                 'with-post-parameter 1=2',
                 'with-raw-content {"1": 2}',
                 '',
@@ -733,7 +755,7 @@ class ParserTest extends TestCase
                 'with-raw-content {"Foo": "Bar"}',
                 '',
                 'PUT https://example.com/',
-                'with-post-file File1=' . __DIR__ . '/../Helpers/TestFiles/helloworld.txt',
+                'with-post-file File1=' . str_replace('\\', '\\\\', __DIR__) . '/../Helpers/TestFiles/helloworld.txt',
                 'with-raw-content {"Foo": "Bar"}',
             ],
             $parseContext,

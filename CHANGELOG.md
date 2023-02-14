@@ -1,4 +1,5 @@
 ## Unreleased
+- Added escape sequence functionality.
 
 ## [2.1.0] - 2022-12-15
 - Added delete, patch, post and put commands.

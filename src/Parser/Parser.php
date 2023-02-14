@@ -32,6 +32,7 @@ use MichaelHall\Webunit\Interfaces\ParseContextInterface;
 use MichaelHall\Webunit\Interfaces\ParseResultInterface;
 use MichaelHall\Webunit\Interfaces\TestCaseInterface;
 use MichaelHall\Webunit\Interfaces\TestSuiteInterface;
+use MichaelHall\Webunit\Interfaces\ValueParserInterface;
 use MichaelHall\Webunit\Location\FileLocation;
 use MichaelHall\Webunit\Modifiers;
 use MichaelHall\Webunit\RequestModifiers\WithHeader;
@@ -65,6 +66,7 @@ class Parser
         $currentTestCase = null;
         $parseErrors = [];
         $lineNumber = 0;
+        $valueParser = new ValueParser($parseContext);
 
         foreach ($content as $line) {
             $line = trim($line);
@@ -72,7 +74,7 @@ class Parser
             $location = new FileLocation($filePath, $lineNumber);
 
             try {
-                self::tryParseLine($location, $line, $parseContext, $testSuite, $currentTestCase);
+                self::tryParseLine($location, $line, $valueParser, $parseContext, $testSuite, $currentTestCase);
             } catch (ParseException $exception) {
                 $parseErrors[] = new ParseError($location, $exception->getMessage());
             }
@@ -82,31 +84,16 @@ class Parser
     }
 
     /**
-     * Checks if a variable name is valid.
-     *
-     * @since 1.3.0
-     *
-     * @param string $variableName The variable name.
-     *
-     * @return bool True if variable name is valid, false otherwise.
-     */
-    public static function isValidVariableName(string $variableName): bool
-    {
-        return preg_match('/^[a-zA-Z_$][a-zA-Z_$0-9]*$/', $variableName) === 1;
-    }
-
-    /**
      * Parses a line.
      *
      * @param LocationInterface      $location        The location.
      * @param string                 $line            The line.
+     * @param ValueParserInterface   $valueParser     The value parser.
      * @param ParseContextInterface  $parseContext    The parse context.
      * @param TestSuiteInterface     $testSuite       The test suite.
      * @param TestCaseInterface|null $currentTestCase The current test case that is parsing or null if no test case is parsing.
-     *
-     * @throws ParseException If parsing failed.
      */
-    private static function tryParseLine(LocationInterface $location, string $line, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase): void
+    private static function tryParseLine(LocationInterface $location, string $line, ValueParserInterface $valueParser, ParseContextInterface $parseContext, TestSuiteInterface $testSuite, ?TestCaseInterface &$currentTestCase): void
     {
         if (self::isEmptyOrComment($line)) {
             return;
@@ -114,27 +101,23 @@ class Parser
 
         $lineParts = preg_split('/\s+/', $line, 2);
         $command = strtolower(trim($lineParts[0]));
-        $argument = count($lineParts) > 1 ? trim($lineParts[1]) : null;
+        $argument = $lineParts[1] ?? null;
 
-        if ($argument !== null) {
-            self::replaceVariables($argument, $parseContext);
-        }
-
-        if (self::tryParseSet($command, $argument, $parseContext)) {
+        if (self::tryParseSet($command, $argument, $valueParser, $parseContext)) {
             return;
         }
 
-        if (self::tryParseTestCase($location, $testSuite, $command, $argument, $testCase)) {
+        if (self::tryParseTestCase($location, $testSuite, $command, $argument, $valueParser, $testCase)) {
             $currentTestCase = $testCase;
 
             return;
         }
 
-        if (self::tryParseAssert($location, $currentTestCase, $command, $argument)) {
+        if (self::tryParseAssert($location, $currentTestCase, $command, $argument, $valueParser)) {
             return;
         }
 
-        if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument)) {
+        if (self::tryParseRequestModifier($location, $currentTestCase, $command, $argument, $valueParser)) {
             return;
         }
 
@@ -154,46 +137,16 @@ class Parser
     }
 
     /**
-     * Replaces variables like {{ Foo }} in a text with the actual variable content.
-     *
-     * @param string                $content      The text content.
-     * @param ParseContextInterface $parseContext The parse context.
-     *
-     * @throws ParseException If parsing failed.
-     */
-    private static function replaceVariables(string &$content, ParseContextInterface $parseContext): void
-    {
-        $content = preg_replace_callback(
-            '/{{(.*?)}}/',
-            function (array $matches) use ($parseContext): string {
-                $variableName = trim($matches[1]);
-
-                if ($variableName === '') {
-                    throw new ParseException('Missing variable: Missing variable name in "' . $matches[0] . '".');
-                } elseif (!self::isValidVariableName($variableName)) {
-                    throw new ParseException('Invalid variable: Invalid variable name "' . $variableName . '" in "' . $matches[0] . '".');
-                } elseif (!$parseContext->hasVariable($variableName)) {
-                    throw new ParseException('Invalid variable: No variable with name "' . $variableName . '" is set in "' . $matches[0] . '".');
-                }
-
-                return $parseContext->getVariable($variableName);
-            },
-            $content,
-        );
-    }
-
-    /**
      * Try parse a set command.
      *
      * @param string                $command      The command.
      * @param string|null           $argument     The argument or null if no argument.
+     * @param ValueParserInterface  $valueParser  The value parser.
      * @param ParseContextInterface $parseContext The parse context.
-     *
-     * @throws ParseException If parsing failed.
      *
      * @return bool
      */
-    private static function tryParseSet(string $command, ?string $argument, ParseContextInterface $parseContext): bool
+    private static function tryParseSet(string $command, ?string $argument, ValueParserInterface $valueParser, ParseContextInterface $parseContext): bool
     {
         switch ($command) {
             case 'set':
@@ -216,11 +169,11 @@ class Parser
             throw new ParseException('Missing variable: Missing variable name for "' . $command . '" in "' . $argument . '".');
         }
 
-        if (!self::isValidVariableName($variableName)) {
+        if (!ValueParser::isValidVariableName($variableName)) {
             throw new ParseException('Invalid variable: Invalid variable name "' . $variableName . '" for "' . $command . '" in "' . $argument . '".');
         }
 
-        $variableValue = count($argumentParts) > 1 ? trim($argumentParts[1]) : null;
+        $variableValue = count($argumentParts) > 1 ? $valueParser->parseText($argumentParts[1]) : null;
         if ($variableValue === null) {
             throw new ParseException('Missing variable: Missing variable value for "' . $command . '" in "' . $argument . '".');
         }
@@ -237,17 +190,18 @@ class Parser
     /**
      * Try parse a test case.
      *
-     * @param LocationInterface      $location  The location.
-     * @param TestSuiteInterface     $testSuite The test suite.
-     * @param string                 $command   The command.
-     * @param null|string            $argument  The argument or null if no argument.
-     * @param TestCaseInterface|null $testCase  The parsed test case or null if parsing failed.
+     * @param LocationInterface      $location    The location.
+     * @param TestSuiteInterface     $testSuite   The test suite.
+     * @param string                 $command     The command.
+     * @param null|string            $argument    The argument or null if no argument.
+     * @param ValueParserInterface   $valueParser The value parser.
+     * @param TestCaseInterface|null $testCase    The parsed test case or null if parsing failed.
      *
      * @throws ParseException If parsing failed.
      *
      * @return bool True if this was a test case, false otherwise.
      */
-    private static function tryParseTestCase(LocationInterface $location, TestSuiteInterface $testSuite, string $command, ?string $argument, ?TestCaseInterface &$testCase): bool
+    private static function tryParseTestCase(LocationInterface $location, TestSuiteInterface $testSuite, string $command, ?string $argument, ValueParserInterface $valueParser, ?TestCaseInterface &$testCase): bool
     {
         $testCase = null;
 
@@ -269,7 +223,7 @@ class Parser
         }
 
         try {
-            $url = Url::parse($argument);
+            $url = Url::parse($valueParser->parseText($argument));
         } catch (UrlInvalidArgumentException $exception) {
             throw new ParseException('Invalid argument: Invalid Url argument "' . $argument . '" for "' . $command . '": ' . $exception->getMessage());
         }
@@ -283,16 +237,17 @@ class Parser
     /**
      * Try parse an assert.
      *
-     * @param LocationInterface      $location The location.
-     * @param TestCaseInterface|null $testCase The test case.
-     * @param string                 $command  The command.
-     * @param string|null            $argument The argument or null if no argument.
+     * @param LocationInterface      $location    The location.
+     * @param TestCaseInterface|null $testCase    The test case.
+     * @param string                 $command     The command.
+     * @param string|null            $argument    The argument or null if no argument.
+     * @param ValueParserInterface   $valueParser The value parser.
      *
      * @throws ParseException If parsing failed.
      *
      * @return bool True if this was an assert, false otherwise.
      */
-    private static function tryParseAssert(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
+    private static function tryParseAssert(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, ValueParserInterface $valueParser): bool
     {
         self::extractModifiers($command, $assertString, $modifiersString);
 
@@ -300,7 +255,7 @@ class Parser
             switch ($assertString) {
                 case 'assert-contains':
                     self::tryParseModifiers($assertString, $modifiersString, $modifiers);
-                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'content', $argumentValue);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'content', $valueParser, $argumentValue);
 
                     $assert = new AssertContains($location, $argumentValue, $modifiers);
 
@@ -316,7 +271,7 @@ class Parser
 
                 case 'assert-equals':
                     self::tryParseModifiers($assertString, $modifiersString, $modifiers);
-                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'content', $argumentValue);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'content', $valueParser, $argumentValue);
 
                     $assert = new AssertEquals($location, $argumentValue, $modifiers);
 
@@ -324,7 +279,7 @@ class Parser
 
                 case 'assert-header':
                     self::tryParseModifiers($assertString, $modifiersString, $modifiers);
-                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'header', $argumentValue);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_STRING, 'header', $valueParser, $argumentValue);
 
                     $assert = new AssertHeader($location, $argumentValue, $modifiers);
 
@@ -332,7 +287,7 @@ class Parser
 
                 case 'assert-status-code':
                     self::tryParseModifiers($assertString, $modifiersString, $modifiers);
-                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_INTEGER, 'status code', $argumentValue);
+                    self::checkAssertArgument($command, $argument, self::ARGUMENT_TYPE_INTEGER, 'status code', $valueParser, $argumentValue);
 
                     $assert = new AssertStatusCode($location, $argumentValue, $modifiers);
 
@@ -369,29 +324,30 @@ class Parser
     /**
      * Try parse a request modifier.
      *
-     * @param LocationInterface      $location The location.
-     * @param TestCaseInterface|null $testCase The test case.
-     * @param string                 $command  The command.
-     * @param string|null            $argument The argument or null if no argument.
+     * @param LocationInterface      $location    The location.
+     * @param TestCaseInterface|null $testCase    The test case.
+     * @param string                 $command     The command.
+     * @param string|null            $argument    The argument or null if no argument.
+     * @param ValueParserInterface   $valueParser The value parser.
      *
      * @throws ParseException If parsing failed.
      *
      * @return bool True if this was a request modifier, false otherwise.
      */
-    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument): bool
+    private static function tryParseRequestModifier(LocationInterface $location, ?TestCaseInterface $testCase, string $command, ?string $argument, ValueParserInterface $valueParser): bool
     {
         switch ($command) {
             case 'with-header':
                 self::tryParseHeaderRequestModifierParameter($command, $argument, $headerName, $headerValue);
 
-                $requestModifier = new WithHeader($headerName, $headerValue);
+                $requestModifier = new WithHeader($valueParser->parseText($headerName), $valueParser->parseText($headerValue));
 
                 break;
 
             case 'with-post-parameter':
                 self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
-                $requestModifier = new WithPostParameter($parameterName, $parameterValue);
+                $requestModifier = new WithPostParameter($valueParser->parseText($parameterName), $valueParser->parseText($parameterValue));
 
                 break;
 
@@ -399,8 +355,9 @@ class Parser
                 self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
                 try {
+                    $parameterValue = $valueParser->parseText($parameterValue);
                     $filePath = $location->getFilePath()->withFilePath(FilePath::parse($parameterValue));
-                    $requestModifier = new WithPostFile($parameterName, $filePath);
+                    $requestModifier = new WithPostFile($valueParser->parseText($parameterName), $filePath);
                 } catch (FilePathInvalidArgumentException) {
                     throw new ParseException('Invalid argument: File path "' . $parameterValue . '" is not valid for request modifier "' . $command . '".');
                 } catch (FileNotFoundException) {
@@ -414,7 +371,7 @@ class Parser
                     throw new ParseException('Missing argument: Missing content for request modifier "' . $command . '".');
                 }
 
-                $requestModifier = new WithRawContent($argument);
+                $requestModifier = new WithRawContent($valueParser->parseText($argument));
 
                 break;
 
@@ -447,18 +404,17 @@ class Parser
     /**
      * Checks an assert argument.
      *
-     * @param string          $command       The command.
-     * @param null|string     $argument      The argument as a string.
-     * @param int             $argumentType  The argument type as one of the ARGUMENT_TYPE_* constants.
-     * @param null|string     $argumentName  The argument name or null if no argument.
-     * @param string|int|null $argumentValue The actual argument to use.
+     * @param string                    $command       The command.
+     * @param null|string               $argument      The argument as a string.
+     * @param int                       $argumentType  The argument type as one of the ARGUMENT_TYPE_* constants.
+     * @param null|string               $argumentName  The argument name or null if no argument.
+     * @param ValueParserInterface|null $valueParser   The value parser or null if no value needs to be parsed.
+     * @param string|int|null           $argumentValue The actual argument to use.
      *
      * @throws ParseException If check failed.
      */
-    private static function checkAssertArgument(string $command, ?string $argument, int $argumentType, ?string $argumentName = null, string|int|null &$argumentValue = null): void
+    private static function checkAssertArgument(string $command, ?string $argument, int $argumentType, ?string $argumentName = null, ?ValueParserInterface $valueParser = null, string|int|null &$argumentValue = null): void
     {
-        $argumentValue = $argument;
-
         if ($argumentType === self::ARGUMENT_TYPE_NONE) {
             if ($argument !== null) {
                 throw new ParseException('Extra argument: "' . $argument . '". No arguments are allowed for assert "' . $command . '".');
@@ -470,6 +426,9 @@ class Parser
         if ($argument === null) {
             throw new ParseException('Missing argument: Missing ' . $argumentName . ' argument for assert "' . $command . '".');
         }
+
+        $argument = $valueParser->parseText($argument);
+        $argumentValue = $argument;
 
         if ($argumentType === self::ARGUMENT_TYPE_INTEGER) {
             $argumentValue = intval($argument);

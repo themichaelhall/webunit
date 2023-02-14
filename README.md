@@ -148,6 +148,21 @@ set-default            Url = https://example.com/
 get                    {{ Url }}
 ```
 
+The following escape sequences can be used in the test file:
+
+| Escape sequence | Character       |
+|-----------------|-----------------|
+| \\n             | Line feed       |
+| \\r             | Carriage return |
+| \\s             | Space           |
+| \\t             | Horizontal tab  |
+| \\\\            | Backslash       |
+
+```
+get                    https://example.org/
+assert-contains        <html>\n<head>\n\s
+```
+
 ## Commands
 
 ### delete _url_
@@ -241,7 +256,7 @@ assert-status-code 301
 
 ### with-header _header-name: header-value_
 
-Sets a HTTP-header with the specified name to the specified value.
+Sets an HTTP-header with the specified name to the specified value.
 
 ```
 with-header Accept-Language: en
