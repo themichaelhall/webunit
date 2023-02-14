@@ -1,3 +1,5 @@
+## Unreleased
+
 ## [2.2.0] - 2023-02-14
 - Added escape sequence functionality.
 
