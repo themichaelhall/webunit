@@ -75,7 +75,7 @@ class ConsoleApplication
      *
      * @since 1.2.0
      */
-    public const WEBUNIT_VERSION = '2.1.0';
+    public const WEBUNIT_VERSION = '2.2.0';
 
     /**
      * Constructs the console application.
