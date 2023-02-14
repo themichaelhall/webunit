@@ -355,7 +355,8 @@ class Parser
                 self::tryParsePostRequestModifierParameter($command, $argument, $parameterName, $parameterValue);
 
                 try {
-                    $filePath = $location->getFilePath()->withFilePath(FilePath::parse($valueParser->parseText($parameterValue)));
+                    $parameterValue = $valueParser->parseText($parameterValue);
+                    $filePath = $location->getFilePath()->withFilePath(FilePath::parse($parameterValue));
                     $requestModifier = new WithPostFile($valueParser->parseText($parameterName), $filePath);
                 } catch (FilePathInvalidArgumentException) {
                     throw new ParseException('Invalid argument: File path "' . $parameterValue . '" is not valid for request modifier "' . $command . '".');
