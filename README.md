@@ -1,7 +1,6 @@
 # Webunit
 
-[![Tests](https://github.com/themichaelhall/webunit/workflows/tests/badge.svg?branch=master)](https://github.com/themichaelhall/webunit/actions)
-[![StyleCI](https://styleci.io/repos/119093998/shield?style=flat&branch=master)](https://styleci.io/repos/119093998)
+[![Tests](https://github.com/themichaelhall/webunit/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/themichaelhall/webunit/actions)
 [![License](https://poser.pugx.org/michaelhall/webunit/license)](https://packagist.org/packages/michaelhall/webunit)
 [![Latest Stable Version](https://poser.pugx.org/michaelhall/webunit/v/stable)](https://packagist.org/packages/michaelhall/webunit)
 [![Total Downloads](https://poser.pugx.org/michaelhall/webunit/downloads)](https://packagist.org/packages/michaelhall/webunit)
@@ -264,7 +263,7 @@ with-header Accept-Language: en
 
 ### with-post-file _parameter-name = file-path_
 
-Sets a POST-parameter with the specified name to a file to be uploaded. The file path can be either absolute or relative to the webunit test script. This request modifier can not be used for GET requests and can not be combined with the _with-raw-content_ request modifier. 
+Sets a POST-parameter with the specified name to a file to be uploaded. The file path can be either absolute or relative to the webunit test script. This request modifier can not be used for GET requests and can not be combined with the _with-raw-content_ request modifier.
 
 ```
 with-post-file File = ../../files/foo.txt
