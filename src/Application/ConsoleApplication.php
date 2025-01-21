@@ -163,7 +163,7 @@ class ConsoleApplication
      *
      * @return bool True if parsing was successful, false otherwise.
      */
-    private function parseCommandLineParameters(array $parameters, ParseContextInterface $parseContext, FilePathInterface &$testfilePath = null, string &$error = null): bool
+    private function parseCommandLineParameters(array $parameters, ParseContextInterface $parseContext, ?FilePathInterface &$testfilePath = null, ?string &$error = null): bool
     {
         array_shift($parameters);
         $testfilePath = null;
