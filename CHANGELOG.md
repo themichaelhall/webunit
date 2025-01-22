@@ -1,4 +1,5 @@
 ## Unreleased
+- Fixed crash when asserts are given invalid regular expressions.
 
 ## [2.2.0] - 2023-02-14
 - Added escape sequence functionality.

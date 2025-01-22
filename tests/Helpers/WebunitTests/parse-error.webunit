@@ -13,6 +13,7 @@ assert-empty BAZ
 assert-empty
 
 assert-empty!!
+assert-equals~ [abc
 
 with-post-parameter Foo=
 

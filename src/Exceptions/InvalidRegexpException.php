@@ -28,6 +28,6 @@ class InvalidRegexpException extends LogicException
      */
     public function __construct(string $regexp)
     {
-        parent::__construct('Regexp "' . $regexp . '" is invalid.');
+        parent::__construct($regexp);
     }
 }

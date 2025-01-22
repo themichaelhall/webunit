@@ -299,6 +299,41 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Test parse with errors in regexp.
+     */
+    public function testParseWithRegexpErrors()
+    {
+        $parser = new Parser();
+        $parseContext = new ParseContext();
+        $parseResult = $parser->parse(
+            FilePath::parse('foo.webunit'),
+            [
+                'get https://example.com/',
+                'assert-contains [Foo',
+                'assert-contains~ [Bar',
+            ],
+            $parseContext,
+        );
+
+        $testSuite = $parseResult->getTestSuite();
+        $testCases = $testSuite->getTestCases();
+        $parseErrors = $parseResult->getParseErrors();
+
+        self::assertSame(1, count($testCases));
+
+        self::assertSame('https://example.com/', $testCases[0]->getUrl()->__toString());
+        self::assertSame(2, count($testCases[0]->getAsserts()));
+
+        self::assertInstanceOf(AssertContains::class, $testCases[0]->getAsserts()[1]);
+        self::assertSame('[Foo', $testCases[0]->getAsserts()[1]->getContent());
+
+        self::assertSame(1, count($parseErrors));
+        self::assertSame('foo.webunit:3: Invalid regular expression: "[Bar" for assert "assert-contains~".', $parseErrors[0]->__toString());
+
+        self::assertFalse($parseResult->isSuccess());
+    }
+
+    /**
      * Test parse with variables.
      *
      * @noinspection PhpPossiblePolymorphicInvocationInspection

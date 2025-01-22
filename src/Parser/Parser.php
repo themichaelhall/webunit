@@ -23,6 +23,7 @@ use MichaelHall\Webunit\Assertions\AssertStatusCode;
 use MichaelHall\Webunit\Exceptions\FileNotFoundException;
 use MichaelHall\Webunit\Exceptions\IncompatibleRequestModifierException;
 use MichaelHall\Webunit\Exceptions\InvalidParameterException;
+use MichaelHall\Webunit\Exceptions\InvalidRegexpException;
 use MichaelHall\Webunit\Exceptions\MethodNotAllowedForRequestModifierException;
 use MichaelHall\Webunit\Exceptions\NotAllowedModifierException;
 use MichaelHall\Webunit\Exceptions\ParseException;
@@ -310,6 +311,8 @@ class Parser
             $isMultiple = count($invalidModifiers) > 1;
 
             throw new ParseException('Invalid modifier' . ($isMultiple ? 's' : '') . ': Modifier' . ($isMultiple ? 's' : '') . ' ' . implode(', ', $invalidModifiers) . ' ' . ($isMultiple ? 'are' : 'is') . ' not allowed for assert "' . $assertString . '".');
+        } catch (InvalidRegexpException $e) {
+            throw new ParseException('Invalid regular expression: "' . $e->getMessage() . '" for assert "' . $command . '".');
         }
 
         if ($testCase === null) {

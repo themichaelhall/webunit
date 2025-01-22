@@ -134,7 +134,7 @@ class AssertContainsTest extends TestCase
     public function testInvalidRegexp()
     {
         self::expectException(InvalidRegexpException::class);
-        self::expectExceptionMessage('Regexp "(Foo" is invalid.');
+        self::expectExceptionMessage('(Foo');
 
         new AssertContains(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(ModifiersInterface::REGEXP));
     }

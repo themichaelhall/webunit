@@ -110,11 +110,12 @@ class ConsoleApplicationTest extends TestCase
             "$testfilePath:10: Invalid variable: Invalid variable name \"{Bar}\" for \"set-default\" in \"{Bar} = Baz\"." . PHP_EOL .
             "$testfilePath:12: Extra argument: \"BAZ\". No arguments are allowed for assert \"assert-empty\"." . PHP_EOL .
             "$testfilePath:15: Duplicate modifier: Modifier \"!\" is duplicated for assert \"assert-empty\"." . PHP_EOL .
-            "$testfilePath:17: Invalid request modifier: Request modifier \"with-post-parameter\" is not allowed for request method \"GET\"." . PHP_EOL .
-            "$testfilePath:20: Invalid argument: File \"../TestFiles/not-found.txt\" was not found for request modifier \"with-post-file\"." . PHP_EOL .
-            "$testfilePath:23: Missing argument: Missing header value for request modifier \"with-header\"." . PHP_EOL .
-            "$testfilePath:24: Missing argument: Missing content for request modifier \"with-raw-content\"." . PHP_EOL .
-            "$testfilePath:28: Incompatible request modifier: Request modifier \"with-raw-content\" can not be combined with request modifier \"with-post-parameter\"." . PHP_EOL .
+            "$testfilePath:16: Invalid regular expression: \"[abc\" for assert \"assert-equals~\"." . PHP_EOL .
+            "$testfilePath:18: Invalid request modifier: Request modifier \"with-post-parameter\" is not allowed for request method \"GET\"." . PHP_EOL .
+            "$testfilePath:21: Invalid argument: File \"../TestFiles/not-found.txt\" was not found for request modifier \"with-post-file\"." . PHP_EOL .
+            "$testfilePath:24: Missing argument: Missing header value for request modifier \"with-header\"." . PHP_EOL .
+            "$testfilePath:25: Missing argument: Missing content for request modifier \"with-raw-content\"." . PHP_EOL .
+            "$testfilePath:29: Incompatible request modifier: Request modifier \"with-raw-content\" can not be combined with request modifier \"with-post-parameter\"." . PHP_EOL .
             "\033[41m\033[1;37mParsing failed.\033[0m" . PHP_EOL,
             $output
         );

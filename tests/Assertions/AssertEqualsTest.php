@@ -134,7 +134,7 @@ class AssertEqualsTest extends TestCase
     public function testInvalidRegexp()
     {
         self::expectException(InvalidRegexpException::class);
-        self::expectExceptionMessage('Regexp "(Foo" is invalid.');
+        self::expectExceptionMessage('(Foo');
 
         new AssertEquals(new FileLocation(FilePath::parse('/tmp/tests'), 10), '(Foo', new Modifiers(ModifiersInterface::CASE_INSENSITIVE | ModifiersInterface::REGEXP));
     }
