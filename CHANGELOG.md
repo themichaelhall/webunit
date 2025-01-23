@@ -1,4 +1,4 @@
-## Unreleased
+## [2.3.0] - 2025-01-23
 - Added --no-colors command line option.
 - Fixed crash when asserts are given invalid regular expressions.
 
@@ -27,6 +27,7 @@
 ## 1.0.0 - 2019-04-03
 - First stable revision.
 
+[2.3.0]: https://github.com/themichaelhall/webunit/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/themichaelhall/webunit/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/themichaelhall/webunit/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/themichaelhall/webunit/compare/v1.3.0...v2.0.0
