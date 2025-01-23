@@ -104,7 +104,7 @@ class ConsoleApplication
 
         $parseContext = new ParseContext();
         if (!$this->parseCommandLineParameters($this->commandLineParameters, $parseContext, $testfilePath, $error)) {
-            self::fail($error);
+            $this->fail($error);
             echo 'Usage: webunit [options] testfile' . PHP_EOL;
 
             return self::RESULT_PARAMETER_ERROR;
@@ -122,14 +122,14 @@ class ConsoleApplication
                 echo $parseError . PHP_EOL;
             }
 
-            self::fail('Parsing failed.');
+            $this->fail('Parsing failed.');
 
             return self::RESULT_PARSE_TEST_FILE_ERROR;
         }
 
         $testSuite = $parseResult->getTestSuite();
         if (count($testSuite->getTestCases()) === 0) {
-            self::warn('No tests found.');
+            $this->warn('No tests found.');
 
             return self::RESULT_NO_TESTS_FOUND;
         }
@@ -141,7 +141,10 @@ class ConsoleApplication
                 $currentProgressBarLength = 0;
             }
 
-            echo $assertResult->isSuccess() ? '.' : "\033[41m\033[1;37mF\033[0m";
+            echo $assertResult->isSuccess() ?
+                '.' :
+                $this->formatText('F', self::FORMAT_FAILURE);
+
             $currentProgressBarLength++;
         };
 
@@ -290,7 +293,7 @@ class ConsoleApplication
         /** @noinspection PhpUsageOfSilenceOperatorInspection */
         $content = @file($filePath->__toString());
         if ($content === false) {
-            self::fail('Could not open file "' . $filePath . '".');
+            $this->fail('Could not open file "' . $filePath . '".');
 
             return null;
         }
@@ -307,7 +310,7 @@ class ConsoleApplication
     {
         if ($testResults->isSuccess()) {
             $count = $testResults->getSuccessfulTestsCount();
-            self::success($count . ' test' . ($count > 1 ? 's' : '') . ' completed successfully.');
+            $this->success($count . ' test' . ($count > 1 ? 's' : '') . ' completed successfully.');
 
             return;
         }
@@ -321,7 +324,7 @@ class ConsoleApplication
         }
 
         $count = $testResults->getFailedTestsCount();
-        self::fail($count . ' test' . ($count > 1 ? 's' : '') . ' failed.');
+        $this->fail($count . ' test' . ($count > 1 ? 's' : '') . ' failed.');
     }
 
     /**
@@ -329,9 +332,9 @@ class ConsoleApplication
      *
      * @param string $message The message.
      */
-    private static function success(string $message): void
+    private function success(string $message): void
     {
-        echo "\033[42m\033[30m" . $message . "\033[0m" . PHP_EOL;
+        echo $this->formatText($message, self::FORMAT_SUCCESS) . PHP_EOL;
     }
 
     /**
@@ -339,9 +342,9 @@ class ConsoleApplication
      *
      * @param string $message The message.
      */
-    private static function warn(string $message): void
+    private function warn(string $message): void
     {
-        echo "\033[43m\033[30m" . $message . "\033[0m" . PHP_EOL;
+        echo $this->formatText($message, self::FORMAT_WARNING) . PHP_EOL;
     }
 
     /**
@@ -349,9 +352,22 @@ class ConsoleApplication
      *
      * @param string $message The message.
      */
-    private static function fail(string $message): void
+    private function fail(string $message): void
     {
-        echo "\033[41m\033[1;37m" . $message . "\033[0m" . PHP_EOL;
+        echo $this->formatText($message, self::FORMAT_FAILURE) . PHP_EOL;
+    }
+
+    /**
+     * Formats a text with the specified format code.
+     *
+     * @param string $text       The text.
+     * @param string $formatCode The format code.
+     *
+     * @return string The formatted text.
+     */
+    private function formatText(string $text, string $formatCode): string
+    {
+        return $formatCode . $text . "\033[0m";
     }
 
     /**
@@ -368,4 +384,19 @@ class ConsoleApplication
      * @var int The maximum length in characters per line of the "progress bar".
      */
     private const PROGRESS_BAR_MAX_LENGTH_PER_LINE = 70;
+
+    /**
+     * @var string The format code for success messages.
+     */
+    private const FORMAT_SUCCESS = "\033[42m\033[30m";
+
+    /**
+     * @var string The format code for warning messages.
+     */
+    private const FORMAT_WARNING = "\033[43m\033[30m";
+
+    /**
+     * @var string The format code for failure messages.
+     */
+    private const FORMAT_FAILURE = "\033[41m\033[1;37m";
 }
