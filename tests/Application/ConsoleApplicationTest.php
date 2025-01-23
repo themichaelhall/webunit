@@ -268,6 +268,59 @@ class ConsoleApplicationTest extends TestCase
     }
 
     /**
+     * Test running application with successful test suite with the --no-colors option.
+     */
+    public function testSuccessfulTestSuiteWithNoColors()
+    {
+        $testfilePath = FilePath::parse(__DIR__ . '/../Helpers/WebunitTests/success.webunit');
+
+        $consoleApplication = new ConsoleApplication(['webunit', $testfilePath->__toString(), '--no-colors'], $this->httpClient);
+
+        ob_start();
+        $result = $consoleApplication->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        self::assertSame(0, $result);
+        self::assertSame(
+            'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
+            '......................' . PHP_EOL .
+            '7 tests completed successfully.' . PHP_EOL,
+            $output
+        );
+    }
+
+    /**
+     * Test running application with failed test suite with the --no-colors option.
+     */
+    public function testFailedTestSuiteWithNoColors()
+    {
+        $testfilePath = FilePath::parse(__DIR__ . '/../Helpers/WebunitTests/fail.webunit');
+
+        $consoleApplication = new ConsoleApplication(['webunit', '--no-colors', $testfilePath->__toString()], $this->httpClient);
+
+        ob_start();
+        $result = $consoleApplication->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        self::assertSame(5, $result);
+        self::assertSame(
+            'Webunit v' . ConsoleApplication::WEBUNIT_VERSION . PHP_EOL .
+            '..FF.F.F.F.F.F' . PHP_EOL .
+            "$testfilePath:4: Test failed: https://example.com/foo: Content \"This is Foo page.\" contains \"foo\" (case insensitive)." . PHP_EOL .
+            "$testfilePath:6: Test failed: https://example.com/foobar: Status code 404 was returned." . PHP_EOL .
+            "$testfilePath:10: Test failed: https://example.com/method: Content \"Method is POST\" equals \"Method is POST\"." . PHP_EOL .
+            "$testfilePath:14: Test failed: https://example.com/request: Content \"Post Field \"Foo\" = \"Bar\"\" does not contain \"Post Field \"Foo\" = \"Baz\"\"." . PHP_EOL .
+            "$testfilePath:18: Test failed: https://example.com/request: Content \"Post File \"File\" = \"" . FilePath::parse(__DIR__ . '/../Helpers/TestFiles/helloworld.txt') . '"" contains "Post File "File" = ".*helloworld.txt"" (regexp).' . PHP_EOL .
+            "$testfilePath:22: Test failed: https://example.com/request: Content \"Raw Content = \"Foo-Bar\"\" contains \"Foo-Bar\"." . PHP_EOL .
+            "$testfilePath:26: Test failed: https://example.com/request: Content \"Header \"Foo: Bar\"\" contains \"HEADER \"FOO: BAR\"\" (case insensitive)." . PHP_EOL .
+            '7 tests failed.' . PHP_EOL,
+            $output
+        );
+    }
+
+    /**
      * Set up.
      */
     protected function setUp(): void
