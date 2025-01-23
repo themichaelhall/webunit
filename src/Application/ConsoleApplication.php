@@ -89,6 +89,7 @@ class ConsoleApplication
     {
         $this->commandLineParameters = $commandLineParameters;
         $this->httpClient = $httpClient;
+        $this->isNoColorsMode = false;
     }
 
     /**
@@ -193,6 +194,10 @@ class ConsoleApplication
 
                             return false;
                         }
+                        break;
+
+                    case '--no-colors':
+                        $this->isNoColorsMode = true;
                         break;
 
                     default:
@@ -367,6 +372,10 @@ class ConsoleApplication
      */
     private function formatText(string $text, string $formatCode): string
     {
+        if ($this->isNoColorsMode) {
+            return $text;
+        }
+
         return $formatCode . $text . "\033[0m";
     }
 
@@ -379,6 +388,11 @@ class ConsoleApplication
      * @var HttpClientInterface The HTTP client.
      */
     private HttpClientInterface $httpClient;
+
+    /**
+     * @var bool True if text output should be in no-colors mode, false otherwise.
+     */
+    private bool $isNoColorsMode;
 
     /**
      * @var int The maximum length in characters per line of the "progress bar".

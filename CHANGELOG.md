@@ -1,4 +1,5 @@
 ## Unreleased
+- Added --no-colors command line option.
 - Fixed crash when asserts are given invalid regular expressions.
 
 ## [2.2.0] - 2023-02-14

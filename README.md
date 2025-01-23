@@ -147,6 +147,12 @@ set-default            Url = https://example.com/
 get                    {{ Url }}
 ```
 
+The ```--no-colors``` command line option can be used to disable colors in output.
+
+```
+$ webunit --no-colors testfile
+```
+
 The following escape sequences can be used in the test file:
 
 | Escape sequence | Character       |
